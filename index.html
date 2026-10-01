@@ -1,430 +1,264 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CTRL — Presented by CASHCXDE</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CTRL — Powered by CASHCXDE</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700;800&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Syne:wght@700;800;900&display=swap" rel="stylesheet">
+  
   <style>
-    :root {
-      --bg-dark: #020205;
-      --card-glass: rgba(10, 12, 20, 0.6);
-      --card-border: rgba(255, 255, 255, 0.1);
-      --neon-cyan: #00f0ff;
-      --neon-glow: rgba(0, 240, 255, 0.4);
-      --cashcxde-accent: #7000ff;
-      --text-main: #ffffff;
-      --text-muted: #838a9e;
-      --input-bg: rgba(0, 0, 0, 0.5);
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
     }
-
-    * { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
       font-family: 'Plus Jakarta Sans', sans-serif;
-      background-color: var(--bg-dark);
-      color: var(--text-main);
+      background: radial-gradient(circle at 80% 20%, #0a2e38 0%, #030407 60%);
+      color: #ffffff;
+      min-height: 100vh;
       display: flex;
       justify-content: center;
       align-items: center;
-      min-height: 100vh;
-      padding: 24px 16px;
-      overflow: hidden; /* Keep it locked for the floating effects */
-      position: relative;
-      perspective: 1000px;
+      padding: 20px;
+      overflow-x: hidden;
     }
 
-    /* Ambient Animated Background Elements */
-    .bg-orb {
-      position: fixed;
-      border-radius: 50%;
-      filter: blur(100px);
-      z-index: -2;
-      animation: drift 15s infinite alternate ease-in-out;
-    }
-    .orb-1 {
-      width: 400px; height: 400px;
-      background: rgba(112, 0, 255, 0.25);
-      top: 10%; left: 10%;
-    }
-    .orb-2 {
-      width: 500px; height: 500px;
-      background: rgba(0, 240, 255, 0.15);
-      bottom: -10%; right: -5%;
-      animation-delay: -5s;
-    }
-
-    @keyframes drift {
-      0% { transform: translate(0, 0) scale(1); }
-      100% { transform: translate(50px, -50px) scale(1.1); }
-    }
-
-    /* Cursor Tracking Glow */
-    #cursor-glow {
-      position: fixed;
-      width: 400px;
-      height: 400px;
-      background: radial-gradient(circle, rgba(0, 240, 255, 0.15) 0%, transparent 60%);
-      border-radius: 50%;
-      pointer-events: none;
-      transform: translate(-50%, -50%);
-      z-index: -1;
-      transition: width 0.2s, height 0.2s;
-    }
-
-    /* Main Interface Container with continuous float */
-    .main-card {
+    .card {
+      background: rgba(11, 14, 23, 0.85);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(0, 240, 255, 0.15);
+      border-radius: 28px;
+      padding: 40px 32px;
       width: 100%;
       max-width: 440px;
-      background: var(--card-glass);
-      backdrop-filter: blur(30px);
-      -webkit-backdrop-filter: blur(30px);
-      border: 1px solid var(--card-border);
-      border-radius: 24px;
-      padding: 40px 32px;
-      box-shadow: 0 30px 60px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+      box-shadow: 0 30px 60px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+      text-align: center;
       position: relative;
-      animation: floatUI 6s ease-in-out infinite;
-      z-index: 10;
     }
 
-    @keyframes floatUI {
-      0% { transform: translateY(0px); }
-      50% { transform: translateY(-12px); }
-      100% { transform: translateY(0px); }
-    }
-
-    /* Interactive View Panels */
-    .view-panel {
-      display: none;
-      opacity: 0;
-      transform: translateY(20px) scale(0.95);
-      transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-    .view-panel.active {
-      display: block;
-      opacity: 1;
-      transform: translateY(0) scale(1);
-    }
-
-    .sponsor-badge {
-      display: flex; align-items: center; justify-content: center;
-      font-size: 11px; font-weight: 800; letter-spacing: 4px;
-      color: var(--text-muted); text-transform: uppercase;
+    /* Sponsor Subheader */
+    .sponsor-tag {
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 3px;
+      color: #838a9e;
+      text-transform: uppercase;
       margin-bottom: 12px;
     }
-    .sponsor-badge span {
-      margin-left: 8px;
-      color: var(--text-main);
-      text-shadow: 0 0 10px rgba(255,255,255,0.5);
+
+    .sponsor-tag span {
+      color: #ffffff;
     }
 
-    .title-control {
+    /* Fixed Brand Header */
+    .brand-title {
       font-family: 'Syne', sans-serif;
-      font-size: 52px; font-weight: 800; line-height: 1;
-      text-align: center; letter-spacing: 10px;
+      font-size: clamp(28px, 8vw, 36px); /* Auto scales text to prevent overflow */
+      font-weight: 900;
+      letter-spacing: 6px;
+      color: #ffffff;
       text-transform: uppercase;
-      background: linear-gradient(180deg, #ffffff 0%, #838a9e 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      margin-bottom: 35px;
-      position: relative;
-    }
-
-    .form-label {
-      font-size: 11px; font-weight: 700; text-transform: uppercase;
-      letter-spacing: 2px; color: var(--neon-cyan); margin-bottom: 10px; display: block;
-    }
-
-    /* Inputs that react to focus */
-    .custom-input {
-      width: 100%;
-      background: var(--input-bg);
-      border: 1px solid var(--card-border);
-      border-radius: 14px;
-      padding: 16px 20px;
-      font-size: 15px;
-      color: var(--text-main);
-      font-family: inherit;
-      outline: none;
-      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      line-height: 1;
       margin-bottom: 24px;
-    }
-    .custom-input:focus {
-      border-color: var(--neon-cyan);
-      background: rgba(0, 240, 255, 0.05);
-      box-shadow: 0 0 25px var(--neon-glow);
-      transform: scale(1.02);
+      white-space: nowrap;
     }
 
-    /* Buttons with intense hover states */
-    .btn-action {
+    /* Status Pill */
+    .status-pill {
+      display: inline-block;
+      padding: 10px 24px;
+      background: rgba(0, 240, 255, 0.05);
+      border: 1px solid #00f0ff;
+      border-radius: 50px;
+      color: #00f0ff;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      box-shadow: 0 0 15px rgba(0, 240, 255, 0.2);
+      margin-bottom: 30px;
+    }
+
+    /* Tier Allocation Box */
+    .tier-box {
+      background: rgba(255, 255, 255, 0.03);
+      border-left: 3px solid #00f0ff;
+      border-radius: 14px;
+      padding: 20px;
+      text-align: left;
+      margin-bottom: 32px;
+    }
+
+    .tier-box h3 {
+      font-family: 'Syne', sans-serif;
+      font-size: 20px;
+      font-weight: 800;
+      color: #ffffff;
+      margin-bottom: 4px;
+    }
+
+    .tier-box p {
+      font-size: 13px;
+      color: #6c758d;
+    }
+
+    /* Form Elements */
+    .section-label {
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 2px;
+      color: #00f0ff;
+      text-transform: uppercase;
+      text-align: left;
+      margin-bottom: 10px;
+      display: block;
+    }
+
+    .input-field {
       width: 100%;
-      background: var(--text-main);
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 16px 18px;
+      font-size: 14px;
+      color: #ffffff;
+      outline: none;
+      transition: all 0.2s ease;
+      margin-bottom: 16px;
+    }
+
+    .input-field:focus {
+      border-color: #00f0ff;
+      box-shadow: 0 0 10px rgba(0, 240, 255, 0.15);
+    }
+
+    .input-field::placeholder {
+      color: #4a5163;
+    }
+
+    .btn-submit {
+      width: 100%;
+      background: #ffffff;
       color: #000000;
       font-family: 'Syne', sans-serif;
-      font-size: 14px; font-weight: 800;
-      text-transform: uppercase; letter-spacing: 3px;
-      border: none; border-radius: 14px; padding: 20px;
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      padding: 18px;
+      border: none;
+      border-radius: 12px;
       cursor: pointer;
-      position: relative;
-      overflow: hidden;
-      transition: all 0.3s ease;
-    }
-    .btn-action::before {
-      content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.8), transparent);
-      transition: left 0.5s ease;
-    }
-    .btn-action:hover {
-      background: var(--neon-cyan);
-      box-shadow: 0 0 30px var(--neon-glow);
-      transform: translateY(-4px);
-    }
-    .btn-action:hover::before { left: 100%; }
-    .btn-action:active { transform: translateY(2px) scale(0.98); }
-
-    /* Interactive Size Grid */
-    .size-grid {
-      display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 28px;
-    }
-    .size-card {
-      background: var(--input-bg);
-      border: 1px solid var(--card-border);
-      color: var(--text-muted);
-      padding: 18px 0; border-radius: 12px;
-      font-family: 'Syne', sans-serif; font-weight: 700; font-size: 16px;
-      cursor: pointer; transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-    .size-card:hover {
-      border-color: var(--neon-cyan);
-      color: var(--text-main);
-      transform: translateY(-3px);
-      box-shadow: 0 10px 20px rgba(0, 240, 255, 0.15);
-    }
-    .size-card.selected {
-      background: var(--neon-cyan);
-      color: #000;
-      border-color: var(--neon-cyan);
-      box-shadow: 0 0 25px var(--neon-glow);
-      transform: scale(1.05);
+      transition: all 0.2s ease;
+      margin-bottom: 20px;
     }
 
-    .status-badge {
-      display: inline-flex; align-items: center; gap: 8px;
-      background: rgba(0, 240, 255, 0.1);
-      border: 1px solid var(--neon-cyan); color: var(--neon-cyan);
-      padding: 10px 20px; border-radius: 30px;
-      font-size: 12px; font-weight: 800; text-transform: uppercase;
-      letter-spacing: 2px; margin-bottom: 24px;
-      box-shadow: 0 0 15px rgba(0, 240, 255, 0.2);
-      animation: pulse 2s infinite;
-    }
-    @keyframes pulse {
-      0% { box-shadow: 0 0 10px rgba(0,240,255,0.2); }
-      50% { box-shadow: 0 0 25px rgba(0,240,255,0.6); }
-      100% { box-shadow: 0 0 10px rgba(0,240,255,0.2); }
+    .btn-submit:hover:not(:disabled) {
+      background: #00f0ff;
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(0, 240, 255, 0.2);
     }
 
-    .info-card {
-      background: rgba(255,255,255,0.03);
-      border-left: 3px solid var(--neon-cyan);
-      padding: 20px; border-radius: 8px; margin-bottom: 28px;
-      font-size: 14px; color: var(--text-muted);
+    .btn-submit:disabled {
+      background: rgba(255, 255, 255, 0.2);
+      color: #6c758d;
+      cursor: not-allowed;
+      transform: none;
     }
-    .info-card strong { color: var(--text-main); font-size: 18px; display: block; margin-bottom: 4px;}
 
-    .invite-pill {
-      font-size: 11px; font-weight: 700; color: #fff;
-      background: var(--cashcxde-accent);
-      padding: 8px 16px; border-radius: 30px; display: inline-block;
-      margin-top: 20px; letter-spacing: 1.5px; text-transform: uppercase;
-      box-shadow: 0 0 15px rgba(112, 0, 255, 0.4);
+    /* Badge Counter */
+    .counter-badge {
+      display: inline-block;
+      padding: 8px 16px;
+      background: rgba(112, 0, 255, 0.2);
+      border: 1px solid rgba(112, 0, 255, 0.4);
+      border-radius: 20px;
+      color: #a855f7;
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
     }
   </style>
 </head>
 <body>
 
-  <!-- Ambient Background -->
-  <div class="bg-orb orb-1"></div>
-  <div class="bg-orb orb-2"></div>
-  <div id="cursor-glow"></div>
+  <div class="card">
+    <div class="sponsor-tag">PRESENTED BY <span>CASHCXDE</span></div>
+    <div class="brand-title">CONTROL</div>
 
-  <div class="main-card">
-    <div class="sponsor-badge">PRESENTED BY <span>CASHCXDE</span></div>
-    <h1 class="title-control">CONTROL</h1>
+    <div class="status-pill">ACCESS GRANTED</div>
 
-    <!-- VIEW 1: GATEWAY VERIFICATION -->
-    <div id="view-gateway" class="view-panel active">
-      <label class="form-label" for="email-entry">Invited Email Address</label>
-      <input type="email" id="email-entry" class="custom-input" placeholder="Enter your email..." />
-      <button class="btn-action" onclick="checkGuestStatus()">Verify Access</button>
+    <div class="tier-box">
+      <h3 id="tier-display">Tier XS</h3>
+      <p id="tier-status">Your allocation is securely locked.</p>
     </div>
 
-    <!-- VIEW 2: SELECT SHIRT / PACKAGE SIZE -->
-    <div id="view-select-size" class="view-panel">
-      <label class="form-label">Select Package Size</label>
-      <div class="size-grid">
-        <button class="size-card" onclick="selectSize(this, 'XS')">XS</button>
-        <button class="size-card" onclick="selectSize(this, 'S')">S</button>
-        <button class="size-card" onclick="selectSize(this, 'M')">M</button>
-        <button class="size-card" onclick="selectSize(this, 'L')">L</button>
-        <button class="size-card" onclick="selectSize(this, 'XL')">XL</button>
-        <button class="size-card" onclick="selectSize(this, 'XXL')">XXL</button>
-      </div>
-      <button class="btn-action" onclick="confirmPackage()">Lock Tier Selection</button>
-    </div>
+    <label class="section-label">DISPATCH GUEST INVITATION</label>
+    <input type="email" id="friend-email" class="input-field" placeholder="friend@domain.com" />
 
-    <!-- VIEW 3: ACCESS DASHBOARD & DISPATCH INVITES -->
-    <div id="view-approved" class="view-panel">
-      <div style="text-align: center;">
-        <span class="status-badge">Access Granted</span>
-      </div>
+    <button type="button" id="send-btn" class="btn-submit">SEND INVITATION</button>
 
-      <div class="info-card">
-        <strong>Tier <span id="confirmed-size">M</span></strong>
-        <span>Your allocation is securely locked.</span>
-      </div>
-
-      <label class="form-label">Dispatch Guest Invitation</label>
-      <input type="email" id="friend-email" class="custom-input" placeholder="friend@domain.com" />
-      
-      <button class="btn-action" onclick="sendFriendInvite()">Send Invitation</button>
-      
-      <div style="text-align: center;">
-        <span class="invite-pill"><span id="remaining-count">2</span> Invites Remaining</span>
-      </div>
-    </div>
+    <div class="counter-badge" id="invites-badge">0 INVITES REMAINING</div>
   </div>
 
   <script>
-    const API_BASE = "https://control-1-0baa.onrender.com";
-    let currentGuestEmail = "";
-    let selectedSize = "";
+    // State
+    let invitesRemaining = 0; // Replace with value fetched from backend API
 
-    // Interactive Cursor Glow Tracker
-    const cursorGlow = document.getElementById('cursor-glow');
-    document.addEventListener('mousemove', (e) => {
-      cursorGlow.style.left = e.clientX + 'px';
-      cursorGlow.style.top = e.clientY + 'px';
-    });
-    document.addEventListener('mousedown', () => cursorGlow.style.transform = 'translate(-50%, -50%) scale(0.8)');
-    document.addEventListener('mouseup', () => cursorGlow.style.transform = 'translate(-50%, -50%) scale(1)');
+    const sendBtn = document.getElementById('send-btn');
+    const invitesBadge = document.getElementById('invites-badge');
+    const emailInput = document.getElementById('friend-email');
 
-    // View Switcher with smooth animation
-    function switchView(hideId, showId) {
-      const hideEl = document.getElementById(hideId);
-      const showEl = document.getElementById(showId);
-      hideEl.classList.remove('active');
-      setTimeout(() => {
-        showEl.classList.add('active');
-      }, 300); // Waits for fade out before fading in
-    }
-
-    window.addEventListener('DOMContentLoaded', () => {
-      const urlParams = new URLSearchParams(window.location.search);
-      const emailParam = urlParams.get('email');
-      if (emailParam) {
-        document.getElementById('email-entry').value = emailParam;
-        checkGuestStatus();
-      }
-    });
-
-    async function checkGuestStatus() {
-      const email = document.getElementById('email-entry').value.trim();
-      if (!email) return alert("Please enter your email address.");
-
-      // Visual feedback on button
-      const btn = event.target;
-      const originalText = btn.innerText;
-      btn.innerText = "VERIFYING...";
-
-      try {
-        const res = await fetch(`${API_BASE}/api/guest-status?email=${encodeURIComponent(email)}`);
-        const data = await res.json();
-
-        if (!res.ok || !data.authorized) {
-          btn.innerText = originalText;
-          return alert("This email has not been invited yet.");
-        }
-
-        currentGuestEmail = email;
-        if (data.guest.status === 'APPROVED') {
-          document.getElementById('confirmed-size').innerText = data.guest.shirt_size || 'M';
-          document.getElementById('remaining-count').innerText = data.guest.invites_remaining;
-          switchView('view-gateway', 'view-approved');
-        } else {
-          switchView('view-gateway', 'view-select-size');
-        }
-      } catch (err) {
-        btn.innerText = originalText;
-        alert("Failed to connect to CONTROL server.");
-      }
-    }
-
-    function selectSize(element, size) {
-      selectedSize = size;
-      document.querySelectorAll('.size-card').forEach(btn => btn.classList.remove('selected'));
-      element.classList.add('selected');
-    }
-
-    async function confirmPackage() {
-      if (!selectedSize) return alert("Please select a size first.");
+    function updateState() {
+      invitesBadge.textContent = `${invitesRemaining} INVITES REMAINING`;
       
-      const btn = event.target;
-      const originalText = btn.innerText;
-      btn.innerText = "LOCKING...";
-
-      try {
-        const res = await fetch(`${API_BASE}/api/secure-package`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email: currentGuestEmail, shirtSize: selectedSize })
-        });
-        const data = await res.json();
-        
-        if (data.success) {
-          document.getElementById('confirmed-size').innerText = data.guest.shirt_size || 'M';
-          document.getElementById('remaining-count').innerText = data.guest.invites_remaining;
-          switchView('view-select-size', 'view-approved');
-        }
-      } catch (err) {
-        btn.innerText = originalText;
-        alert("Error saving your selection.");
+      if (invitesRemaining <= 0) {
+        sendBtn.disabled = true;
+        emailInput.disabled = true;
+      } else {
+        sendBtn.disabled = false;
+        emailInput.disabled = false;
       }
     }
 
-    async function sendFriendInvite() {
-      const friendEmail = document.getElementById('friend-email').value.trim();
-      if (!friendEmail) return alert("Please enter your friend's email address.");
+    sendBtn.addEventListener('click', async () => {
+      const email = emailInput.value.trim();
+      if (!email) return alert('Please enter a valid email address.');
 
-      const btn = event.target;
-      const originalText = btn.innerText;
-      btn.innerText = "SENDING...";
+      sendBtn.disabled = true;
+      sendBtn.textContent = 'SENDING...';
 
       try {
-        const res = await fetch(`${API_BASE}/api/send-invite`, {
+        // Backend API request example
+        const res = await fetch('/api/send-invite', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ inviterEmail: currentGuestEmail, friendEmail, note: "" })
+          body: JSON.stringify({ friendEmail: email })
         });
-        const data = await res.json();
 
-        btn.innerText = originalText;
+        const data = await res.json();
         if (data.success) {
-          alert(`Invitation sent to ${friendEmail}!`);
-          document.getElementById('remaining-count').innerText = data.remaining;
-          document.getElementById('friend-email').value = "";
+          invitesRemaining = data.remaining;
+          emailInput.value = '';
+          alert('Invitation dispatched successfully.');
         } else {
-          alert(data.error || "Could not send invitation.");
+          alert(data.error || 'Failed to send invite.');
         }
       } catch (err) {
-        btn.innerText = originalText;
-        alert("Failed to send invitation.");
+        alert('Server communication error.');
+      } finally {
+        sendBtn.textContent = 'SEND INVITATION';
+        updateState();
       }
-    }
+    });
+
+    // Initialize UI
+    updateState();
   </script>
 </body>
 </html>
