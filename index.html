@@ -2,20 +2,25 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>CONTROL</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CONTROL PORTAL</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <style>
-    body { background: #080b10; color: #fff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; justify-content: center; padding: 20px; }
-    .container { width: 100%; max-width: 480px; background: #0f172a; border: 1px solid #1e293b; border-radius: 12px; padding: 24px; box-shadow: 0 0 30px rgba(0, 240, 255, 0.1); }
+    body { background: #080b10; color: #fff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; justify-content: center; padding: 20px; margin: 0; min-height: 100vh; align-items: center; }
+    .container { width: 100%; max-width: 440px; background: #0f172a; border: 1px solid #1e293b; border-radius: 12px; padding: 24px; box-shadow: 0 0 30px rgba(0, 240, 255, 0.1); }
     .header { text-align: center; font-weight: 900; letter-spacing: 4px; color: #00f0ff; font-size: 24px; margin-bottom: 20px; }
     .box { background: #020617; border: 1px solid #1e293b; border-radius: 8px; padding: 16px; margin-bottom: 16px; }
-    .btn { width: 100%; background: #00f0ff; color: #000; font-weight: bold; border: none; padding: 12px; border-radius: 6px; cursor: pointer; font-size: 14px; text-transform: uppercase; margin-top: 8px; }
+    .btn { width: 100%; background: #00f0ff; color: #000; font-weight: bold; border: none; padding: 12px; border-radius: 6px; cursor: pointer; font-size: 14px; text-transform: uppercase; margin-top: 8px; transition: background 0.2s; }
+    .btn:hover { background: #00c8ff; }
     .btn-secondary { background: #1e293b; color: #fff; }
+    .btn-danger { background: #ef4444; color: #fff; margin-top: 15px; font-size: 11px; padding: 8px; }
     select, input { width: 100%; padding: 10px; background: #0f172a; border: 1px solid #334155; color: #fff; border-radius: 6px; box-sizing: border-box; margin-top: 6px; }
     #qrcode { display: flex; justify-content: center; margin-top: 15px; }
     .badge { display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; text-transform: uppercase; }
     .confirmed { background: rgba(0, 255, 136, 0.2); color: #00ff88; }
     .pending { background: rgba(255, 170, 0, 0.2); color: #ffaa00; }
+    .hidden { display: none !important; }
+    .error-msg { color: #ef4444; font-size: 12px; text-align: center; margin-top: 8px; }
   </style>
 </head>
 <body>
@@ -23,146 +28,194 @@
 <div class="container">
   <div class="header">CONTROL</div>
 
-  <!-- STATUS CARD -->
-  <div class="box">
-    <div style="display: flex; justify-content: space-between; align-items: center;">
-      <span>ACCESS STATUS</span>
-      <span id="rsvp-badge" class="badge pending">PENDING</span>
+  <!-- LOGIN VIEW -->
+  <div id="login-view" class="box">
+    <span style="font-size: 12px; color: #94a3b8; display: block; text-align: center; margin-bottom: 12px;">ENTER AUTHORIZED VIP EMAIL</span>
+    <input type="email" id="login-email" placeholder="guest@domain.com" autocomplete="email">
+    <button class="btn" onclick="handleLogin()">AUTHENTICATE PASS</button>
+    <div id="login-error" class="error-msg"></div>
+  </div>
+
+  <!-- MAIN PORTAL VIEW (Hidden by default) -->
+  <div id="portal-view" class="hidden">
+    <!-- STATUS CARD -->
+    <div class="box">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <span>ACCESS STATUS</span>
+        <span id="rsvp-badge" class="badge pending">PENDING</span>
+      </div>
+      <p style="font-size: 12px; color: #94a3b8; margin-top: 6px; word-break: break-all;">USER: <b id="user-email">--</b></p>
+      <button class="btn" id="rsvp-btn" onclick="toggleRSVP()">CONFIRM ATTENDANCE</button>
     </div>
-    <p style="font-size: 12px; color: #94a3b8; margin-top: 4px;">USER: <b id="user-email">Loading...</b></p>
-    <button class="btn" id="rsvp-btn" onclick="toggleRSVP()">CONFIRM ATTENDANCE</button>
-  </div>
 
-  <!-- MERCH CARD -->
-  <div class="box">
-    <label style="font-size: 12px; color: #94a3b8;">SELECT MERCH SIZE ALLOCATION</label>
-    <select id="shirt-select">
-      <option value="Unassigned">Select Size...</option>
-      <option value="S">Small (S)</option>
-      <option value="M">Medium (M)</option>
-      <option value="L">Large (L)</option>
-      <option value="XL">Extra Large (XL)</option>
-    </select>
-    <button class="btn btn-secondary" onclick="saveShirt()">Lock Allocation</button>
-  </div>
+    <!-- MERCH ALLOCATION -->
+    <div class="box">
+      <label style="font-size: 12px; color: #94a3b8;">SELECT MERCH SIZE ALLOCATION</label>
+      <select id="shirt-select">
+        <option value="Unassigned">Select Size...</option>
+        <option value="S">Small (S)</option>
+        <option value="M">Medium (M)</option>
+        <option value="L">Large (L)</option>
+        <option value="XL">Extra Large (XL)</option>
+      </select>
+      <button class="btn btn-secondary" onclick="saveShirt()">Lock Allocation</button>
+    </div>
 
-  <!-- INVITE DISPATCH CARD -->
-  <div class="box">
-    <label style="font-size: 12px; color: #94a3b8;">DISPATCH GUEST INVITATION</label>
-    <input type="email" id="invite-email" placeholder="friend@domain.com">
-    <button class="btn" onclick="sendInvite()">SEND INVITATION</button>
-    <p style="font-size: 11px; color: #00f0ff; text-align: center; margin-top: 8px;">
-      <span id="invites-count">0</span> INVITES REMAINING
-    </p>
-  </div>
+    <!-- INVITE DISPATCH CARD -->
+    <div class="box">
+      <label style="font-size: 12px; color: #94a3b8;">DISPATCH GUEST INVITATION</label>
+      <input type="email" id="invite-email" placeholder="friend@domain.com">
+      <button class="btn" onclick="sendInvite()">SEND INVITATION</button>
+      <p style="font-size: 11px; color: #00f0ff; text-align: center; margin-top: 8px;">
+        <span id="invites-count">0</span> INVITES REMAINING
+      </p>
+    </div>
 
-  <!-- DIGITAL VIP PASS (QR CODE) -->
-  <div class="box" style="text-align: center;">
-    <span style="font-size: 12px; color: #94a3b8;">ENTRY PASS QR CODE</span>
-    <div id="qrcode"></div>
+    <!-- ENTRY PASS QR CODE -->
+    <div class="box" style="text-align: center;">
+      <span style="font-size: 12px; color: #94a3b8;">DIGITAL ENTRY PASS</span>
+      <div id="qrcode"></div>
+    </div>
+
+    <button class="btn btn-danger" onclick="logout()">LOGOUT / SWITCH USER</button>
   </div>
 </div>
 
 <script>
   const BACKEND_URL = 'https://control-1-0baa.onrender.com';
-  // Replace this with the logged-in user email or pull dynamically
-  const CURRENT_USER = 'jaybnres@gmail.com'; 
+  let currentUser = localStorage.getItem('control_user_email');
 
-  // Tactical Web Audio API Sound Generator
-  function playClickSound() {
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(800, ctx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(200, ctx.currentTime + 0.05);
-    gain.gain.setValueAtTime(0.1, ctx.currentTime);
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    osc.start();
-    osc.stop(ctx.currentTime + 0.05);
-  }
+  async function handleLogin() {
+    const emailInput = document.getElementById('login-email').value;
+    const errorDiv = document.getElementById('login-error');
+    errorDiv.innerText = '';
 
-  // Fetch Live Status
-  async function loadUser() {
-    document.getElementById('user-email').innerText = CURRENT_USER;
-    const res = await fetch(`${BACKEND_URL}/api/user-status?email=${CURRENT_USER}`);
-    const data = await res.json();
-
-    // Update UI
-    document.getElementById('invites-count').innerText = data.invites_left;
-    document.getElementById('shirt-select').value = data.shirt_size || 'Unassigned';
-    
-    const badge = document.getElementById('rsvp-badge');
-    const rsvpBtn = document.getElementById('rsvp-btn');
-    if (data.rsvp_status === 'CONFIRMED') {
-      badge.innerText = 'CONFIRMED';
-      badge.className = 'badge confirmed';
-      rsvpBtn.innerText = 'CANCEL RSVP';
-    } else {
-      badge.innerText = 'PENDING';
-      badge.className = 'badge pending';
-      rsvpBtn.innerText = 'CONFIRM ATTENDANCE';
+    if (!emailInput) {
+      errorDiv.innerText = 'Please enter your email.';
+      return;
     }
 
-    // Generate QR
-    document.getElementById('qrcode').innerHTML = '';
-    new QRCode(document.getElementById('qrcode'), {
-      text: `CONTROL-PASS:${CURRENT_USER}:${data.rsvp_status}`,
-      width: 128,
-      height: 128,
-      colorDark: '#00f0ff',
-      colorLight: '#020617'
-    });
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: emailInput })
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        currentUser = data.user.email;
+        localStorage.setItem('control_user_email', currentUser);
+        showPortal();
+      } else {
+        errorDiv.innerText = data.error || 'Access Denied';
+      }
+    } catch (err) {
+      errorDiv.innerText = 'Server connection error. Try again.';
+    }
+  }
+
+  async function loadUserData() {
+    if (!currentUser) return logout();
+
+    document.getElementById('user-email').innerText = currentUser;
+    
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/user-status?email=${encodeURIComponent(currentUser)}`);
+      const data = await res.json();
+
+      if (!res.ok) return logout();
+
+      document.getElementById('invites-count').innerText = data.invites_left;
+      document.getElementById('shirt-select').value = data.shirt_size || 'Unassigned';
+
+      const badge = document.getElementById('rsvp-badge');
+      const rsvpBtn = document.getElementById('rsvp-btn');
+      if (data.rsvp_status === 'CONFIRMED') {
+        badge.innerText = 'CONFIRMED';
+        badge.className = 'badge confirmed';
+        rsvpBtn.innerText = 'CANCEL RSVP';
+      } else {
+        badge.innerText = 'PENDING';
+        badge.className = 'badge pending';
+        rsvpBtn.innerText = 'CONFIRM ATTENDANCE';
+      }
+
+      document.getElementById('qrcode').innerHTML = '';
+      new QRCode(document.getElementById('qrcode'), {
+        text: `CONTROL-VIP:${currentUser}:${data.rsvp_status}`,
+        width: 128,
+        height: 128,
+        colorDark: '#00f0ff',
+        colorLight: '#020617'
+      });
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  function showPortal() {
+    document.getElementById('login-view').classList.add('hidden');
+    document.getElementById('portal-view').classList.remove('hidden');
+    loadUserData();
+  }
+
+  function logout() {
+    localStorage.removeItem('control_user_email');
+    currentUser = null;
+    document.getElementById('login-view').classList.remove('hidden');
+    document.getElementById('portal-view').classList.add('hidden');
+    document.getElementById('login-email').value = '';
   }
 
   async function toggleRSVP() {
-    playClickSound();
     const currentStatus = document.getElementById('rsvp-badge').innerText;
     const newStatus = currentStatus === 'CONFIRMED' ? 'PENDING' : 'CONFIRMED';
 
     await fetch(`${BACKEND_URL}/api/update-rsvp`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: CURRENT_USER, rsvp_status: newStatus })
+      body: JSON.stringify({ email: currentUser, rsvp_status: newStatus })
     });
-    loadUser();
+    loadUserData();
   }
 
   async function saveShirt() {
-    playClickSound();
     const shirt = document.getElementById('shirt-select').value;
     await fetch(`${BACKEND_URL}/api/update-shirt`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: CURRENT_USER, shirt_size: shirt })
+      body: JSON.stringify({ email: currentUser, shirt_size: shirt })
     });
-    alert('Allocation Locked!');
-    loadUser();
+    alert('Merch allocation updated!');
+    loadUserData();
   }
 
   async function sendInvite() {
-    playClickSound();
     const recipient = document.getElementById('invite-email').value;
-    if (!recipient) return alert('Enter an email');
+    if (!recipient) return alert('Enter recipient email');
 
     const res = await fetch(`${BACKEND_URL}/api/send-invite`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ sender_email: CURRENT_USER, recipient_email: recipient })
+      body: JSON.stringify({ sender_email: currentUser, recipient_email: recipient })
     });
 
     const data = await res.json();
     if (res.ok) {
-      alert('Invitation Sent!');
+      alert('Invitation dispatched!');
       document.getElementById('invite-email').value = '';
-      loadUser();
+      loadUserData();
     } else {
       alert(data.error);
     }
   }
 
-  loadUser();
+  // Check session on initial page load
+  if (currentUser) {
+    showPortal();
+  }
 </script>
 
 </body>
