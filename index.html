@@ -3,81 +3,185 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CONTROL PORTAL</title>
+  <title>CONTROL | VIP PORTAL</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;600;700&display=swap" rel="stylesheet">
   <style>
-    body { background: #080b10; color: #fff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; justify-content: center; padding: 20px; margin: 0; min-height: 100vh; align-items: center; }
-    .container { width: 100%; max-width: 440px; background: #0f172a; border: 1px solid #1e293b; border-radius: 12px; padding: 24px; box-shadow: 0 0 30px rgba(0, 240, 255, 0.1); }
-    .header { text-align: center; font-weight: 900; letter-spacing: 4px; color: #00f0ff; font-size: 24px; margin-bottom: 20px; }
-    .box { background: #020617; border: 1px solid #1e293b; border-radius: 8px; padding: 16px; margin-bottom: 16px; }
-    .btn { width: 100%; background: #00f0ff; color: #000; font-weight: bold; border: none; padding: 12px; border-radius: 6px; cursor: pointer; font-size: 14px; text-transform: uppercase; margin-top: 8px; transition: background 0.2s; }
-    .btn:hover { background: #00c8ff; }
-    .btn-secondary { background: #1e293b; color: #fff; }
-    .btn-danger { background: #ef4444; color: #fff; margin-top: 15px; font-size: 11px; padding: 8px; }
-    select, input { width: 100%; padding: 10px; background: #0f172a; border: 1px solid #334155; color: #fff; border-radius: 6px; box-sizing: border-box; margin-top: 6px; }
-    #qrcode { display: flex; justify-content: center; margin-top: 15px; }
-    .badge { display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; text-transform: uppercase; }
-    .confirmed { background: rgba(0, 255, 136, 0.2); color: #00ff88; }
-    .pending { background: rgba(255, 170, 0, 0.2); color: #ffaa00; }
+    :root {
+      --neon-blue: #00f0ff;
+      --neon-purple: #b026ff;
+      --glass-bg: rgba(15, 15, 30, 0.4);
+      --glass-border: rgba(255, 255, 255, 0.1);
+    }
+
+    body { 
+      margin: 0; 
+      font-family: 'Space Grotesk', sans-serif; 
+      background: radial-gradient(circle at bottom, #0d0a20 0%, #020108 100%);
+      color: #fff; 
+      display: flex; 
+      justify-content: center; 
+      align-items: center; 
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* COSMIC ANIMATIONS */
+    .stars {
+      position: fixed;
+      top: 0; left: 0; width: 200vw; height: 200vh;
+      background: transparent url('data:image/svg+xml;utf8,<svg width="200" height="200" xmlns="http://www.w3.org/2000/svg"><circle cx="20" cy="20" r="1" fill="white"/><circle cx="150" cy="80" r="1.5" fill="white" opacity="0.7"/><circle cx="80" cy="150" r="1" fill="white" opacity="0.5"/></svg>') repeat;
+      z-index: -3;
+      animation: drift 100s linear infinite;
+    }
+    
+    .moon {
+      position: fixed;
+      top: 10%; right: 15%;
+      width: 120px; height: 120px;
+      border-radius: 50%;
+      background: #e2e8f0;
+      box-shadow: 
+        inset -15px -15px 30px rgba(0,0,0,0.8), 
+        0 0 60px rgba(176, 38, 255, 0.4);
+      z-index: -2;
+      animation: float 8s ease-in-out infinite;
+    }
+
+    .nebula {
+      position: fixed;
+      bottom: -20%; left: -10%;
+      width: 500px; height: 500px;
+      background: radial-gradient(circle, rgba(0,240,255,0.15) 0%, transparent 60%);
+      filter: blur(40px);
+      z-index: -2;
+    }
+
+    @keyframes drift { from { transform: translate(0, 0); } to { transform: translate(-50vw, -50vh); } }
+    @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
+    @keyframes pulse-glow { 0%, 100% { text-shadow: 0 0 10px var(--neon-blue), 0 0 20px var(--neon-blue); } 50% { text-shadow: 0 0 20px var(--neon-blue), 0 0 40px var(--neon-purple); } }
+
+    /* UI GLASSMORPHISM */
+    .container { 
+      width: 100%; max-width: 460px; 
+      background: var(--glass-bg); 
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--glass-border); 
+      border-radius: 20px; 
+      padding: 30px; 
+      box-shadow: 0 20px 50px rgba(0,0,0,0.5), inset 0 0 20px rgba(255,255,255,0.02);
+      position: relative;
+      z-index: 10;
+    }
+
+    .header { 
+      text-align: center; font-weight: 700; letter-spacing: 6px; 
+      color: #fff; font-size: 28px; margin-bottom: 30px; 
+      animation: pulse-glow 3s infinite alternate;
+    }
+
+    .box { 
+      background: rgba(0, 0, 0, 0.4); 
+      border: 1px solid rgba(255, 255, 255, 0.05); 
+      border-radius: 12px; padding: 20px; margin-bottom: 20px; 
+      transition: transform 0.3s, border-color 0.3s; 
+    }
+    .box:hover { transform: translateY(-2px); border-color: rgba(0, 240, 255, 0.3); }
+
+    /* INPUTS & BUTTONS */
+    input, select, textarea { 
+      width: 100%; padding: 12px; background: rgba(0,0,0,0.5); 
+      border: 1px solid var(--glass-border); color: #fff; 
+      border-radius: 8px; box-sizing: border-box; margin-top: 8px;
+      font-family: 'Space Grotesk', sans-serif; transition: 0.3s;
+    }
+    input:focus, select:focus, textarea:focus { outline: none; border-color: var(--neon-blue); box-shadow: 0 0 15px rgba(0, 240, 255, 0.2); }
+    textarea { resize: vertical; min-height: 80px; }
+
+    .btn { 
+      width: 100%; background: linear-gradient(90deg, var(--neon-blue), var(--neon-purple)); 
+      color: #fff; font-weight: 700; border: none; padding: 14px; 
+      border-radius: 8px; cursor: pointer; font-size: 14px; 
+      text-transform: uppercase; letter-spacing: 2px; margin-top: 12px; 
+      transition: opacity 0.3s, transform 0.2s; 
+    }
+    .btn:hover { opacity: 0.9; transform: scale(1.02); }
+    .btn-secondary { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); }
+    .btn-secondary:hover { background: rgba(255,255,255,0.2); }
+    .btn-danger { background: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.4); margin-top: 15px; font-size: 12px; }
+
+    /* STATUS ELEMENTS */
+    #qrcode { display: flex; justify-content: center; margin-top: 15px; padding: 10px; background: #fff; border-radius: 8px; width: fit-content; margin-left: auto; margin-right: auto;}
+    .badge { padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; letter-spacing: 1px; }
+    .confirmed { background: rgba(0, 255, 136, 0.1); color: #00ff88; border: 1px solid rgba(0, 255, 136, 0.3); }
+    .pending { background: rgba(255, 170, 0, 0.1); color: #ffaa00; border: 1px solid rgba(255, 170, 0, 0.3); }
     .hidden { display: none !important; }
-    .error-msg { color: #ef4444; font-size: 12px; text-align: center; margin-top: 8px; }
+    .label { font-size: 11px; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; }
   </style>
 </head>
 <body>
+
+<!-- BACKGROUND ELEMENTS -->
+<div class="stars"></div>
+<div class="moon"></div>
+<div class="nebula"></div>
 
 <div class="container">
   <div class="header">CONTROL</div>
 
   <!-- LOGIN VIEW -->
   <div id="login-view" class="box">
-    <span style="font-size: 12px; color: #94a3b8; display: block; text-align: center; margin-bottom: 12px;">ENTER AUTHORIZED VIP EMAIL</span>
-    <input type="email" id="login-email" placeholder="guest@domain.com" autocomplete="email">
-    <button class="btn" onclick="handleLogin()">AUTHENTICATE PASS</button>
-    <div id="login-error" class="error-msg"></div>
+    <span class="label" style="display: block; text-align: center; margin-bottom: 12px;">SYSTEM AUTHENTICATION</span>
+    <input type="email" id="login-email" placeholder="Enter VIP Email..." autocomplete="email">
+    <button class="btn" onclick="handleLogin()">INITIATE LINK</button>
+    <div id="login-error" style="color: #ff4444; font-size: 12px; text-align: center; margin-top: 12px;"></div>
   </div>
 
-  <!-- MAIN PORTAL VIEW (Hidden by default) -->
+  <!-- PORTAL VIEW -->
   <div id="portal-view" class="hidden">
+    
     <!-- STATUS CARD -->
     <div class="box">
       <div style="display: flex; justify-content: space-between; align-items: center;">
-        <span>ACCESS STATUS</span>
+        <span class="label">ACCESS STATUS</span>
         <span id="rsvp-badge" class="badge pending">PENDING</span>
       </div>
-      <p style="font-size: 12px; color: #94a3b8; margin-top: 6px; word-break: break-all;">USER: <b id="user-email">--</b></p>
-      <button class="btn" id="rsvp-btn" onclick="toggleRSVP()">CONFIRM ATTENDANCE</button>
+      <p style="font-size: 14px; color: #fff; margin-top: 10px; font-weight: 600;" id="user-email">--</p>
+      <button class="btn btn-secondary" id="rsvp-btn" onclick="toggleRSVP()">CONFIRM ATTENDANCE</button>
     </div>
 
-    <!-- MERCH ALLOCATION -->
+    <!-- MERCH CARD -->
     <div class="box">
-      <label style="font-size: 12px; color: #94a3b8;">SELECT MERCH SIZE ALLOCATION</label>
+      <label class="label">MERCHANDISE ALLOCATION</label>
       <select id="shirt-select">
         <option value="Unassigned">Select Size...</option>
-        <option value="S">Small (S)</option>
-        <option value="M">Medium (M)</option>
-        <option value="L">Large (L)</option>
-        <option value="XL">Extra Large (XL)</option>
+        <option value="S">Small</option>
+        <option value="M">Medium</option>
+        <option value="L">Large</option>
+        <option value="XL">Extra Large</option>
       </select>
-      <button class="btn btn-secondary" onclick="saveShirt()">Lock Allocation</button>
+      <button class="btn btn-secondary" style="padding: 10px; font-size: 12px;" onclick="saveShirt()">LOCK SIZE</button>
     </div>
 
-    <!-- INVITE DISPATCH CARD -->
+    <!-- DISPATCH CARD WITH CUSTOM NOTE -->
     <div class="box">
-      <label style="font-size: 12px; color: #94a3b8;">DISPATCH GUEST INVITATION</label>
-      <input type="email" id="invite-email" placeholder="friend@domain.com">
-      <button class="btn" onclick="sendInvite()">SEND INVITATION</button>
-      <p style="font-size: 11px; color: #00f0ff; text-align: center; margin-top: 8px;">
-        <span id="invites-count">0</span> INVITES REMAINING
+      <label class="label">DISPATCH INVITATION</label>
+      <input type="email" id="invite-email" placeholder="Target Email Address...">
+      <textarea id="invite-note" placeholder="Attach a custom message... (e.g., 'Bro you have to come to this!')"></textarea>
+      <button class="btn" onclick="sendInvite()">TRANSMIT INVITE</button>
+      <p style="font-size: 12px; color: var(--neon-blue); text-align: center; margin-top: 12px; font-weight: 600;">
+        <span id="invites-count">0</span> AUTHORIZATIONS REMAINING
       </p>
     </div>
 
-    <!-- ENTRY PASS QR CODE -->
+    <!-- QR CODE -->
     <div class="box" style="text-align: center;">
-      <span style="font-size: 12px; color: #94a3b8;">DIGITAL ENTRY PASS</span>
+      <span class="label">DIGITAL ENTRY PASS</span>
       <div id="qrcode"></div>
     </div>
 
-    <button class="btn btn-danger" onclick="logout()">LOGOUT / SWITCH USER</button>
+    <button class="btn btn-danger" onclick="logout()">TERMINATE SESSION</button>
   </div>
 </div>
 
@@ -90,10 +194,7 @@
     const errorDiv = document.getElementById('login-error');
     errorDiv.innerText = '';
 
-    if (!emailInput) {
-      errorDiv.innerText = 'Please enter your email.';
-      return;
-    }
+    if (!emailInput) return errorDiv.innerText = 'Email required for uplink.';
 
     try {
       const res = await fetch(`${BACKEND_URL}/api/login`, {
@@ -101,7 +202,6 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: emailInput })
       });
-
       const data = await res.json();
 
       if (res.ok) {
@@ -109,22 +209,20 @@
         localStorage.setItem('control_user_email', currentUser);
         showPortal();
       } else {
-        errorDiv.innerText = data.error || 'Access Denied';
+        errorDiv.innerText = 'ACCESS DENIED: Unrecognized clearance.';
       }
     } catch (err) {
-      errorDiv.innerText = 'Server connection error. Try again.';
+      errorDiv.innerText = 'Network error. Retrying connection...';
     }
   }
 
   async function loadUserData() {
     if (!currentUser) return logout();
-
     document.getElementById('user-email').innerText = currentUser;
     
     try {
       const res = await fetch(`${BACKEND_URL}/api/user-status?email=${encodeURIComponent(currentUser)}`);
       const data = await res.json();
-
       if (!res.ok) return logout();
 
       document.getElementById('invites-count').innerText = data.invites_left;
@@ -135,7 +233,7 @@
       if (data.rsvp_status === 'CONFIRMED') {
         badge.innerText = 'CONFIRMED';
         badge.className = 'badge confirmed';
-        rsvpBtn.innerText = 'CANCEL RSVP';
+        rsvpBtn.innerText = 'REVOKE ATTENDANCE';
       } else {
         badge.innerText = 'PENDING';
         badge.className = 'badge pending';
@@ -144,15 +242,11 @@
 
       document.getElementById('qrcode').innerHTML = '';
       new QRCode(document.getElementById('qrcode'), {
-        text: `CONTROL-VIP:${currentUser}:${data.rsvp_status}`,
-        width: 128,
-        height: 128,
-        colorDark: '#00f0ff',
-        colorLight: '#020617'
+        text: `CONTROL:${currentUser}:${data.rsvp_status}`,
+        width: 140, height: 140,
+        colorDark: '#000000', colorLight: '#ffffff'
       });
-    } catch (err) {
-      console.error(err);
-    }
+    } catch (err) { console.error(err); }
   }
 
   function showPortal() {
@@ -170,13 +264,12 @@
   }
 
   async function toggleRSVP() {
-    const currentStatus = document.getElementById('rsvp-badge').innerText;
-    const newStatus = currentStatus === 'CONFIRMED' ? 'PENDING' : 'CONFIRMED';
-
+    const current = document.getElementById('rsvp-badge').innerText;
+    const next = current === 'CONFIRMED' ? 'PENDING' : 'CONFIRMED';
     await fetch(`${BACKEND_URL}/api/update-rsvp`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: currentUser, rsvp_status: newStatus })
+      body: JSON.stringify({ email: currentUser, rsvp_status: next })
     });
     loadUserData();
   }
@@ -188,35 +281,37 @@
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email: currentUser, shirt_size: shirt })
     });
-    alert('Merch allocation updated!');
+    alert('Allocation locked.');
     loadUserData();
   }
 
   async function sendInvite() {
     const recipient = document.getElementById('invite-email').value;
-    if (!recipient) return alert('Enter recipient email');
+    const note = document.getElementById('invite-note').value;
+    if (!recipient) return alert('Target email required.');
 
     const res = await fetch(`${BACKEND_URL}/api/send-invite`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ sender_email: currentUser, recipient_email: recipient })
+      body: JSON.stringify({ 
+        sender_email: currentUser, 
+        recipient_email: recipient,
+        custom_note: note 
+      })
     });
 
     const data = await res.json();
     if (res.ok) {
-      alert('Invitation dispatched!');
+      alert('Transmission successful.');
       document.getElementById('invite-email').value = '';
+      document.getElementById('invite-note').value = '';
       loadUserData();
     } else {
       alert(data.error);
     }
   }
 
-  // Check session on initial page load
-  if (currentUser) {
-    showPortal();
-  }
+  if (currentUser) showPortal();
 </script>
-
 </body>
 </html>
