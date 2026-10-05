@@ -5,127 +5,126 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>CONTROL | VIP PORTAL</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
   <style>
     :root {
-      --neon-blue: #00f0ff;
-      --neon-purple: #b026ff;
-      --glass-bg: rgba(15, 15, 30, 0.4);
-      --glass-border: rgba(255, 255, 255, 0.1);
+      --void: #080307; --oxblood: #2a0a12; --ember: #ff5a36; --gold: #f2c879; --ivory: #fff4e0;
+      --line: rgba(242, 200, 121, 0.24);
+    }
+    body {
+      margin: 0; padding: 28px 16px; box-sizing: border-box;
+      font-family: 'Manrope', sans-serif; color: var(--ivory);
+      background: radial-gradient(ellipse at 75% 4%, #3d0f1b 0%, #1a060d 38%, var(--void) 82%);
+      display: flex; justify-content: center; align-items: center; min-height: 100vh; overflow-x: hidden;
     }
 
-    body { 
-      margin: 0; 
-      font-family: 'Space Grotesk', sans-serif; 
-      background: radial-gradient(circle at bottom, #0d0a20 0%, #020108 100%);
-      color: #fff; 
-      display: flex; 
-      justify-content: center; 
-      align-items: center; 
-      min-height: 100vh;
-      overflow-x: hidden;
-    }
+    /* ---- NIGHT SKY ---- */
+    .stars { position: fixed; top: 0; left: 0; width: 200vw; height: 200vh; z-index: -4; animation: drift 140s linear infinite;
+      background: transparent url('data:image/svg+xml;utf8,<svg width="220" height="220" xmlns="http://www.w3.org/2000/svg"><circle cx="20" cy="30" r="1" fill="%23fff4e0"/><circle cx="160" cy="90" r="1.5" fill="%23fff4e0" opacity="0.7"/><circle cx="90" cy="170" r="1" fill="%23fff4e0" opacity="0.5"/></svg>') repeat; }
+    .stars.s3 { z-index: -3; animation: drift 90s linear infinite, twinkle 3.5s ease-in-out infinite alternate;
+      background-image: url('data:image/svg+xml;utf8,<svg width="270" height="270" xmlns="http://www.w3.org/2000/svg"><circle cx="40" cy="210" r="1.5" fill="%23f2c879"/><circle cx="200" cy="60" r="1.8" fill="%23fff4e0"/><circle cx="130" cy="130" r="1" fill="%23fff4e0"/></svg>'); }
 
-    /* COSMIC ANIMATIONS */
-    .stars {
-      position: fixed;
-      top: 0; left: 0; width: 200vw; height: 200vh;
-      background: transparent url('data:image/svg+xml;utf8,<svg width="200" height="200" xmlns="http://www.w3.org/2000/svg"><circle cx="20" cy="20" r="1" fill="white"/><circle cx="150" cy="80" r="1.5" fill="white" opacity="0.7"/><circle cx="80" cy="150" r="1" fill="white" opacity="0.5"/></svg>') repeat;
-      z-index: -3;
-      animation: drift 100s linear infinite;
-    }
-    
-    .moon {
-      position: fixed;
-      top: 10%; right: 15%;
-      width: 120px; height: 120px;
-      border-radius: 50%;
-      background: #e2e8f0;
-      box-shadow: 
-        inset -15px -15px 30px rgba(0,0,0,0.8), 
-        0 0 60px rgba(176, 38, 255, 0.4);
-      z-index: -2;
-      animation: float 8s ease-in-out infinite;
-    }
+    /* rising embers */
+    .embers { position: fixed; top: 0; left: 0; width: 100vw; height: calc(100vh + 460px); z-index: -3; animation: ember 38s linear infinite;
+      background: url('data:image/svg+xml;utf8,<svg width="300" height="300" xmlns="http://www.w3.org/2000/svg"><circle cx="40" cy="260" r="2" fill="%23ff7a45" opacity="0.8"/><circle cx="210" cy="90" r="1.5" fill="%23ffb066" opacity="0.7"/><circle cx="130" cy="180" r="2.4" fill="%23ff5a36" opacity="0.6"/><circle cx="270" cy="230" r="1.2" fill="%23ffd9a0"/></svg>') repeat; }
+    .embers.e2 { animation-name: ember2; animation-duration: 64s; filter: blur(1px);
+      background-image: url('data:image/svg+xml;utf8,<svg width="420" height="420" xmlns="http://www.w3.org/2000/svg"><circle cx="90" cy="120" r="3.4" fill="%23ff5a36" opacity="0.5"/><circle cx="330" cy="300" r="4" fill="%23ff8a50" opacity="0.4"/></svg>'); }
 
-    .nebula {
-      position: fixed;
-      bottom: -20%; left: -10%;
-      width: 500px; height: 500px;
-      background: radial-gradient(circle, rgba(0,240,255,0.15) 0%, transparent 60%);
-      filter: blur(40px);
-      z-index: -2;
-    }
+    /* ---- THE BLOOD MOON ---- */
+    .moon-wrap { position: fixed; top: -6%; right: -12%; width: min(64vw, 600px); aspect-ratio: 1; z-index: -2; transition: transform .3s ease-out; }
+    .moon-wrap::before, .moon-wrap::after { content: ''; position: absolute; inset: 0; border-radius: 50%;
+      border: 1px solid rgba(242, 200, 121, .55); animation: ripple 7s ease-out infinite; }
+    .moon-wrap::after { animation-delay: 3.5s; }
+    .moon { position: absolute; inset: 0; border-radius: 50%; overflow: hidden; animation: float 10s ease-in-out infinite;
+      background:
+        radial-gradient(circle at 62% 32%, rgba(130,80,40,.4) 0 7%, transparent 7.6%),
+        radial-gradient(circle at 36% 62%, rgba(130,80,40,.35) 0 11%, transparent 11.6%),
+        radial-gradient(circle at 73% 70%, rgba(130,80,40,.4) 0 5.5%, transparent 6%),
+        radial-gradient(circle at 22% 44%, rgba(130,80,40,.35) 0 4%, transparent 4.6%),
+        radial-gradient(circle at 40% 36%, #fff4e0, #e9c98e 55%, #a9793e);
+      box-shadow: 0 0 80px 10px rgba(255,150,70,.45), 0 0 260px 60px rgba(200,40,40,.3); }
+    /* Earth's shadow slides over the moon, then retreats */
+    .moon::after { content: ''; position: absolute; top: -10%; left: -10%; width: 120%; height: 120%; border-radius: 50%;
+      background: radial-gradient(circle, rgba(70,6,14,.96) 55%, rgba(150,20,20,.75) 70%, transparent 78%);
+      animation: eclipse 26s ease-in-out infinite alternate; }
 
-    @keyframes drift { from { transform: translate(0, 0); } to { transform: translate(-50vw, -50vh); } }
-    @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
-    @keyframes pulse-glow { 0%, 100% { text-shadow: 0 0 10px var(--neon-blue), 0 0 20px var(--neon-blue); } 50% { text-shadow: 0 0 20px var(--neon-blue), 0 0 40px var(--neon-purple); } }
+    @keyframes drift { to { transform: translate(-50vw, -50vh); } }
+    @keyframes twinkle { from { opacity: .15; } to { opacity: 1; } }
+    @keyframes ember { to { transform: translateY(-300px); } }
+    @keyframes ember2 { to { transform: translateY(-420px); } }
+    @keyframes float { 0%, 100% { transform: translateY(0) rotate(0); } 50% { transform: translateY(-24px) rotate(2deg); } }
+    @keyframes ripple { from { transform: scale(1); opacity: .7; } to { transform: scale(1.75); opacity: 0; } }
+    @keyframes eclipse { from { transform: translateX(-105%); } to { transform: translateX(0); } }
+    @keyframes rise { from { opacity: 0; transform: translateY(40px) scale(.97); } to { opacity: 1; transform: none; } }
+    @keyframes shimmer { to { background-position: -250% 0; } }
+    @keyframes edge { to { left: 110%; } }
 
-    /* UI GLASSMORPHISM */
-    .container { 
-      width: 100%; max-width: 460px; 
-      background: var(--glass-bg); 
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border: 1px solid var(--glass-border); 
-      border-radius: 20px; 
-      padding: 30px; 
-      box-shadow: 0 20px 50px rgba(0,0,0,0.5), inset 0 0 20px rgba(255,255,255,0.02);
-      position: relative;
-      z-index: 10;
-    }
+    /* ---- THE PASS ---- */
+    .container { width: 100%; max-width: 520px; position: relative; z-index: 10; overflow: hidden;
+      background: rgba(18, 5, 10, .62); backdrop-filter: blur(22px) saturate(1.2); -webkit-backdrop-filter: blur(22px) saturate(1.2);
+      border: 1px solid var(--line); border-radius: 18px; padding: 40px 34px;
+      box-shadow: 0 30px 90px rgba(0,0,0,.7), 0 0 80px rgba(255,90,54,.12);
+      animation: rise 1s cubic-bezier(.2,.8,.2,1) both; }
+    .container::before { content: ''; position: absolute; top: 0; left: -60%; width: 60%; height: 1px;
+      background: linear-gradient(90deg, transparent, var(--gold), transparent); animation: edge 6s ease-in-out infinite; }
 
-    .header { 
-      text-align: center; font-weight: 700; letter-spacing: 6px; 
-      color: #fff; font-size: 28px; margin-bottom: 30px; 
-      animation: pulse-glow 3s infinite alternate;
-    }
+    .header { font-family: 'Syne', sans-serif; text-align: center; font-weight: 800; line-height: 1;
+      font-size: clamp(40px, 11vw, 64px); letter-spacing: .12em; margin-bottom: 34px;
+      background: linear-gradient(100deg, var(--ivory) 20%, var(--gold) 45%, var(--ember) 55%, var(--ivory) 80%); background-size: 250% 100%;
+      -webkit-background-clip: text; background-clip: text; color: transparent;
+      filter: drop-shadow(0 0 22px rgba(255,90,54,.4)); animation: shimmer 7s linear infinite; }
 
-    .box { 
-      background: rgba(0, 0, 0, 0.4); 
-      border: 1px solid rgba(255, 255, 255, 0.05); 
-      border-radius: 12px; padding: 20px; margin-bottom: 20px; 
-      transition: transform 0.3s, border-color 0.3s; 
-    }
-    .box:hover { transform: translateY(-2px); border-color: rgba(0, 240, 255, 0.3); }
+    .box { background: rgba(0,0,0,.4); border: 1px solid rgba(255,244,224,.08); border-radius: 12px;
+      padding: 26px; margin-bottom: 20px; transition: border-color .3s; }
+    .box:hover { border-color: var(--line); }
+    #portal-view .box { animation: rise .8s cubic-bezier(.2,.8,.2,1) both; }
+    #portal-view .box:nth-child(2) { animation-delay: .12s; }
+    #portal-view .box:nth-child(3) { animation-delay: .24s; }
+    #portal-view .box:nth-child(4) { animation-delay: .36s; }
 
-    /* INPUTS & BUTTONS */
-    input, select, textarea { 
-      width: 100%; padding: 12px; background: rgba(0,0,0,0.5); 
-      border: 1px solid var(--glass-border); color: #fff; 
-      border-radius: 8px; box-sizing: border-box; margin-top: 8px;
-      font-family: 'Space Grotesk', sans-serif; transition: 0.3s;
-    }
-    input:focus, select:focus, textarea:focus { outline: none; border-color: var(--neon-blue); box-shadow: 0 0 15px rgba(0, 240, 255, 0.2); }
-    textarea { resize: vertical; min-height: 80px; }
+    input, select, textarea { width: 100%; padding: 15px; font-size: 15px; background: rgba(0,0,0,.55);
+      border: 1px solid rgba(255,244,224,.14); color: var(--ivory); border-radius: 10px; box-sizing: border-box; margin-top: 10px;
+      font-family: 'Manrope', sans-serif; transition: .3s; }
+    input:focus, select:focus, textarea:focus { outline: none; border-color: var(--gold); box-shadow: 0 0 22px rgba(242,200,121,.25); }
+    textarea { resize: vertical; min-height: 90px; }
+    select option { background: #1a060d; }
 
-    .btn { 
-      width: 100%; background: linear-gradient(90deg, var(--neon-blue), var(--neon-purple)); 
-      color: #fff; font-weight: 700; border: none; padding: 14px; 
-      border-radius: 8px; cursor: pointer; font-size: 14px; 
-      text-transform: uppercase; letter-spacing: 2px; margin-top: 12px; 
-      transition: opacity 0.3s, transform 0.2s; 
-    }
-    .btn:hover { opacity: 0.9; transform: scale(1.02); }
-    .btn-secondary { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); }
-    .btn-secondary:hover { background: rgba(255,255,255,0.2); }
-    .btn-danger { background: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.4); margin-top: 15px; font-size: 12px; }
+    .btn { position: relative; overflow: hidden; width: 100%; border: none; padding: 16px; border-radius: 10px; cursor: pointer;
+      font-family: 'Syne', sans-serif; font-weight: 700; font-size: 14px; letter-spacing: 2px; text-transform: uppercase; margin-top: 14px;
+      color: #1a0509; background: linear-gradient(90deg, var(--ember), var(--gold));
+      box-shadow: 0 0 28px rgba(255,90,54,.35); transition: transform .2s, box-shadow .3s; }
+    .btn::after { content: ''; position: absolute; top: 0; left: -120%; width: 60%; height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,.5), transparent); transform: skewX(-20deg); transition: left .6s; }
+    .btn:hover { transform: scale(1.03); box-shadow: 0 0 40px rgba(255,140,60,.55); }
+    .btn:hover::after { left: 140%; }
+    .btn:active { transform: scale(.98); }
+    .btn-secondary { background: transparent; color: var(--gold); border: 1px solid var(--line); box-shadow: none; }
+    .btn-secondary:hover { background: rgba(242,200,121,.1); box-shadow: none; }
+    .btn-danger { background: rgba(239,68,68,.15); color: #ff7b7b; border: 1px solid rgba(239,68,68,.45); margin-top: 8px; font-size: 12px; box-shadow: none; }
 
-    /* STATUS ELEMENTS */
-    #qrcode { display: flex; justify-content: center; margin-top: 15px; padding: 10px; background: #fff; border-radius: 8px; width: fit-content; margin-left: auto; margin-right: auto;}
-    .badge { padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; letter-spacing: 1px; }
-    .confirmed { background: rgba(0, 255, 136, 0.1); color: #00ff88; border: 1px solid rgba(0, 255, 136, 0.3); }
-    .pending { background: rgba(255, 170, 0, 0.1); color: #ffaa00; border: 1px solid rgba(255, 170, 0, 0.3); }
+    #qrcode { display: flex; justify-content: center; margin: 16px auto 0; padding: 12px; background: var(--ivory); border-radius: 12px;
+      width: fit-content; box-shadow: 0 0 44px rgba(255,140,60,.4); }
+    .badge { padding: 7px 14px; border-radius: 20px; font-size: 12px; font-weight: 700; letter-spacing: 1px; }
+    .confirmed { background: rgba(109,255,176,.1); color: #6dffb0; border: 1px solid rgba(109,255,176,.35); box-shadow: 0 0 16px rgba(109,255,176,.22); }
+    .pending { background: rgba(242,200,121,.1); color: var(--gold); border: 1px solid var(--line); }
     .hidden { display: none !important; }
-    .label { font-size: 11px; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; }
+    .label { font-size: 11px; color: #c7ad84; text-transform: uppercase; letter-spacing: 2px; }
+
+    @media (max-width: 600px) {
+      .moon-wrap { width: 92vw; right: -34%; top: -4%; }
+      .container { padding: 30px 20px; }
+    }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
   </style>
 </head>
 <body>
 
 <!-- BACKGROUND ELEMENTS -->
 <div class="stars"></div>
-<div class="moon"></div>
-<div class="nebula"></div>
+<div class="stars s3"></div>
+<div class="embers"></div>
+<div class="embers e2"></div>
+<div class="moon-wrap" id="moon"><div class="moon"></div></div>
 
 <div class="container">
   <div class="header">CONTROL</div>
@@ -136,6 +135,16 @@
     <input type="email" id="login-email" placeholder="Enter VIP Email..." autocomplete="email">
     <button class="btn" onclick="handleLogin()">INITIATE LINK</button>
     <div id="login-error" style="color: #ff4444; font-size: 12px; text-align: center; margin-top: 12px;"></div>
+  </div>
+
+  <!-- ACCEPT INVITE VIEW -->
+  <div id="accept-view" class="box hidden">
+    <span class="label" style="display: block; text-align: center; margin-bottom: 12px;">PERSONAL INVITATION</span>
+    <p id="accept-from" style="text-align: center; margin: 0 0 8px;"></p>
+    <p id="accept-note" style="text-align: center; font-style: italic; color: var(--gold); margin: 0 0 8px;"></p>
+    <input type="email" id="accept-email" placeholder="Confirm your email to accept...">
+    <button class="btn" onclick="acceptInvite()">ACCEPT INVITATION</button>
+    <div id="accept-error" style="color: #ff4444; font-size: 12px; text-align: center; margin-top: 12px;"></div>
   </div>
 
   <!-- PORTAL VIEW -->
@@ -168,9 +177,9 @@
     <div class="box">
       <label class="label">DISPATCH INVITATION</label>
       <input type="email" id="invite-email" placeholder="Target Email Address...">
-      <textarea id="invite-note" placeholder="Attach a custom message... (e.g., 'Bro you have to come to this!')"></textarea>
+      <textarea id="invite-note" maxlength="300" placeholder="Attach a custom message... (e.g., 'Bro you have to come to this!')"></textarea>
       <button class="btn" onclick="sendInvite()">TRANSMIT INVITE</button>
-      <p style="font-size: 12px; color: var(--neon-blue); text-align: center; margin-top: 12px; font-weight: 600;">
+      <p style="font-size: 12px; color: var(--gold); text-align: center; margin-top: 12px; font-weight: 600;">
         <span id="invites-count">0</span> AUTHORIZATIONS REMAINING
       </p>
     </div>
@@ -188,6 +197,23 @@
 <script>
   const BACKEND_URL = 'https://control-1-0baa.onrender.com';
   let currentUser = localStorage.getItem('control_user_email');
+  let token = localStorage.getItem('control_token');
+
+  // Sends a request with the login token attached.
+  // If the server says the session is invalid or expired, log the user out.
+  async function authFetch(path, body) {
+    const res = await fetch(`${BACKEND_URL}${path}`, {
+      method: body ? 'POST' : 'GET',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+      body: body ? JSON.stringify(body) : undefined
+    });
+    if (res.status === 401) {
+      logout();
+      document.getElementById('login-error').innerText = 'Session expired. Please log in again.';
+      throw new Error('SESSION_EXPIRED');
+    }
+    return res;
+  }
 
   async function handleLogin() {
     const emailInput = document.getElementById('login-email').value;
@@ -206,8 +232,12 @@
 
       if (res.ok) {
         currentUser = data.user.email;
+        token = data.token;
         localStorage.setItem('control_user_email', currentUser);
+        localStorage.setItem('control_token', token);
         showPortal();
+      } else if (res.status === 429) {
+        errorDiv.innerText = 'Too many attempts. Please wait a few minutes.';
       } else {
         errorDiv.innerText = 'ACCESS DENIED: Unrecognized clearance.';
       }
@@ -217,11 +247,11 @@
   }
 
   async function loadUserData() {
-    if (!currentUser) return logout();
+    if (!currentUser || !token) return logout();
     document.getElementById('user-email').innerText = currentUser;
     
     try {
-      const res = await fetch(`${BACKEND_URL}/api/user-status?email=${encodeURIComponent(currentUser)}`);
+      const res = await authFetch('/api/user-status');
       const data = await res.json();
       if (!res.ok) return logout();
 
@@ -257,32 +287,43 @@
 
   function logout() {
     localStorage.removeItem('control_user_email');
+    localStorage.removeItem('control_token');
     currentUser = null;
+    token = null;
     document.getElementById('login-view').classList.remove('hidden');
     document.getElementById('portal-view').classList.add('hidden');
     document.getElementById('login-email').value = '';
+    document.getElementById('login-error').innerText = '';
   }
 
   async function toggleRSVP() {
     const current = document.getElementById('rsvp-badge').innerText;
     const next = current === 'CONFIRMED' ? 'PENDING' : 'CONFIRMED';
-    await fetch(`${BACKEND_URL}/api/update-rsvp`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: currentUser, rsvp_status: next })
-    });
-    loadUserData();
+    try {
+      const res = await authFetch('/api/update-rsvp', { rsvp_status: next });
+      if (!res.ok) {
+        const data = await res.json();
+        return alert(data.error || 'Update failed.');
+      }
+      loadUserData();
+    } catch (err) {
+      if (err.message !== 'SESSION_EXPIRED') alert('Network error. Try again.');
+    }
   }
 
   async function saveShirt() {
     const shirt = document.getElementById('shirt-select').value;
-    await fetch(`${BACKEND_URL}/api/update-shirt`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: currentUser, shirt_size: shirt })
-    });
-    alert('Allocation locked.');
-    loadUserData();
+    try {
+      const res = await authFetch('/api/update-shirt', { shirt_size: shirt });
+      if (!res.ok) {
+        const data = await res.json();
+        return alert(data.error || 'Update failed.');
+      }
+      alert('Allocation locked.');
+      loadUserData();
+    } catch (err) {
+      if (err.message !== 'SESSION_EXPIRED') alert('Network error. Try again.');
+    }
   }
 
   async function sendInvite() {
@@ -290,28 +331,76 @@
     const note = document.getElementById('invite-note').value;
     if (!recipient) return alert('Target email required.');
 
-    const res = await fetch(`${BACKEND_URL}/api/send-invite`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ 
-        sender_email: currentUser, 
+    try {
+      const res = await authFetch('/api/send-invite', {
         recipient_email: recipient,
-        custom_note: note 
-      })
-    });
-
-    const data = await res.json();
-    if (res.ok) {
-      alert('Transmission successful.');
-      document.getElementById('invite-email').value = '';
-      document.getElementById('invite-note').value = '';
-      loadUserData();
-    } else {
-      alert(data.error);
+        custom_note: note
+      });
+      const data = await res.json();
+      if (res.ok) {
+        alert('Transmission successful.');
+        document.getElementById('invite-email').value = '';
+        document.getElementById('invite-note').value = '';
+        loadUserData();
+      } else {
+        alert(data.error);
+      }
+    } catch (err) {
+      if (err.message !== 'SESSION_EXPIRED') alert('Network error. Try again.');
     }
   }
 
-  if (currentUser) showPortal();
+  // Moon drifts gently opposite the cursor
+  const moonEl = document.getElementById('moon');
+  if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    addEventListener('mousemove', (e) => {
+      const x = (e.clientX / innerWidth - 0.5) * -34;
+      const y = (e.clientY / innerHeight - 0.5) * -34;
+      moonEl.style.transform = `translate(${x}px, ${y}px)`;
+    });
+  }
+
+  const inviteToken = new URLSearchParams(location.search).get('invite');
+
+  async function loadInvite() {
+    const loginErr = document.getElementById('login-error');
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/invite/${encodeURIComponent(inviteToken)}`);
+      const data = await res.json();
+      if (!res.ok) { loginErr.innerText = data.error; return; }
+      document.getElementById('login-view').classList.add('hidden');
+      document.getElementById('accept-view').classList.remove('hidden');
+      document.getElementById('accept-from').textContent = data.inviter + ' chose you as one of their two invites.';
+      document.getElementById('accept-note').textContent = data.note ? '"' + data.note + '"' : '';
+    } catch (err) { loginErr.innerText = 'Network error. Try again.'; }
+  }
+
+  async function acceptInvite() {
+    const err = document.getElementById('accept-error');
+    err.innerText = '';
+    const email = document.getElementById('accept-email').value;
+    if (!email) return err.innerText = 'Enter the email this invitation was sent to.';
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/invite/accept`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: inviteToken, email })
+      });
+      const data = await res.json();
+      if (!res.ok) return err.innerText = data.error;
+      currentUser = data.user.email;
+      token = data.token;
+      localStorage.setItem('control_user_email', currentUser);
+      localStorage.setItem('control_token', token);
+      history.replaceState(null, '', location.pathname);
+      document.getElementById('accept-view').classList.add('hidden');
+      showPortal();
+    } catch (e) { err.innerText = 'Network error. Try again.'; }
+  }
+
+  // Invite link opens the accept screen; otherwise resume a saved session.
+  if (inviteToken) loadInvite();
+  else if (currentUser && token) showPortal();
 </script>
 </body>
 </html>
