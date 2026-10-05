@@ -3,196 +3,193 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CONTROL | VIP PORTAL</title>
+  <title>On D' Road</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Bowlby+One&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
   <style>
-    :root {
-      --void: #080307; --oxblood: #2a0a12; --ember: #ff5a36; --gold: #f2c879; --ivory: #fff4e0;
-      --line: rgba(242, 200, 121, 0.24);
-    }
-    body {
-      margin: 0; padding: 28px 16px; box-sizing: border-box;
-      font-family: 'Manrope', sans-serif; color: var(--ivory);
-      background: radial-gradient(ellipse at 75% 4%, #3d0f1b 0%, #1a060d 38%, var(--void) 82%);
-      display: flex; justify-content: center; align-items: center; min-height: 100vh; overflow-x: hidden;
-    }
+    :root { --sun:#ffd400; --pink:#ff2e88; --teal:#00b8a9; --orange:#ff6b1a; --ink:#140b2e; --cream:#fff7e6; --gold:#d6176f; }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; font-family: 'Outfit', sans-serif; color: var(--ink); background: var(--cream); overflow-x: hidden; }
+    .display { font-family: 'Bowlby One', sans-serif; }
 
-    /* ---- NIGHT SKY ---- */
-    .stars { position: fixed; top: 0; left: 0; width: 200vw; height: 200vh; z-index: -4; animation: drift 140s linear infinite;
-      background: transparent url('data:image/svg+xml;utf8,<svg width="220" height="220" xmlns="http://www.w3.org/2000/svg"><circle cx="20" cy="30" r="1" fill="%23fff4e0"/><circle cx="160" cy="90" r="1.5" fill="%23fff4e0" opacity="0.7"/><circle cx="90" cy="170" r="1" fill="%23fff4e0" opacity="0.5"/></svg>') repeat; }
-    .stars.s3 { z-index: -3; animation: drift 90s linear infinite, twinkle 3.5s ease-in-out infinite alternate;
-      background-image: url('data:image/svg+xml;utf8,<svg width="270" height="270" xmlns="http://www.w3.org/2000/svg"><circle cx="40" cy="210" r="1.5" fill="%23f2c879"/><circle cx="200" cy="60" r="1.8" fill="%23fff4e0"/><circle cx="130" cy="130" r="1" fill="%23fff4e0"/></svg>'); }
+    /* confetti */
+    .confetti { position: fixed; top: 0; left: 0; width: 100vw; height: calc(100vh + 300px); z-index: -1; pointer-events: none; animation: fall 14s linear infinite;
+      background: url('data:image/svg+xml;utf8,<svg width="300" height="300" xmlns="http://www.w3.org/2000/svg"><rect x="30" y="20" width="9" height="14" fill="%23ff2e88" transform="rotate(25 30 20)"/><rect x="200" y="60" width="8" height="13" fill="%2300b8a9" transform="rotate(-30 200 60)"/><rect x="110" y="150" width="9" height="9" fill="%23ff6b1a"/><rect x="260" y="210" width="8" height="14" fill="%23ffd400" transform="rotate(50 260 210)"/><rect x="60" y="250" width="9" height="13" fill="%2300b8a9" transform="rotate(15 60 250)"/></svg>') repeat; }
+    .confetti.c2 { animation-duration: 23s; opacity: .7; background-size: 420px; }
 
-    /* rising embers */
-    .embers { position: fixed; top: 0; left: 0; width: 100vw; height: calc(100vh + 460px); z-index: -3; animation: ember 38s linear infinite;
-      background: url('data:image/svg+xml;utf8,<svg width="300" height="300" xmlns="http://www.w3.org/2000/svg"><circle cx="40" cy="260" r="2" fill="%23ff7a45" opacity="0.8"/><circle cx="210" cy="90" r="1.5" fill="%23ffb066" opacity="0.7"/><circle cx="130" cy="180" r="2.4" fill="%23ff5a36" opacity="0.6"/><circle cx="270" cy="230" r="1.2" fill="%23ffd9a0"/></svg>') repeat; }
-    .embers.e2 { animation-name: ember2; animation-duration: 64s; filter: blur(1px);
-      background-image: url('data:image/svg+xml;utf8,<svg width="420" height="420" xmlns="http://www.w3.org/2000/svg"><circle cx="90" cy="120" r="3.4" fill="%23ff5a36" opacity="0.5"/><circle cx="330" cy="300" r="4" fill="%23ff8a50" opacity="0.4"/></svg>'); }
+    /* ticker + bunting */
+    .ticker { background: var(--ink); color: var(--sun); overflow: hidden; white-space: nowrap; padding: 10px 0; }
+    .ticker-track { display: inline-block; animation: marquee 22s linear infinite; font-family: 'Bowlby One', sans-serif; font-size: 14px; letter-spacing: 2px; }
+    .ticker-track span { padding-right: 40px; }
+    .bunting { height: 38px; transform-origin: top; animation: sway 4s ease-in-out infinite alternate;
+      background: url('data:image/svg+xml;utf8,<svg width="160" height="38" xmlns="http://www.w3.org/2000/svg"><polygon points="0,0 40,0 20,36" fill="%23ff2e88"/><polygon points="40,0 80,0 60,36" fill="%23ffd400"/><polygon points="80,0 120,0 100,36" fill="%2300b8a9"/><polygon points="120,0 160,0 140,36" fill="%23ff6b1a"/></svg>') repeat-x; }
 
-    /* ---- THE BLOOD MOON ---- */
-    .moon-wrap { position: fixed; top: -6%; right: -12%; width: min(64vw, 600px); aspect-ratio: 1; z-index: -2; transition: transform .3s ease-out; }
-    .moon-wrap::before, .moon-wrap::after { content: ''; position: absolute; inset: 0; border-radius: 50%;
-      border: 1px solid rgba(242, 200, 121, .55); animation: ripple 7s ease-out infinite; }
-    .moon-wrap::after { animation-delay: 3.5s; }
-    .moon { position: absolute; inset: 0; border-radius: 50%; overflow: hidden; animation: float 10s ease-in-out infinite;
-      background:
-        radial-gradient(circle at 62% 32%, rgba(130,80,40,.4) 0 7%, transparent 7.6%),
-        radial-gradient(circle at 36% 62%, rgba(130,80,40,.35) 0 11%, transparent 11.6%),
-        radial-gradient(circle at 73% 70%, rgba(130,80,40,.4) 0 5.5%, transparent 6%),
-        radial-gradient(circle at 22% 44%, rgba(130,80,40,.35) 0 4%, transparent 4.6%),
-        radial-gradient(circle at 40% 36%, #fff4e0, #e9c98e 55%, #a9793e);
-      box-shadow: 0 0 80px 10px rgba(255,150,70,.45), 0 0 260px 60px rgba(200,40,40,.3); }
-    /* Earth's shadow slides over the moon, then retreats */
-    .moon::after { content: ''; position: absolute; top: -10%; left: -10%; width: 120%; height: 120%; border-radius: 50%;
-      background: radial-gradient(circle, rgba(70,6,14,.96) 55%, rgba(150,20,20,.75) 70%, transparent 78%);
-      animation: eclipse 26s ease-in-out infinite alternate; }
+    /* hero */
+    .hero { position: relative; text-align: center; padding: 56px 20px 70px; overflow: hidden; isolation: isolate; }
+    .sun { position: absolute; inset: -70% -30%; z-index: -1; animation: spin 120s linear infinite;
+      background: repeating-conic-gradient(#ffd400 0 7.5deg, #ffe566 7.5deg 15deg);
+      -webkit-mask-image: radial-gradient(circle, #000 18%, transparent 62%); mask-image: radial-gradient(circle, #000 18%, transparent 62%); }
+    .eyebrow { display: inline-block; background: var(--ink); color: #fff; font-weight: 800; letter-spacing: 3px; font-size: 12px; padding: 8px 18px; border-radius: 999px; transform: rotate(-3deg); animation: pop .6s both; }
+    .wordmark { font-family: 'Bowlby One', sans-serif; margin: 22px 0 0; line-height: .86; text-transform: uppercase; color: var(--pink);
+      text-shadow: 3px 3px 0 var(--sun), 6px 6px 0 var(--teal), 9px 9px 0 var(--ink); }
+    .wordmark span { display: block; animation: pop .8s cubic-bezier(.3,1.6,.5,1) both; }
+    .w1 { font-size: clamp(34px, 9vw, 60px); animation-delay: .15s !important; }
+    .w2 { font-size: clamp(84px, 25vw, 200px); animation-delay: .3s !important; }
+    .tag { font-size: clamp(17px, 4vw, 22px); font-weight: 700; margin: 34px auto 24px; max-width: 520px; animation: pop .8s .5s both; }
+    .cta { display: inline-block; background: var(--ink); color: #fff; text-decoration: none; font-weight: 800; letter-spacing: 3px; padding: 18px 38px;
+      border-radius: 999px; font-size: 15px; box-shadow: 5px 5px 0 var(--pink); transition: transform .15s, box-shadow .15s; animation: pop .8s .65s both; }
+    .cta:hover { transform: translate(-3px,-3px); box-shadow: 8px 8px 0 var(--pink); }
 
-    @keyframes drift { to { transform: translate(-50vw, -50vh); } }
-    @keyframes twinkle { from { opacity: .15; } to { opacity: 1; } }
-    @keyframes ember { to { transform: translateY(-300px); } }
-    @keyframes ember2 { to { transform: translateY(-420px); } }
-    @keyframes float { 0%, 100% { transform: translateY(0) rotate(0); } 50% { transform: translateY(-24px) rotate(2deg); } }
-    @keyframes ripple { from { transform: scale(1); opacity: .7; } to { transform: scale(1.75); opacity: 0; } }
-    @keyframes eclipse { from { transform: translateX(-105%); } to { transform: translateX(0); } }
-    @keyframes rise { from { opacity: 0; transform: translateY(40px) scale(.97); } to { opacity: 1; transform: none; } }
-    @keyframes shimmer { to { background-position: -250% 0; } }
-    @keyframes edge { to { left: 110%; } }
-
-    /* ---- THE PASS ---- */
-    .container { width: 100%; max-width: 520px; position: relative; z-index: 10; overflow: hidden;
-      background: rgba(18, 5, 10, .62); backdrop-filter: blur(22px) saturate(1.2); -webkit-backdrop-filter: blur(22px) saturate(1.2);
-      border: 1px solid var(--line); border-radius: 18px; padding: 40px 34px;
-      box-shadow: 0 30px 90px rgba(0,0,0,.7), 0 0 80px rgba(255,90,54,.12);
-      animation: rise 1s cubic-bezier(.2,.8,.2,1) both; }
-    .container::before { content: ''; position: absolute; top: 0; left: -60%; width: 60%; height: 1px;
-      background: linear-gradient(90deg, transparent, var(--gold), transparent); animation: edge 6s ease-in-out infinite; }
-
-    .header { font-family: 'Syne', sans-serif; text-align: center; font-weight: 800; line-height: 1;
-      font-size: clamp(40px, 11vw, 64px); letter-spacing: .12em; margin-bottom: 34px;
-      background: linear-gradient(100deg, var(--ivory) 20%, var(--gold) 45%, var(--ember) 55%, var(--ivory) 80%); background-size: 250% 100%;
-      -webkit-background-clip: text; background-clip: text; color: transparent;
-      filter: drop-shadow(0 0 22px rgba(255,90,54,.4)); animation: shimmer 7s linear infinite; }
-
-    .box { background: rgba(0,0,0,.4); border: 1px solid rgba(255,244,224,.08); border-radius: 12px;
-      padding: 26px; margin-bottom: 20px; transition: border-color .3s; }
-    .box:hover { border-color: var(--line); }
-    #portal-view .box { animation: rise .8s cubic-bezier(.2,.8,.2,1) both; }
-    #portal-view .box:nth-child(2) { animation-delay: .12s; }
-    #portal-view .box:nth-child(3) { animation-delay: .24s; }
-    #portal-view .box:nth-child(4) { animation-delay: .36s; }
-
-    input, select, textarea { width: 100%; padding: 15px; font-size: 15px; background: rgba(0,0,0,.55);
-      border: 1px solid rgba(255,244,224,.14); color: var(--ivory); border-radius: 10px; box-sizing: border-box; margin-top: 10px;
-      font-family: 'Manrope', sans-serif; transition: .3s; }
-    input:focus, select:focus, textarea:focus { outline: none; border-color: var(--gold); box-shadow: 0 0 22px rgba(242,200,121,.25); }
+    /* access area */
+    .access { max-width: 520px; margin: 0 auto; padding: 10px 18px 50px; scroll-margin-top: 20px; }
+    .box { background: #fff; border: 3px solid var(--ink); border-radius: 24px; padding: 24px; margin-bottom: 26px; box-shadow: 7px 7px 0 var(--pink); animation: pop .6s both; }
+    #portal-view .box:nth-child(2) { box-shadow: 7px 7px 0 var(--teal); animation-delay: .1s; }
+    #portal-view .box:nth-child(3) { box-shadow: 7px 7px 0 var(--orange); animation-delay: .2s; }
+    #portal-view .box:nth-child(4) { box-shadow: 7px 7px 0 var(--sun); animation-delay: .3s; }
+    .label { font-family: 'Bowlby One', sans-serif; font-size: 13px; letter-spacing: 1.5px; text-transform: uppercase; }
+    input, select, textarea { width: 100%; padding: 15px 18px; font-size: 16px; font-family: 'Outfit', sans-serif; color: var(--ink); background: var(--cream);
+      border: 3px solid var(--ink); border-radius: 16px; margin-top: 12px; transition: box-shadow .2s; }
+    input:focus, select:focus, textarea:focus { outline: none; box-shadow: 4px 4px 0 var(--teal); }
     textarea { resize: vertical; min-height: 90px; }
-    select option { background: #1a060d; }
-
-    .btn { position: relative; overflow: hidden; width: 100%; border: none; padding: 16px; border-radius: 10px; cursor: pointer;
-      font-family: 'Syne', sans-serif; font-weight: 700; font-size: 14px; letter-spacing: 2px; text-transform: uppercase; margin-top: 14px;
-      color: #1a0509; background: linear-gradient(90deg, var(--ember), var(--gold));
-      box-shadow: 0 0 28px rgba(255,90,54,.35); transition: transform .2s, box-shadow .3s; }
-    .btn::after { content: ''; position: absolute; top: 0; left: -120%; width: 60%; height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,.5), transparent); transform: skewX(-20deg); transition: left .6s; }
-    .btn:hover { transform: scale(1.03); box-shadow: 0 0 40px rgba(255,140,60,.55); }
-    .btn:hover::after { left: 140%; }
-    .btn:active { transform: scale(.98); }
-    .btn-secondary { background: transparent; color: var(--gold); border: 1px solid var(--line); box-shadow: none; }
-    .btn-secondary:hover { background: rgba(242,200,121,.1); box-shadow: none; }
-    .btn-danger { background: rgba(239,68,68,.15); color: #ff7b7b; border: 1px solid rgba(239,68,68,.45); margin-top: 8px; font-size: 12px; box-shadow: none; }
-
-    #qrcode { display: flex; justify-content: center; margin: 16px auto 0; padding: 12px; background: var(--ivory); border-radius: 12px;
-      width: fit-content; box-shadow: 0 0 44px rgba(255,140,60,.4); }
-    .badge { padding: 7px 14px; border-radius: 20px; font-size: 12px; font-weight: 700; letter-spacing: 1px; }
-    .confirmed { background: rgba(109,255,176,.1); color: #6dffb0; border: 1px solid rgba(109,255,176,.35); box-shadow: 0 0 16px rgba(109,255,176,.22); }
-    .pending { background: rgba(242,200,121,.1); color: var(--gold); border: 1px solid var(--line); }
+    .btn { width: 100%; background: var(--ink); color: #fff; border: 3px solid var(--ink); border-radius: 999px; padding: 16px; margin-top: 14px; cursor: pointer;
+      font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 15px; letter-spacing: 2px; text-transform: uppercase; transition: transform .15s, box-shadow .15s; }
+    .btn:hover { transform: translate(-2px,-2px); box-shadow: 5px 5px 0 var(--pink); }
+    .btn:active { transform: translate(1px,1px); box-shadow: none; }
+    .btn-secondary { background: #fff; color: var(--ink); }
+    .btn-danger { background: #fff; color: #c0153d; border-color: #c0153d; font-size: 12px; margin-top: 4px; }
+    .badge { padding: 7px 14px; border-radius: 999px; font-size: 12px; font-weight: 800; letter-spacing: 1px; border: 2px solid var(--ink); }
+    .confirmed { background: #b6f5d4; }
+    .pending { background: #ffe07a; }
+    #qrcode { display: flex; justify-content: center; margin: 14px auto 0; padding: 12px; background: #fff; border: 3px solid var(--ink); border-radius: 16px; width: fit-content; }
     .hidden { display: none !important; }
-    .label { font-size: 11px; color: #c7ad84; text-transform: uppercase; letter-spacing: 2px; }
 
-    @media (max-width: 600px) {
-      .moon-wrap { width: 92vw; right: -34%; top: -4%; }
-      .container { padding: 30px 20px; }
-    }
+    /* how it works */
+    .steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 18px; max-width: 980px; margin: 0 auto; padding: 20px 18px 60px; }
+    .step { border: 3px solid var(--ink); border-radius: 26px; padding: 26px; box-shadow: 7px 7px 0 var(--ink); }
+    .step b { font-family: 'Bowlby One', sans-serif; font-size: 56px; line-height: 1; display: block; }
+    .step h3 { font-family: 'Bowlby One', sans-serif; margin: 10px 0 6px; font-size: 20px; text-transform: uppercase; }
+    .step p { margin: 0; font-weight: 600; }
+    .step:nth-child(1) { background: var(--pink); color: #fff; }
+    .step:nth-child(2) { background: var(--teal); }
+    .step:nth-child(3) { background: var(--orange); }
+    footer { background: var(--ink); color: var(--sun); text-align: center; padding: 34px 20px; font-family: 'Bowlby One', sans-serif; letter-spacing: 2px; }
+    footer small { display: block; color: #fff; font-family: 'Outfit', sans-serif; font-weight: 600; letter-spacing: 1px; margin-top: 8px; }
+
+    @keyframes marquee { to { transform: translateX(-50%); } }
+    @keyframes sway { from { transform: rotate(-.5deg); } to { transform: rotate(.5deg); } }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes fall { to { transform: translateY(300px); } }
+    @keyframes pop { from { opacity: 0; transform: translateY(26px) scale(.9); } to { opacity: 1; transform: none; } }
     @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+
+    /* ---- extra motion ---- */
+    .plumes { position: fixed; inset: 0; pointer-events: none; z-index: -1; overflow: hidden; }
+    .plumes span { position: absolute; bottom: -50px; width: 54px; height: 230px; border-radius: 50% 50% 50% 50% / 75% 75% 25% 25%; transform-origin: bottom center; opacity: .9; animation: plume 4.5s ease-in-out infinite alternate; }
+    .wordmark span span { display: inline-block; animation: bob 1.5s ease-in-out infinite; animation-delay: calc(var(--i) * .1s); }
+    .eq { display: flex; justify-content: center; align-items: flex-end; gap: 5px; height: 56px; margin-top: 36px; }
+    .eq i { width: 9px; height: 8px; background: var(--ink); border-radius: 5px; animation: eq .8s ease-in-out infinite alternate; }
+    .cta { animation: pop .8s .65s both, wiggle 2.6s 2s ease-in-out infinite; }
+    .ticker.rev { background: var(--pink); color: #fff; }
+    .ticker.rev .ticker-track { animation-direction: reverse; }
+    .step { opacity: 0; transform: translateY(46px) rotate(2deg); transition: opacity .7s, transform .8s cubic-bezier(.2,.9,.3,1.25); }
+    .step.in { opacity: 1; transform: none; }
+    .bit { position: fixed; width: 10px; height: 14px; border-radius: 2px; pointer-events: none; z-index: 99; animation: burst .9s ease-out forwards; }
+    @keyframes plume { from { transform: rotate(calc(var(--r) - 9deg)); } to { transform: rotate(calc(var(--r) + 9deg)); } }
+    @keyframes bob { 50% { transform: translateY(-12px) rotate(-3deg); } }
+    @keyframes eq { to { height: 56px; } }
+    @keyframes wiggle { 0%, 12%, 100% { transform: rotate(0); } 3% { transform: rotate(-4deg) scale(1.05); } 6% { transform: rotate(4deg) scale(1.05); } 9% { transform: rotate(-2deg); } }
+    @keyframes burst { to { transform: translate(var(--x), var(--y)) rotate(var(--r)); opacity: 0; } }
   </style>
 </head>
 <body>
+<div class="confetti"></div>
+<div class="confetti c2"></div>
 
-<!-- BACKGROUND ELEMENTS -->
-<div class="stars"></div>
-<div class="stars s3"></div>
-<div class="embers"></div>
-<div class="embers e2"></div>
-<div class="moon-wrap" id="moon"><div class="moon"></div></div>
+<div class="ticker"><div class="ticker-track">
+  <span>ON D' ROAD ✦ INVITE ONLY ✦ MAS ✦ FÊTE ✦ BRING YOUR PEOPLE ✦</span><span>ON D' ROAD ✦ INVITE ONLY ✦ MAS ✦ FÊTE ✦ BRING YOUR PEOPLE ✦</span>
+  <span>ON D' ROAD ✦ INVITE ONLY ✦ MAS ✦ FÊTE ✦ BRING YOUR PEOPLE ✦</span><span>ON D' ROAD ✦ INVITE ONLY ✦ MAS ✦ FÊTE ✦ BRING YOUR PEOPLE ✦</span>
+</div></div>
+<div class="bunting"></div>
+<div class="plumes"><span style="left:1%;background:linear-gradient(#ff2e88,#ffd400);--r:-14deg;animation-delay:-0.5s"></span><span style="left:6%;background:linear-gradient(#00b8a9,#ffd400);--r:6deg;animation-delay:-1.8s"></span><span style="left:11%;background:linear-gradient(#ff6b1a,#ff2e88);--r:-4deg;animation-delay:-3.1s"></span><span style="left:87%;background:linear-gradient(#ff2e88,#ffd400);--r:12deg;animation-delay:-0.9s"></span><span style="left:92%;background:linear-gradient(#00b8a9,#ff2e88);--r:-6deg;animation-delay:-2.4s"></span><span style="left:97%;background:linear-gradient(#ff6b1a,#ffd400);--r:14deg;animation-delay:-3.6s"></span></div>
 
-<div class="container">
-  <div class="header">CONTROL</div>
+<header class="hero">
+  <div class="sun"></div>
+  <span class="eyebrow">THE INVITE-ONLY MAS EXPERIENCE</span>
+  <h1 class="wordmark"><span class="w1">On D'</span><span class="w2">Road</span></h1>
+  <p class="tag">Your invite is your way in. Get on the list, secure your package, and bring two of your people.</p>
+  <a class="cta" href="#access">GET IN</a>
+  <div class="eq" id="eq"></div>
+</header>
 
+<main class="access" id="access">
   <!-- LOGIN VIEW -->
   <div id="login-view" class="box">
-    <span class="label" style="display: block; text-align: center; margin-bottom: 12px;">SYSTEM AUTHENTICATION</span>
-    <input type="email" id="login-email" placeholder="Enter VIP Email..." autocomplete="email">
-    <button class="btn" onclick="handleLogin()">INITIATE LINK</button>
-    <div id="login-error" style="color: #ff4444; font-size: 12px; text-align: center; margin-top: 12px;"></div>
+    <span class="label">Got an invite? Get in.</span>
+    <input type="email" id="login-email" placeholder="Your VIP email..." autocomplete="email">
+    <button class="btn" onclick="handleLogin()">LET ME IN</button>
+    <div id="login-error" style="color: #c0153d; font-weight: 700; font-size: 13px; text-align: center; margin-top: 12px;"></div>
   </div>
 
   <!-- ACCEPT INVITE VIEW -->
   <div id="accept-view" class="box hidden">
-    <span class="label" style="display: block; text-align: center; margin-bottom: 12px;">PERSONAL INVITATION</span>
-    <p id="accept-from" style="text-align: center; margin: 0 0 8px;"></p>
-    <p id="accept-note" style="text-align: center; font-style: italic; color: var(--gold); margin: 0 0 8px;"></p>
+    <span class="label">You've been invited</span>
+    <p id="accept-from" style="font-weight: 800; font-size: 18px; margin: 12px 0 6px;"></p>
+    <p id="accept-note" style="font-style: italic; font-weight: 600; color: var(--gold); margin: 0 0 6px;"></p>
     <input type="email" id="accept-email" placeholder="Confirm your email to accept...">
     <button class="btn" onclick="acceptInvite()">ACCEPT INVITATION</button>
-    <div id="accept-error" style="color: #ff4444; font-size: 12px; text-align: center; margin-top: 12px;"></div>
+    <div id="accept-error" style="color: #c0153d; font-weight: 700; font-size: 13px; text-align: center; margin-top: 12px;"></div>
   </div>
 
   <!-- PORTAL VIEW -->
   <div id="portal-view" class="hidden">
-    
-    <!-- STATUS CARD -->
     <div class="box">
       <div style="display: flex; justify-content: space-between; align-items: center;">
-        <span class="label">ACCESS STATUS</span>
+        <span class="label">Your status</span>
         <span id="rsvp-badge" class="badge pending">PENDING</span>
       </div>
-      <p style="font-size: 14px; color: #fff; margin-top: 10px; font-weight: 600;" id="user-email">--</p>
+      <p style="font-weight: 800; margin: 12px 0 0; word-break: break-all;" id="user-email">--</p>
       <button class="btn btn-secondary" id="rsvp-btn" onclick="toggleRSVP()">CONFIRM ATTENDANCE</button>
     </div>
 
-    <!-- MERCH CARD -->
     <div class="box">
-      <label class="label">MERCHANDISE ALLOCATION</label>
+      <label class="label">Your shirt size</label>
       <select id="shirt-select">
-        <option value="Unassigned">Select Size...</option>
+        <option value="Unassigned">Select size...</option>
         <option value="S">Small</option>
         <option value="M">Medium</option>
         <option value="L">Large</option>
         <option value="XL">Extra Large</option>
       </select>
-      <button class="btn btn-secondary" style="padding: 10px; font-size: 12px;" onclick="saveShirt()">LOCK SIZE</button>
+      <button class="btn btn-secondary" onclick="saveShirt()">LOCK SIZE</button>
     </div>
 
-    <!-- DISPATCH CARD WITH CUSTOM NOTE -->
     <div class="box">
-      <label class="label">DISPATCH INVITATION</label>
-      <input type="email" id="invite-email" placeholder="Target Email Address...">
-      <textarea id="invite-note" maxlength="300" placeholder="Attach a custom message... (e.g., 'Bro you have to come to this!')"></textarea>
-      <button class="btn" onclick="sendInvite()">TRANSMIT INVITE</button>
-      <p style="font-size: 12px; color: var(--gold); text-align: center; margin-top: 12px; font-weight: 600;">
-        <span id="invites-count">0</span> AUTHORIZATIONS REMAINING
-      </p>
+      <label class="label">Invite your people</label>
+      <input type="email" id="invite-email" placeholder="Their email address...">
+      <textarea id="invite-note" maxlength="300" placeholder="Add a note... (e.g. 'Bro you have to come to this!')"></textarea>
+      <button class="btn" onclick="sendInvite()">SEND INVITE</button>
+      <p style="font-weight: 800; text-align: center; margin: 14px 0 0;"><span id="invites-count">0</span> INVITES LEFT</p>
     </div>
 
-    <!-- QR CODE -->
     <div class="box" style="text-align: center;">
-      <span class="label">DIGITAL ENTRY PASS</span>
+      <span class="label">Your entry pass</span>
       <div id="qrcode"></div>
     </div>
 
-    <button class="btn btn-danger" onclick="logout()">TERMINATE SESSION</button>
+    <button class="btn btn-danger" onclick="logout()">LOG OUT</button>
   </div>
-</div>
+</main>
+
+<section class="steps">
+  <div class="step"><b>01</b><h3>Get invited</h3><p>Someone on the list picks you. Your invite is personal and single-use.</p></div>
+  <div class="step"><b>02</b><h3>Secure your package</h3><p>Choose your package and lock in your size.</p></div>
+  <div class="step"><b>03</b><h3>Pass it on</h3><p>Accept and you get two invites of your own for your people.</p></div>
+</section>
+
+<div class="ticker rev"><div class="ticker-track"><span>SECURE YOUR PACKAGE ✦ PASS IT ON ✦ ON D' ROAD ✦ MAS ✦ FÊTE ✦</span><span>SECURE YOUR PACKAGE ✦ PASS IT ON ✦ ON D' ROAD ✦ MAS ✦ FÊTE ✦</span><span>SECURE YOUR PACKAGE ✦ PASS IT ON ✦ ON D' ROAD ✦ MAS ✦ FÊTE ✦</span><span>SECURE YOUR PACKAGE ✦ PASS IT ON ✦ ON D' ROAD ✦ MAS ✦ FÊTE ✦</span></div></div>
+
+<footer>ON D' ROAD<small>Invite only. Bring your people.</small></footer>
 
 <script>
   const BACKEND_URL = 'https://control-1-0baa.onrender.com';
@@ -272,7 +269,7 @@
 
       document.getElementById('qrcode').innerHTML = '';
       new QRCode(document.getElementById('qrcode'), {
-        text: `CONTROL:${currentUser}:${data.rsvp_status}`,
+        text: `ONDROAD:${currentUser}:${data.rsvp_status}`,
         width: 140, height: 140,
         colorDark: '#000000', colorLight: '#ffffff'
       });
@@ -350,16 +347,6 @@
     }
   }
 
-  // Moon drifts gently opposite the cursor
-  const moonEl = document.getElementById('moon');
-  if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    addEventListener('mousemove', (e) => {
-      const x = (e.clientX / innerWidth - 0.5) * -34;
-      const y = (e.clientY / innerHeight - 0.5) * -34;
-      moonEl.style.transform = `translate(${x}px, ${y}px)`;
-    });
-  }
-
   const inviteToken = new URLSearchParams(location.search).get('invite');
 
   async function loadInvite() {
@@ -370,7 +357,7 @@
       if (!res.ok) { loginErr.innerText = data.error; return; }
       document.getElementById('login-view').classList.add('hidden');
       document.getElementById('accept-view').classList.remove('hidden');
-      document.getElementById('accept-from').textContent = data.inviter + ' chose you as one of their two invites.';
+      document.getElementById('accept-from').textContent = (data.inviter === 'CONTROL' ? "On D' Road" : data.inviter) + ' chose you as one of their two invites.';
       document.getElementById('accept-note').textContent = data.note ? '"' + data.note + '"' : '';
     } catch (err) { loginErr.innerText = 'Network error. Try again.'; }
   }
@@ -401,6 +388,27 @@
   // Invite link opens the accept screen; otherwise resume a saved session.
   if (inviteToken) loadInvite();
   else if (currentUser && token) showPortal();
+
+  // ---- motion extras ----
+  document.querySelectorAll('.w1, .w2').forEach((el) => {
+    const text = el.textContent; el.textContent = '';
+    [...text].forEach((ch, i) => { const s = document.createElement('span'); s.textContent = ch === ' ' ? '\u00a0' : ch; s.style.setProperty('--i', i); el.appendChild(s); });
+  });
+  const eq = document.getElementById('eq');
+  for (let i = 0; i < 18; i++) { const b = document.createElement('i'); b.style.animationDuration = (0.5 + Math.random() * 0.7) + 's'; b.style.animationDelay = (-Math.random()) + 's'; eq.appendChild(b); }
+  const io = new IntersectionObserver((es) => es.forEach((e) => e.isIntersecting && e.target.classList.add('in')), { threshold: 0.2 });
+  document.querySelectorAll('.step').forEach((el) => io.observe(el));
+  addEventListener('pointerdown', (e) => {
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const colors = ['#ff2e88', '#ffd400', '#00b8a9', '#ff6b1a'];
+    for (let i = 0; i < 16; i++) {
+      const b = document.createElement('div'); b.className = 'bit';
+      b.style.left = e.clientX + 'px'; b.style.top = e.clientY + 'px'; b.style.background = colors[i % 4];
+      const a = Math.random() * Math.PI * 2, d = 60 + Math.random() * 90;
+      b.style.setProperty('--x', Math.cos(a) * d + 'px'); b.style.setProperty('--y', Math.sin(a) * d + 'px'); b.style.setProperty('--r', Math.random() * 720 + 'deg');
+      document.body.appendChild(b); setTimeout(() => b.remove(), 900);
+    }
+  });
 </script>
 </body>
 </html>
