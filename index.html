@@ -76,7 +76,7 @@
     <div id="login-view" class="card paper">
       <h2>Got an invite? Get in.</h2>
       <input type="email" id="login-email" placeholder="Your VIP email..." autocomplete="email">
-      <button class="btn" onclick="handleLogin()">LET ME IN</button>
+      <button class="btn" onclick="handleLogin()">SEND LOGIN LINK</button>
       <div id="login-error" style="color: var(--red); font-weight: 800; font-size: 13px; margin-top: 12px;"></div>
     </div>
 
@@ -165,8 +165,9 @@
     const emailInput = document.getElementById('login-email').value;
     const errorDiv = document.getElementById('login-error');
     errorDiv.innerText = '';
+    errorDiv.style.color = 'var(--red)';
 
-    if (!emailInput) return errorDiv.innerText = 'Email required for uplink.';
+    if (!emailInput) return errorDiv.innerText = 'Enter your email first.';
 
     try {
       const res = await fetch(`${BACKEND_URL}/api/login`, {
@@ -175,20 +176,37 @@
         body: JSON.stringify({ email: emailInput })
       });
       const data = await res.json();
-
-      if (res.ok) {
-        currentUser = data.user.email;
-        token = data.token;
-        localStorage.setItem('control_user_email', currentUser);
-        localStorage.setItem('control_token', token);
-        showPortal();
-      } else if (res.status === 429) {
-        errorDiv.innerText = 'Too many attempts. Please wait a few minutes.';
-      } else {
-        errorDiv.innerText = 'ACCESS DENIED: Unrecognized clearance.';
-      }
+      if (res.status === 429) { errorDiv.innerText = 'Too many attempts. Please wait a few minutes.'; return; }
+      if (!res.ok) { errorDiv.innerText = data.error || 'Something went wrong.'; return; }
+      // Same message whether or not the email is on the roster — don't change this copy,
+      // it's what keeps this endpoint from revealing who is or isn't invited.
+      errorDiv.style.color = 'var(--green)';
+      errorDiv.innerText = "Check your email for a login link. It's valid for 15 minutes.";
+      document.getElementById('login-email').value = '';
     } catch (err) {
-      errorDiv.innerText = 'Network error. Retrying connection...';
+      errorDiv.innerText = 'Network error. Try again.';
+    }
+  }
+
+  async function handleLoginCode(code) {
+    const errorDiv = document.getElementById('login-error');
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/login/verify`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code })
+      });
+      const data = await res.json();
+      history.replaceState(null, '', location.pathname);
+      if (!res.ok) { errorDiv.style.color = 'var(--red)'; errorDiv.innerText = data.error; return; }
+      currentUser = data.user.email;
+      token = data.token;
+      localStorage.setItem('control_user_email', currentUser);
+      localStorage.setItem('control_token', token);
+      showPortal();
+    } catch (err) {
+      errorDiv.style.color = 'var(--red)';
+      errorDiv.innerText = 'Network error. Try again.';
     }
   }
 
@@ -298,6 +316,7 @@
   }
 
   const inviteToken = new URLSearchParams(location.search).get('invite');
+  const loginCode = new URLSearchParams(location.search).get('login');
 
   async function loadInvite() {
     const loginErr = document.getElementById('login-error');
@@ -335,8 +354,10 @@
     } catch (e) { err.innerText = 'Network error. Try again.'; }
   }
 
-  // Invite link opens the accept screen; otherwise resume a saved session.
+  // An invite link opens the accept screen, a login link exchanges itself for a session,
+  // otherwise a saved session resumes automatically.
   if (inviteToken) loadInvite();
+  else if (loginCode) handleLoginCode(loginCode);
   else if (currentUser && token) showPortal();
 
   // ---- motion extras ----
