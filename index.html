@@ -5,6 +5,20 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#0b0a09">
   <title>On D' Road</title>
+  <meta name="description" content="Invite only. 18+. Antigua Carnival. Your invite is your way in: get on the list, secure your package, and bring two of your people.">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="On D' Road">
+  <meta property="og:title" content="On D' Road">
+  <meta property="og:description" content="Invite only. 18+. Antigua Carnival. Your invite is your way in.">
+  <meta property="og:url" content="https://ondroad.xyz/">
+  <meta property="og:image" content="https://ondroad.xyz/og.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="On D' Road. Antigua Carnival. 18+. Invite only.">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="icon" href="favicon-32.png" sizes="32x32" type="image/png">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -155,6 +169,11 @@
       transition: border-color .2s, box-shadow .2s; -webkit-appearance: none; appearance: none;
     }
     input::placeholder, textarea::placeholder { color: var(--dim); }
+    select {
+      cursor: pointer; padding-right: 44px; background-repeat: no-repeat; background-position: right 16px center;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%239b9389' stroke-width='1.6'/%3E%3C/svg%3E");
+    }
+    select option { background: var(--surface-2); color: var(--text); }
     input:focus, select:focus, textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 4px rgba(255, 91, 31, .15); }
     textarea { resize: vertical; min-height: 96px; }
     .btn {
@@ -242,6 +261,10 @@
     .event-when { font-size: 30px; line-height: 1.05; margin-bottom: 4px; }
     .event-text { white-space: pre-line; color: var(--muted); font-size: 15px; margin: 12px 0 0; }
     .event-when:empty, .event-text:empty { display: none; }
+    .linkish { background: none; border: 0; padding: 0; font: inherit; color: inherit; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+    .linkish:hover { color: var(--accent); }
+    .help { color: var(--dim); font-size: 13px; margin: 14px 0 0; }
+    .help a { color: var(--muted); text-underline-offset: 3px; }
 
     /* Entry pass styled as a ticket */
     .ticket { padding: 0; overflow: hidden; }
@@ -276,6 +299,11 @@
     footer .inner { display: flex; flex-wrap: wrap; gap: 18px; justify-content: space-between; align-items: flex-end; }
     footer .big { font-family: var(--display); font-size: clamp(44px, 9vw, 96px); line-height: .9; text-transform: uppercase; color: var(--surface-2); -webkit-text-stroke: 1px var(--line-strong); }
     footer small { color: var(--dim); font-size: 13px; }
+    .foot-info { display: grid; gap: 10px; justify-items: end; text-align: right; }
+    @media (max-width: 640px) { .foot-info { justify-items: start; text-align: left; } }
+    .contact { margin: 0; font-size: 15px; line-height: 1.9; color: var(--muted); }
+    .contact a { color: var(--text); text-decoration: none; border-bottom: 1px solid var(--line-strong); margin-left: 12px; white-space: nowrap; }
+    .contact a:hover { border-color: var(--accent); }
 
     /* ---------- Dialog ---------- */
     dialog { width: min(440px, calc(100vw - 32px)); padding: 0; border: 1px solid var(--line-strong); border-radius: 18px; background: var(--surface-2); color: var(--text); box-shadow: 0 30px 80px -20px rgba(0, 0, 0, .85); }
@@ -289,6 +317,19 @@
     .dlg-actions .btn::after { content: none; }
     .btn.danger-solid { background: var(--red); border-color: var(--red); color: #1a0402; }
     .btn.danger-solid:hover { box-shadow: 0 10px 30px -10px rgba(255, 106, 92, .6); }
+    .terms-dlg { width: min(640px, calc(100vw - 32px)); max-height: min(86vh, 900px); }
+    .terms-dlg[open] { display: flex; flex-direction: column; }
+    .terms-head { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 22px 26px 16px; border-bottom: 1px solid var(--line); }
+    .terms-head .x { background: none; border: 0; color: var(--muted); font-size: 18px; line-height: 1; cursor: pointer; padding: 8px 10px; border-radius: 8px; }
+    .terms-head .x:hover { color: var(--text); background: rgba(243, 236, 226, .06); }
+    .terms-body { overflow-y: auto; padding: 4px 26px 18px; font-size: 15px; line-height: 1.6; color: var(--muted); }
+    .terms-body h4 { font-family: var(--display); font-weight: 400; font-size: 20px; letter-spacing: .02em; text-transform: uppercase; color: var(--text); margin: 22px 0 8px; }
+    .terms-body p { margin: 0 0 10px; }
+    .terms-body ul { margin: 0 0 10px; padding-left: 20px; }
+    .terms-body li { margin-bottom: 6px; }
+    .terms-body li::marker { color: var(--accent); }
+    .terms-foot { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 14px 26px 22px; border-top: 1px solid var(--line); font-size: 13px; color: var(--dim); }
+    .terms-foot .btn { width: auto; margin-top: 0; padding: 12px 22px; }
 
     /* ---------- Toast ---------- */
     .toast {
@@ -361,6 +402,7 @@
           </label>
           <button class="btn" onclick="handleLogin()">Send login link</button>
           <div id="login-error" class="msg" style="color: var(--red);"></div>
+          <p class="help">Not getting the email? Check your spam folder<span id="login-help-contact" class="hidden">, or <a href="#contact">contact us</a></span>.</p>
         </div>
       </div>
 
@@ -402,6 +444,8 @@
               <p class="lead" style="font-size:15px; margin-top:10px;">Both packages include admission. What you get and what's required of you is different. Read before you pick.</p>
               <div id="pkg-list"></div>
               <div id="pkg-warn" class="warn hidden">You cannot wear regular clothes with makeup, dress all black and claim "unrecognizable," or wear minimal accessories and call it a costume. If you're not in proper costume or full package gear, you will be denied drinks, denied food, and not welcomed in the band — regardless of payment.</div>
+              <label id="pkg-size-wrap" class="field hidden"><span>Your size</span><select id="pkg-size"></select></label>
+              <label id="pkg-terms-wrap" class="check hidden"><input type="checkbox" id="pkg-terms"> <span>I agree to the <button type="button" class="linkish" onclick="showTerms()">terms</button></span></label>
               <button class="btn" id="pkg-confirm" style="display:none;">Secure this package</button>
               <div id="pkg-msg" class="msg"></div>
             </div>
@@ -410,6 +454,7 @@
               <p class="eyebrow" style="margin-bottom:6px;">Your package</p>
               <p id="order-summary" class="order-summary"></p>
               <p id="order-ref" class="ref"></p>
+              <label id="order-size-wrap" class="field hidden"><span>Your size</span><select id="order-size"></select></label>
               <div id="order-deadline" class="deadline hidden"></div>
               <div id="order-instr" class="instr hidden"><b>How to pay</b><span id="order-instr-text"></span></div>
               <p id="order-note" class="note"></p>
@@ -472,12 +517,24 @@
     </div>
   </main>
 
-  <footer>
+  <footer id="contact">
     <div class="inner">
       <span class="big">On D' Road</span>
-      <small>18+ only. Invite only. Please play responsibly.</small>
+      <div class="foot-info">
+        <p id="contact-line" class="contact hidden">Questions?<span id="contact-links"></span></p>
+        <small>18+ only. Invite only. Please play responsibly. <button type="button" class="linkish" onclick="showTerms()">Terms</button></small>
+      </div>
     </div>
   </footer>
+
+  <dialog id="terms-dlg" class="terms-dlg" aria-labelledby="terms-title">
+    <div class="terms-head">
+      <h3 id="terms-title">Terms</h3>
+      <button type="button" class="x" onclick="$('terms-dlg').close()" aria-label="Close">&#10005;</button>
+    </div>
+    <div id="terms-body" class="terms-body"></div>
+    <div class="terms-foot"><span id="terms-updated"></span><button type="button" class="btn btn-light" onclick="$('terms-dlg').close()">Close</button></div>
+  </dialog>
 
   <dialog id="dlg" aria-labelledby="dlg-title">
     <form id="dlg-form">
@@ -797,11 +854,29 @@
     });
   }
 
+  // "S, M, L" -> ['S', 'M', 'L']
+  const sizeList = (v) => String(v || '').split(',').map((s) => s.trim()).filter(Boolean);
+
+  // Fills a size dropdown. It starts on "Choose your size" until a size is picked.
+  function fillSizes(select, sizes, current) {
+    select.replaceChildren();
+    const first = document.createElement('option');
+    first.value = ''; first.textContent = 'Choose your size'; first.disabled = true;
+    select.appendChild(first);
+    sizes.forEach((s) => { const o = document.createElement('option'); o.value = s; o.textContent = s; select.appendChild(o); });
+    if (current && sizes.includes(current)) select.value = current; else first.selected = true;
+  }
+
   function updatePkgControls() {
     const warn = $('pkg-warn');
     const confirmBtn = $('pkg-confirm');
     const p = packages.find((x) => x.id === chosenPkg);
     warn.classList.toggle('hidden', !p || !p.requires_compliance);
+    const sizes = p ? sizeList(p.sizes) : [];
+    const sel = $('pkg-size'), key = chosenPkg + '|' + sizes.join(',');
+    if (sel.dataset.key !== key) { fillSizes(sel, sizes, ''); sel.dataset.key = key; } // keep the pick while the package stays the same
+    $('pkg-size-wrap').classList.toggle('hidden', !sizes.length);
+    $('pkg-terms-wrap').classList.toggle('hidden', !p);
     confirmBtn.style.display = p ? 'block' : 'none';
   }
 
@@ -809,17 +884,28 @@
     const msg = $('pkg-msg');
     msg.textContent = '';
     if (!chosenPkg) return;
+    const fail = (text) => { msg.style.color = 'var(--red)'; msg.textContent = text; };
+    const p = packages.find((x) => x.id === chosenPkg);
+    const body = { package_id: chosenPkg, terms: true };
+    if (p && sizeList(p.sizes).length) {
+      if (!$('pkg-size').value) return fail('Choose your size.');
+      body.size = $('pkg-size').value;
+    }
+    if (!$('pkg-terms').checked) return fail('Tick the box to agree to the terms.');
     try {
-      let res = await authFetch('/api/orders', { package_id: chosenPkg });
+      let res = await authFetch('/api/orders', body);
       let data = await res.json();
       // Guests who joined before the 18+ check confirm it once, here.
       if (data.code === 'AGE_REQUIRED') {
         const ok = await ask({ title: 'Are you 18 or older?', text: "On D' Road is 18+ only. You may be asked for ID at the entrance.", ok: "Yes, I'm 18+", cancel: 'No' });
-        if (!ok) { msg.style.color = 'var(--red)'; msg.textContent = "On D' Road is 18+ only."; return; }
-        res = await authFetch('/api/orders', { package_id: chosenPkg, adult: true });
+        if (!ok) return fail("On D' Road is 18+ only.");
+        body.adult = true;
+        res = await authFetch('/api/orders', body);
         data = await res.json();
       }
-      if (!res.ok) { msg.style.color = 'var(--red)'; msg.textContent = data.error; return; }
+      // The organizers added sizes since this page loaded: show them.
+      if (data.code === 'SIZE_REQUIRED') await loadPackages();
+      if (!res.ok) return fail(data.error);
       await loadOrder();
       msg.textContent = '';
     } catch (err) { if (err.message !== 'SESSION_EXPIRED') { msg.style.color = 'var(--red)'; msg.textContent = 'Network error. Try again.'; } }
@@ -890,6 +976,9 @@
       pkgBox.style.display = 'none';
       $('order-summary').textContent = myOrder.package_name + ' — ' + money(myOrder.price_cents, myOrder.currency);
       $('order-ref').textContent = myOrder.reference_code + ' · ' + (reserved ? 'Reserved, awaiting payment' : 'Paid');
+      const sizes = sizeList(myOrder.package_sizes);
+      $('order-size-wrap').classList.toggle('hidden', !sizes.length);
+      if (sizes.length) fillSizes($('order-size'), sizes, myOrder.size);
 
       // Pay-by deadline (only while reserved and a deadline is set)
       const dl = $('order-deadline');
@@ -927,6 +1016,16 @@
     } catch (err) { if (err.message !== 'SESSION_EXPIRED') console.error(err); }
   }
 
+  $('order-size').addEventListener('change', async (e) => {
+    try {
+      const res = await authFetch('/api/orders/size', { size: e.target.value });
+      const data = await res.json();
+      if (!res.ok) { toast(data.error, true); return loadOrder(); }
+      myOrder.size = data.size;
+      toast('Size saved: ' + data.size + '.');
+    } catch (err) { if (err.message !== 'SESSION_EXPIRED') { toast('Network error. Try again.', true); loadOrder(); } }
+  });
+
   async function cancelOrder() {
     const ok = await ask({ title: 'Cancel reservation?', text: "Your spot will be released for someone else. You haven't paid, so nothing is owed.", ok: 'Cancel it', cancel: 'Keep it', danger: true });
     if (!ok) return;
@@ -963,6 +1062,70 @@
       toast("Request withdrawn. You're still in.");
     } catch (err) { if (err.message !== 'SESSION_EXPIRED') toast('Network error. Try again.', true); }
   }
+
+  // ---- contact details and terms (public; set by the organizers at /admin/site) ----
+  let site = null;
+
+  async function loadSite() {
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/site`);
+      if (!res.ok) return;
+      site = await res.json();
+      renderContact();
+    } catch (err) { console.error(err); }
+  }
+
+  function renderContact() {
+    const c = (site && site.contact) || {};
+    const links = [];
+    if (c.whatsapp) links.push(['WhatsApp', 'https://wa.me/' + c.whatsapp]);
+    if (c.instagram) links.push(['@' + c.instagram, 'https://instagram.com/' + c.instagram]);
+    if (c.email) links.push([c.email, 'mailto:' + c.email]);
+    const box = $('contact-links');
+    box.replaceChildren();
+    links.forEach(([label, url]) => {
+      const a = document.createElement('a');
+      a.href = url; a.textContent = label;
+      if (!url.startsWith('mailto:')) { a.target = '_blank'; a.rel = 'noopener'; }
+      box.appendChild(a);
+    });
+    $('contact-line').classList.toggle('hidden', !links.length);
+    $('login-help-contact').classList.toggle('hidden', !links.length);
+  }
+
+  // "# " lines become headings and "- " lines bullet points. Everything is set as text, never as HTML.
+  function renderTerms(text) {
+    const box = $('terms-body');
+    box.replaceChildren();
+    let list = null;
+    String(text || '').split(/\r?\n/).forEach((raw) => {
+      const line = raw.trim();
+      if (!line) { list = null; return; }
+      if (line.startsWith('- ')) {
+        if (!list) { list = document.createElement('ul'); box.appendChild(list); }
+        const li = document.createElement('li'); li.textContent = line.slice(2); list.appendChild(li);
+        return;
+      }
+      list = null;
+      const el = document.createElement(line.startsWith('# ') ? 'h4' : 'p');
+      el.textContent = line.startsWith('# ') ? line.slice(2) : line;
+      box.appendChild(el);
+    });
+  }
+
+  async function showTerms() {
+    if (!site) await loadSite();
+    if (site) renderTerms(site.terms);
+    else $('terms-body').textContent = "Couldn't load the terms. Check your connection and try again.";
+    $('terms-updated').textContent = site && site.terms_updated_at
+      ? 'Last updated ' + new Date(site.terms_updated_at).toLocaleDateString('en-US', { dateStyle: 'long', timeZone: 'America/Antigua' })
+      : '';
+    const dlg = $('terms-dlg');
+    if (dlg.showModal) dlg.showModal(); else dlg.setAttribute('open', '');
+    $('terms-body').scrollTop = 0;
+  }
+
+  loadSite();
 
   // An invite link opens the accept screen, a login link exchanges itself for a session,
   // otherwise a saved session resumes automatically. This runs last, after everything above exists.
