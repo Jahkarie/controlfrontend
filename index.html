@@ -191,7 +191,7 @@
     /* Phones: one column, with the entry pass high up (it's what gets shown at the door). */
     @media (max-width: 899px) {
       .col { display: contents; }
-      #pkg-card, #order-status { order: 1; } .ticket { order: 2; } .rsvp { order: 3; } .invite { order: 4; }
+      #pkg-card, #order-status { order: 1; } .ticket { order: 2; } .event, .rsvp { order: 3; } .invite { order: 4; }
     }
     .panel-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 6px; }
     .badge {
@@ -237,6 +237,11 @@
     .instr b { display: block; font-size: 11px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--accent); margin-bottom: 8px; }
     .instr span { white-space: pre-line; }
     .note { color: var(--muted); font-size: 14px; margin: 16px 0 0; }
+    .check { display: flex; align-items: flex-start; gap: 12px; margin-top: 18px; font-size: 15px; color: var(--text); cursor: pointer; }
+    .check input { flex: none; width: 20px; height: 20px; margin: 1px 0 0; padding: 0; -webkit-appearance: auto; appearance: auto; accent-color: var(--accent); }
+    .event-when { font-size: 30px; line-height: 1.05; margin-bottom: 4px; }
+    .event-text { white-space: pre-line; color: var(--muted); font-size: 15px; margin: 12px 0 0; }
+    .event-when:empty, .event-text:empty { display: none; }
 
     /* Entry pass styled as a ticket */
     .ticket { padding: 0; overflow: hidden; }
@@ -372,6 +377,7 @@
           <label class="field"><span>Confirm your email</span>
             <input type="email" id="accept-email" placeholder="The email this invite was sent to" autocomplete="email">
           </label>
+          <label class="check"><input type="checkbox" id="accept-adult"> <span>I'm 18 or older</span></label>
           <button class="btn" onclick="acceptInvite()">Accept invitation</button>
           <div id="accept-error" class="msg" style="color: var(--red);"></div>
         </div>
@@ -410,6 +416,14 @@
               <button class="btn btn-light" id="order-cancel" onclick="cancelOrder()">Cancel reservation</button>
               <button class="btn btn-light hidden" id="order-refund" onclick="requestRefund()">Request refund</button>
               <button class="btn btn-light hidden" id="order-withdraw" onclick="withdrawRefund()">Keep my spot</button>
+            </div>
+
+            <div id="event-card" class="panel event hidden">
+              <p class="eyebrow" style="margin-bottom:12px;">The event</p>
+              <h3 id="event-when" class="event-when"></h3>
+              <p id="event-info" class="event-text"></p>
+              <div id="event-paid" class="instr hidden"><b>For paid guests</b><span id="event-paid-text"></span></div>
+              <p id="event-locked" class="note hidden">More details unlock once your payment is confirmed.</p>
             </div>
 
             <div class="panel invite">
@@ -614,7 +628,7 @@
 
   async function loadUserData() {
     if (!currentUser || !token) return logout();
-    await Promise.all([loadPackages(), loadOrder()]);
+    await Promise.all([loadPackages(), loadOrder(), loadEvent()]);
     $('user-email').innerText = currentUser;
     try {
       const res = await authFetch('/api/user-status');
@@ -715,11 +729,12 @@
     err.innerText = '';
     const email = $('accept-email').value;
     if (!email) return err.innerText = 'Enter the email this invitation was sent to.';
+    if (!$('accept-adult').checked) return err.innerText = "On D' Road is 18+ only. Tick the box to confirm you're 18 or older.";
     try {
       const res = await fetch(`${BACKEND_URL}/api/invite/accept`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token: inviteToken, email })
+        body: JSON.stringify({ token: inviteToken, email, adult: true })
       });
       const data = await res.json();
       if (!res.ok) return err.innerText = data.error;
@@ -795,13 +810,36 @@
     msg.textContent = '';
     if (!chosenPkg) return;
     try {
-      const res = await authFetch('/api/orders', { package_id: chosenPkg });
-      const data = await res.json();
+      let res = await authFetch('/api/orders', { package_id: chosenPkg });
+      let data = await res.json();
+      // Guests who joined before the 18+ check confirm it once, here.
+      if (data.code === 'AGE_REQUIRED') {
+        const ok = await ask({ title: 'Are you 18 or older?', text: "On D' Road is 18+ only. You may be asked for ID at the entrance.", ok: "Yes, I'm 18+", cancel: 'No' });
+        if (!ok) { msg.style.color = 'var(--red)'; msg.textContent = "On D' Road is 18+ only."; return; }
+        res = await authFetch('/api/orders', { package_id: chosenPkg, adult: true });
+        data = await res.json();
+      }
       if (!res.ok) { msg.style.color = 'var(--red)'; msg.textContent = data.error; return; }
       await loadOrder();
       msg.textContent = '';
     } catch (err) { if (err.message !== 'SESSION_EXPIRED') { msg.style.color = 'var(--red)'; msg.textContent = 'Network error. Try again.'; } }
   });
+
+  // Event details set by the organizers. Paid-only details come back only once the order is paid.
+  async function loadEvent() {
+    try {
+      const res = await authFetch('/api/event');
+      const ev = res.ok ? await res.json() : null;
+      const show = ev && (ev.when || ev.info || ev.has_paid_info);
+      $('event-card').classList.toggle('hidden', !show);
+      if (!show) return;
+      $('event-when').textContent = ev.when;
+      $('event-info').textContent = ev.info;
+      $('event-paid-text').textContent = ev.paid_info;
+      $('event-paid').classList.toggle('hidden', !ev.paid_info);
+      $('event-locked').classList.toggle('hidden', ev.paid || !ev.has_paid_info);
+    } catch (err) { if (err.message !== 'SESSION_EXPIRED') console.error(err); }
+  }
 
   async function loadPackages() {
     try {
