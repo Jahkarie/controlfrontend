@@ -11,11 +11,9 @@
     * { box-sizing: border-box; }
     body { margin: 0; font-family: 'Archivo', sans-serif; color: var(--ink); background: var(--paper); }
     .wrap { max-width: 560px; margin: 0 auto; }
-
     .nav { display: flex; justify-content: space-between; align-items: center; padding: 20px 22px; border-bottom: 3px solid var(--ink); }
     .logo { font-family: 'Archivo Black', sans-serif; font-size: 18px; letter-spacing: 1px; }
     .navbtn { background: var(--ink); color: var(--paper); text-decoration: none; font-weight: 800; font-size: 12px; letter-spacing: 1px; padding: 10px 18px; border-radius: 999px; }
-
     .card { border: 3px solid var(--ink); padding: 26px 22px; margin: 18px; border-radius: 4px; }
     .card.orange { background: var(--orange); color: var(--ink); }
     .card.green { background: var(--green); color: var(--ink); }
@@ -27,7 +25,6 @@
     .card h1 { font-size: clamp(38px, 11vw, 58px); } .card h2 { font-size: 22px; }
     .card p { margin: 0 0 10px; font-size: 16px; line-height: 1.55; font-weight: 500; }
     .card ul { margin: 10px 0 0; padding-left: 20px; } .card li { margin-bottom: 6px; font-weight: 600; }
-
     input, select, textarea { width: 100%; padding: 14px 15px; font-size: 15px; font-family: 'Archivo', sans-serif; color: var(--ink); background: #fff;
       border: 3px solid var(--ink); border-radius: 4px; margin-top: 10px; }
     textarea { resize: vertical; min-height: 80px; } select option { background: #fff; }
@@ -37,8 +34,7 @@
     .btn-light { background: transparent; color: inherit; border-color: currentColor; }
     .btn-light:hover { background: rgba(0,0,0,.08); color: inherit; }
     .btn-danger { background: transparent; color: var(--red); border-color: var(--red); font-size: 11px; }
-
-    .pkg { border: 3px solid var(--ink); border-radius: 4px; padding: 18px; margin-top: 14px; background: #fff; cursor: pointer; transition: transform .12s; }
+    .pkg { border: 3px solid var(--ink); border-radius: 4px; padding: 18px; margin-top: 14px; background: #fff; color: var(--ink); cursor: pointer; transition: transform .12s; }
     .pkg:hover { transform: translate(-2px,-2px); }
     .pkg.chosen { background: var(--green); }
     .pkg h3 { font-family: 'Archivo Black', sans-serif; text-transform: uppercase; font-size: 18px; margin: 0 0 6px; }
@@ -46,7 +42,11 @@
     .pkg ul { margin: 10px 0 0; padding-left: 18px; font-size: 14px; }
     .pkg .spots { font-size: 12px; font-weight: 800; letter-spacing: 1px; margin-top: 8px; }
     .warn { border: 3px solid var(--red); background: #fff2f1; color: var(--red); font-weight: 800; font-size: 13px; padding: 14px 16px; border-radius: 4px; margin-top: 14px; }
-
+    .deadline { border: 3px solid var(--orange); color: var(--orange); font-weight: 800; font-size: 14px; padding: 12px 14px; border-radius: 4px; margin: 12px 0; line-height: 1.4; }
+    .deadline.late { border-color: var(--red); color: #ff7a73; }
+    .instr { background: var(--paper); color: var(--ink); border: 3px solid var(--paper); border-radius: 4px; padding: 14px 16px; margin: 12px 0; font-weight: 600; font-size: 14px; line-height: 1.5; }
+    .instr b { display: block; font-family: 'Archivo Black', sans-serif; font-size: 11px; letter-spacing: 2px; margin-bottom: 6px; }
+    .instr span { white-space: pre-line; }
     .badge { padding: 6px 13px; border-radius: 999px; font-size: 11px; font-weight: 800; letter-spacing: 1px; border: 2px solid var(--ink); }
     .confirmed { background: var(--green); } .pending { background: #ffe07a; }
     #qrcode { display: flex; justify-content: center; margin: 14px auto 0; padding: 12px; background: #fff; border: 3px solid var(--ink); border-radius: 4px; width: fit-content; }
@@ -114,8 +114,10 @@
         <h2>Your package</h2>
         <p id="order-summary" style="font-weight:800;"></p>
         <p id="order-ref" style="font-size:13px; opacity:.8;"></p>
-        <p style="font-size:13px; opacity:.8;">Payment isn't open yet. We'll follow up with how to pay to confirm your spot. This reservation is not yet confirmed.</p>
-        <button class="btn btn-light" onclick="cancelOrder()">CANCEL RESERVATION</button>
+        <div id="order-deadline" class="deadline hidden"></div>
+        <div id="order-instr" class="instr hidden"><b>HOW TO PAY</b><span id="order-instr-text"></span></div>
+        <p id="order-note" style="font-size:13px; opacity:.8;"></p>
+        <button class="btn btn-light" id="order-cancel" onclick="cancelOrder()">CANCEL RESERVATION</button>
       </div>
 
       <div class="card paper">
@@ -142,8 +144,13 @@
 
 <script>
   const BACKEND_URL = 'https://control-1-0baa.onrender.com';
+  const $ = (id) => document.getElementById(id);
+
   let currentUser = localStorage.getItem('control_user_email');
   let token = localStorage.getItem('control_token');
+
+  // Packages and orders state. Declared up here so nothing below can run before it exists.
+  let packages = [], chosenPkg = null, myOrder = null;
 
   // Sends a request with the login token attached.
   // If the server says the session is invalid or expired, log the user out.
@@ -155,20 +162,18 @@
     });
     if (res.status === 401) {
       logout();
-      document.getElementById('login-error').innerText = 'Session expired. Please log in again.';
+      $('login-error').innerText = 'Session expired. Please log in again.';
       throw new Error('SESSION_EXPIRED');
     }
     return res;
   }
 
   async function handleLogin() {
-    const emailInput = document.getElementById('login-email').value;
-    const errorDiv = document.getElementById('login-error');
+    const emailInput = $('login-email').value;
+    const errorDiv = $('login-error');
     errorDiv.innerText = '';
     errorDiv.style.color = 'var(--red)';
-
     if (!emailInput) return errorDiv.innerText = 'Enter your email first.';
-
     try {
       const res = await fetch(`${BACKEND_URL}/api/login`, {
         method: 'POST',
@@ -182,14 +187,14 @@
       // it's what keeps this endpoint from revealing who is or isn't invited.
       errorDiv.style.color = 'var(--green)';
       errorDiv.innerText = "Check your email for a login link. It's valid for 15 minutes.";
-      document.getElementById('login-email').value = '';
+      $('login-email').value = '';
     } catch (err) {
       errorDiv.innerText = 'Network error. Try again.';
     }
   }
 
   async function handleLoginCode(code) {
-    const errorDiv = document.getElementById('login-error');
+    const errorDiv = $('login-error');
     try {
       const res = await fetch(`${BACKEND_URL}/api/login/verify`, {
         method: 'POST',
@@ -211,20 +216,16 @@
   }
 
   async function loadUserData() {
-    await Promise.all([loadPackages(), loadOrder()]);
     if (!currentUser || !token) return logout();
-    document.getElementById('user-email').innerText = currentUser;
-    
+    await Promise.all([loadPackages(), loadOrder()]);
+    $('user-email').innerText = currentUser;
     try {
       const res = await authFetch('/api/user-status');
       const data = await res.json();
       if (!res.ok) return logout();
-
-      document.getElementById('invites-count').innerText = data.invites_left;
-      document.getElementById('shirt-select').value = data.shirt_size || 'Unassigned';
-
-      const badge = document.getElementById('rsvp-badge');
-      const rsvpBtn = document.getElementById('rsvp-btn');
+      $('invites-count').innerText = data.invites_left;
+      const badge = $('rsvp-badge');
+      const rsvpBtn = $('rsvp-btn');
       if (data.rsvp_status === 'CONFIRMED') {
         badge.innerText = 'CONFIRMED';
         badge.className = 'badge confirmed';
@@ -234,9 +235,8 @@
         badge.className = 'badge pending';
         rsvpBtn.innerText = 'CONFIRM ATTENDANCE';
       }
-
-      document.getElementById('qrcode').innerHTML = '';
-      new QRCode(document.getElementById('qrcode'), {
+      $('qrcode').innerHTML = '';
+      new QRCode($('qrcode'), {
         text: `ONDROAD:${currentUser}:${data.rsvp_status}`,
         width: 140, height: 140,
         colorDark: '#000000', colorLight: '#ffffff'
@@ -245,8 +245,8 @@
   }
 
   function showPortal() {
-    document.getElementById('login-view').classList.add('hidden');
-    document.getElementById('portal-view').classList.remove('hidden');
+    $('login-view').classList.add('hidden');
+    $('portal-view').classList.remove('hidden');
     loadUserData();
   }
 
@@ -255,14 +255,14 @@
     localStorage.removeItem('control_token');
     currentUser = null;
     token = null;
-    document.getElementById('login-view').classList.remove('hidden');
-    document.getElementById('portal-view').classList.add('hidden');
-    document.getElementById('login-email').value = '';
-    document.getElementById('login-error').innerText = '';
+    $('login-view').classList.remove('hidden');
+    $('portal-view').classList.add('hidden');
+    $('login-email').value = '';
+    $('login-error').innerText = '';
   }
 
   async function toggleRSVP() {
-    const current = document.getElementById('rsvp-badge').innerText;
+    const current = $('rsvp-badge').innerText;
     const next = current === 'CONFIRMED' ? 'PENDING' : 'CONFIRMED';
     try {
       const res = await authFetch('/api/update-rsvp', { rsvp_status: next });
@@ -276,26 +276,10 @@
     }
   }
 
-  async function saveShirt() {
-    const shirt = document.getElementById('shirt-select').value;
-    try {
-      const res = await authFetch('/api/update-shirt', { shirt_size: shirt });
-      if (!res.ok) {
-        const data = await res.json();
-        return alert(data.error || 'Update failed.');
-      }
-      alert('Allocation locked.');
-      loadUserData();
-    } catch (err) {
-      if (err.message !== 'SESSION_EXPIRED') alert('Network error. Try again.');
-    }
-  }
-
   async function sendInvite() {
-    const recipient = document.getElementById('invite-email').value;
-    const note = document.getElementById('invite-note').value;
+    const recipient = $('invite-email').value;
+    const note = $('invite-note').value;
     if (!recipient) return alert('Target email required.');
-
     try {
       const res = await authFetch('/api/send-invite', {
         recipient_email: recipient,
@@ -304,8 +288,8 @@
       const data = await res.json();
       if (res.ok) {
         alert('Transmission successful.');
-        document.getElementById('invite-email').value = '';
-        document.getElementById('invite-note').value = '';
+        $('invite-email').value = '';
+        $('invite-note').value = '';
         loadUserData();
       } else {
         alert(data.error);
@@ -319,22 +303,22 @@
   const loginCode = new URLSearchParams(location.search).get('login');
 
   async function loadInvite() {
-    const loginErr = document.getElementById('login-error');
+    const loginErr = $('login-error');
     try {
       const res = await fetch(`${BACKEND_URL}/api/invite/${encodeURIComponent(inviteToken)}`);
       const data = await res.json();
       if (!res.ok) { loginErr.innerText = data.error; return; }
-      document.getElementById('login-view').classList.add('hidden');
-      document.getElementById('accept-view').classList.remove('hidden');
-      document.getElementById('accept-from').textContent = (data.inviter === 'CONTROL' ? "On D' Road" : data.inviter) + ' chose you as one of their two invites.';
-      document.getElementById('accept-note').textContent = data.note ? '"' + data.note + '"' : '';
+      $('login-view').classList.add('hidden');
+      $('accept-view').classList.remove('hidden');
+      $('accept-from').textContent = (data.inviter === 'CONTROL' ? "On D' Road" : data.inviter) + ' chose you as one of their two invites.';
+      $('accept-note').textContent = data.note ? '"' + data.note + '"' : '';
     } catch (err) { loginErr.innerText = 'Network error. Try again.'; }
   }
 
   async function acceptInvite() {
-    const err = document.getElementById('accept-error');
+    const err = $('accept-error');
     err.innerText = '';
-    const email = document.getElementById('accept-email').value;
+    const email = $('accept-email').value;
     if (!email) return err.innerText = 'Enter the email this invitation was sent to.';
     try {
       const res = await fetch(`${BACKEND_URL}/api/invite/accept`, {
@@ -349,45 +333,28 @@
       localStorage.setItem('control_user_email', currentUser);
       localStorage.setItem('control_token', token);
       history.replaceState(null, '', location.pathname);
-      document.getElementById('accept-view').classList.add('hidden');
+      $('accept-view').classList.add('hidden');
       showPortal();
     } catch (e) { err.innerText = 'Network error. Try again.'; }
   }
 
-  // An invite link opens the accept screen, a login link exchanges itself for a session,
-  // otherwise a saved session resumes automatically.
-  if (inviteToken) loadInvite();
-  else if (loginCode) handleLoginCode(loginCode);
-  else if (currentUser && token) showPortal();
-
-  // ---- motion extras ----
-  document.querySelectorAll('.w1, .w2').forEach((el) => {
-    const text = el.textContent; el.textContent = '';
-    [...text].forEach((ch, i) => { const s = document.createElement('span'); s.textContent = ch === ' ' ? '\u00a0' : ch; s.style.setProperty('--i', i); el.appendChild(s); });
-  });
-  const eq = document.getElementById('eq');
-  for (let i = 0; i < 18; i++) { const b = document.createElement('i'); b.style.animationDuration = (0.5 + Math.random() * 0.7) + 's'; b.style.animationDelay = (-Math.random()) + 's'; eq.appendChild(b); }
-  const io = new IntersectionObserver((es) => es.forEach((e) => e.isIntersecting && e.target.classList.add('in')), { threshold: 0.2 });
-  document.querySelectorAll('.step').forEach((el) => io.observe(el));
-  addEventListener('pointerdown', (e) => {
-    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    const colors = ['#e9b44c', '#ffd98a', '#ff2a6d', '#ffffff'];
-    for (let i = 0; i < 16; i++) {
-      const b = document.createElement('div'); b.className = 'bit';
-      b.style.left = e.clientX + 'px'; b.style.top = e.clientY + 'px'; b.style.background = colors[i % 4];
-      const a = Math.random() * Math.PI * 2, d = 60 + Math.random() * 90;
-      b.style.setProperty('--x', Math.cos(a) * d + 'px'); b.style.setProperty('--y', Math.sin(a) * d + 'px'); b.style.setProperty('--r', Math.random() * 720 + 'deg');
-      document.body.appendChild(b); setTimeout(() => b.remove(), 900);
-    }
-  });
-
   // ---- packages / orders ----
-  let packages = [], chosenPkg = null, myOrder = null;
-
   function money(cents, cur) { return (cur || 'XCD') + ' ' + (cents / 100).toFixed(2); }
 
+  function fmtDate(iso) {
+    return new Date(iso).toLocaleString('en-US', { dateStyle: 'full', timeStyle: 'short', timeZone: 'America/Antigua' });
+  }
+
+  function timeLeft(iso) {
+    const ms = new Date(iso).getTime() - Date.now();
+    if (ms <= 0) return null;
+    const d = Math.floor(ms / 86400000), h = Math.floor((ms % 86400000) / 3600000);
+    if (d > 0) return d + 'd ' + h + 'h left';
+    return h > 0 ? h + 'h left' : 'under 1h left';
+  }
+
   function renderPackages() {
-    const list = document.getElementById('pkg-list');
+    const list = $('pkg-list');
     list.innerHTML = '';
     packages.forEach((p) => {
       const div = document.createElement('div');
@@ -414,15 +381,15 @@
   }
 
   function updatePkgControls() {
-    const warn = document.getElementById('pkg-warn');
-    const confirmBtn = document.getElementById('pkg-confirm');
+    const warn = $('pkg-warn');
+    const confirmBtn = $('pkg-confirm');
     const p = packages.find((x) => x.id === chosenPkg);
     warn.classList.toggle('hidden', !p || !p.requires_compliance);
     confirmBtn.style.display = p ? 'block' : 'none';
   }
 
-  document.getElementById('pkg-confirm').addEventListener('click', async () => {
-    const msg = document.getElementById('pkg-msg');
+  $('pkg-confirm').addEventListener('click', async () => {
+    const msg = $('pkg-msg');
     msg.textContent = '';
     if (!chosenPkg) return;
     try {
@@ -446,17 +413,47 @@
     try {
       const res = await authFetch('/api/my-order');
       myOrder = await res.json();
-      const statusBox = document.getElementById('order-status');
+      const statusBox = $('order-status');
       const pkgBox = document.querySelector('.card.purple');
-      if (myOrder) {
-        statusBox.classList.remove('hidden');
-        pkgBox.style.display = 'none';
-        document.getElementById('order-summary').textContent = myOrder.package_name + ' — ' + money(myOrder.price_cents, myOrder.currency);
-        document.getElementById('order-ref').textContent = 'Reference: ' + myOrder.reference_code + ' — ' + myOrder.status;
-      } else {
+      if (!myOrder) {
         statusBox.classList.add('hidden');
         pkgBox.style.display = '';
+        return;
       }
+      const reserved = myOrder.status === 'RESERVED';
+      statusBox.classList.remove('hidden');
+      pkgBox.style.display = 'none';
+      $('order-summary').textContent = myOrder.package_name + ' — ' + money(myOrder.price_cents, myOrder.currency);
+      $('order-ref').textContent = 'Reference: ' + myOrder.reference_code + ' — ' + (reserved ? 'RESERVED' : 'PAID');
+
+      // Pay-by deadline (only while reserved and a deadline is set)
+      const dl = $('order-deadline');
+      if (reserved && myOrder.pay_by) {
+        const left = timeLeft(myOrder.pay_by);
+        dl.textContent = left
+          ? 'PAY BY ' + fmtDate(myOrder.pay_by) + ' · ' + left
+          : 'PAST DUE — pay now or your spot may be released.';
+        dl.classList.toggle('late', !left);
+        dl.classList.remove('hidden');
+      } else {
+        dl.classList.add('hidden');
+      }
+
+      // Payment instructions typed in by the organizer
+      const instr = $('order-instr');
+      if (reserved && myOrder.payment_instructions) {
+        $('order-instr-text').textContent = myOrder.payment_instructions;
+        instr.classList.remove('hidden');
+      } else {
+        instr.classList.add('hidden');
+      }
+
+      $('order-note').textContent = !reserved
+        ? "Payment received. You're confirmed and your entry pass is below."
+        : (myOrder.payment_instructions
+            ? 'Your spot is not confirmed until your payment is received.'
+            : "We'll follow up with how to pay to confirm your spot. This reservation is not yet confirmed.");
+      $('order-cancel').classList.toggle('hidden', !reserved);
     } catch (err) { if (err.message !== 'SESSION_EXPIRED') console.error(err); }
   }
 
@@ -469,6 +466,12 @@
       await loadOrder(); await loadPackages();
     } catch (err) { if (err.message !== 'SESSION_EXPIRED') alert('Network error. Try again.'); }
   }
+
+  // An invite link opens the accept screen, a login link exchanges itself for a session,
+  // otherwise a saved session resumes automatically. This runs last, after everything above exists.
+  if (inviteToken) loadInvite();
+  else if (loginCode) handleLoginCode(loginCode);
+  else if (currentUser && token) showPortal();
 </script>
 </body>
 </html>
