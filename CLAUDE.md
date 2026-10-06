@@ -12,8 +12,10 @@ On D' Road is an invite-only, 18+ Antigua Carnival band. This repo is the guest-
 
 - **`login-view`:** enter email → `/api/login` emails a one-time link.
 - **`?login=<code>`:** exchanged at `/api/login/verify` for a session token.
-- **`accept-view` (`?invite=<token>`):** shows who invited them and their note; accepting with the matching email calls `/api/invite/accept` and logs them in.
-- **`portal-view`:** package picker (with the costume warning when `requires_compliance`), order status with pay-by deadline, payment instructions, cancel/refund buttons, RSVP, the QR entry pass once paid, and "invite your people" (2 invites).
+- **`accept-view` (`?invite=<token>`):** shows who invited them and their note. Accepting needs the matching email and the "I'm 18 or older" box ticked; it calls `/api/invite/accept` with `adult: true` and logs them in.
+- **`portal-view`:** package picker (with the costume warning when `requires_compliance`), order status with pay-by deadline, payment instructions, cancel/refund buttons, the event card, RSVP, the QR entry pass once paid, and "invite your people" (2 invites).
+- **Reserving:** if `/api/orders` answers `code: 'AGE_REQUIRED'` (guests who joined before the 18+ check), the page asks "Are you 18 or older?" with `ask()` and resends with `adult: true`.
+- **Event card (`#event-card`):** filled from `/api/event`. Hidden when nothing is set. Paid-only details show once the order is paid; until then a note says more details unlock after payment.
 - The session is kept in `localStorage` as `control_token` and `control_user_email`. Requests go through `authFetch()` with `Authorization: Bearer <token>`.
 - The QR code encodes `ONDROAD:<reference>:<email>`; the door scanner in `control/door.js` depends on that format.
 
