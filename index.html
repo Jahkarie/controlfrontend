@@ -256,6 +256,13 @@
     .instr b { display: block; font-size: 11px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--accent); margin-bottom: 8px; }
     .instr span { white-space: pre-line; }
     .note { color: var(--muted); font-size: 14px; margin: 16px 0 0; }
+    .paybox { margin: 16px 0 0; padding: 16px 18px; border-radius: 10px; background: rgba(243,236,226,.04); border: 1px solid var(--line); }
+    .paybox-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; margin: 0 0 12px; font-size: 15px; font-weight: 600; }
+    .paybox-head b { font-size: 11px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--accent); }
+    .paybox .note { margin-top: 12px; }
+    /* PayPal's buttons are made for light pages, so they sit on a white card. */
+    .paypal-frame { background: #fff; border-radius: 10px; padding: 12px 12px 2px; min-height: 60px; }
+    .paypal-frame:empty { display: none; }
     .check { display: flex; align-items: flex-start; gap: 12px; margin-top: 18px; font-size: 15px; color: var(--text); cursor: pointer; }
     .check input { flex: none; width: 20px; height: 20px; margin: 1px 0 0; padding: 0; -webkit-appearance: auto; appearance: auto; accent-color: var(--accent); }
     .event-when { font-size: 30px; line-height: 1.05; margin-bottom: 4px; }
@@ -456,7 +463,12 @@
               <p id="order-ref" class="ref"></p>
               <label id="order-size-wrap" class="field hidden"><span>Your size</span><select id="order-size"></select></label>
               <div id="order-deadline" class="deadline hidden"></div>
-              <div id="order-instr" class="instr hidden"><b>How to pay</b><span id="order-instr-text"></span></div>
+              <div id="paypal-box" class="paybox hidden">
+                <p class="paybox-head"><b>Pay now</b><span id="paypal-amount"></span></p>
+                <div id="paypal-buttons" class="paypal-frame"></div>
+                <p id="paypal-msg" class="note hidden" role="status"></p>
+              </div>
+              <div id="order-instr" class="instr hidden"><b id="order-instr-label">How to pay</b><span id="order-instr-text"></span></div>
               <p id="order-note" class="note"></p>
               <button class="btn btn-light" id="order-cancel" onclick="cancelOrder()">Cancel reservation</button>
               <button class="btn btn-light hidden" id="order-refund" onclick="requestRefund()">Request refund</button>
@@ -966,6 +978,7 @@
       const statusBox = $('order-status');
       const pkgBox = $('pkg-card');
       renderPass();
+      renderPayPal();
       if (!myOrder) {
         statusBox.classList.add('hidden');
         pkgBox.style.display = '';
@@ -1025,6 +1038,83 @@
       toast('Size saved: ' + data.size + '.');
     } catch (err) { if (err.message !== 'SESSION_EXPIRED') { toast('Network error. Try again.', true); loadOrder(); } }
   });
+
+  // ---- PayPal: shown on a reserved order once the organizers have set it up (see control/paypal.js) ----
+  let paypalSdk = null, paypalKey = null;
+
+  function loadPayPalSdk(clientId) {
+    if (!paypalSdk) {
+      paypalSdk = new Promise((resolve, reject) => {
+        const s = document.createElement('script');
+        s.src = 'https://www.paypal.com/sdk/js?client-id=' + encodeURIComponent(clientId) + '&currency=USD&intent=capture&components=buttons';
+        s.onload = () => (window.paypal ? resolve(window.paypal) : reject(new Error('PayPal did not load')));
+        s.onerror = () => { paypalSdk = null; reject(new Error('PayPal did not load')); };
+        document.head.appendChild(s);
+      });
+    }
+    return paypalSdk;
+  }
+
+  async function renderPayPal() {
+    const box = $('paypal-box'), msg = $('paypal-msg');
+    const show = (on) => {
+      box.classList.toggle('hidden', !on);
+      $('order-instr-label').textContent = on ? 'Other ways to pay' : 'How to pay';
+      if (!on) { $('paypal-buttons').replaceChildren(); paypalKey = null; }
+    };
+    if (!myOrder || myOrder.status !== 'RESERVED') return show(false);
+    let info = null;
+    try {
+      const res = await authFetch('/api/paypal/checkout');
+      if (res.ok) info = await res.json();
+    } catch (err) { /* PayPal stays hidden */ }
+    if (!info || !info.enabled || !myOrder || myOrder.status !== 'RESERVED') return show(false);
+    show(true);
+    $('paypal-amount').textContent = 'USD ' + info.amount + (myOrder.currency !== 'USD' ? ' (' + money(myOrder.price_cents, myOrder.currency) + ')' : '');
+    if (info.pending) {
+      $('paypal-buttons').replaceChildren(); paypalKey = null;
+      msg.textContent = "PayPal is still processing your payment. We'll email you as soon as it's confirmed.";
+      return msg.classList.remove('hidden');
+    }
+    msg.classList.add('hidden');
+    const key = myOrder.id + '|' + info.amount;
+    if (paypalKey === key) return; // already showing the buttons for this order
+    paypalKey = key;
+    try {
+      const paypal = await loadPayPalSdk(info.client_id);
+      $('paypal-buttons').replaceChildren();
+      await paypal.Buttons({
+        style: { layout: 'vertical', color: 'gold', shape: 'rect', label: 'pay' },
+        createOrder: async () => {
+          const res = await authFetch('/api/paypal/create-order', {});
+          const d = await res.json();
+          if (!res.ok) {
+            toast(d.error, d.code !== 'ALREADY_PAID');
+            if (d.code) loadOrder();
+            throw new Error('STOP');
+          }
+          return d.id;
+        },
+        onApprove: async (data, actions) => {
+          const res = await authFetch('/api/paypal/capture', { paypal_order_id: data.orderID });
+          const d = await res.json();
+          if (d.code === 'DECLINED') { toast(d.error, true); return actions.restart(); }
+          if (!res.ok) toast(d.error, true);
+          else toast(d.pending ? d.message : "Payment received. You're in!", !!d.pending);
+          await loadOrder();
+        },
+        onCancel: () => toast('Payment cancelled. Your spot is held until your pay-by date.'),
+        onError: (err) => {
+          if (err && err.message === 'STOP') return;
+          toast('PayPal ran into a problem. Try again, or use another way to pay.', true);
+        }
+      }).render('#paypal-buttons');
+    } catch (err) {
+      paypalKey = null;
+      msg.textContent = "PayPal couldn't load. Check your connection and refresh, or use another way to pay.";
+      msg.classList.remove('hidden');
+    }
+  }
 
   async function cancelOrder() {
     const ok = await ask({ title: 'Cancel reservation?', text: "Your spot will be released for someone else. You haven't paid, so nothing is owed.", ok: 'Cancel it', cancel: 'Keep it', danger: true });

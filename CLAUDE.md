@@ -6,7 +6,7 @@ On D' Road is an invite-only, 18+ Antigua Carnival band. This repo is the guest-
 
 - One static page, `index.html`: HTML, CSS and plain JavaScript. No build step, no framework.
 - Images next to it: `og.png` (1200×630 link preview), `favicon.svg`, `favicon-32.png`, `apple-touch-icon.png`. The `og:url` and `og:image` tags point at `https://ondroad.xyz/`.
-- Only external script: `qrcodejs` from cdnjs, for the entry pass.
+- External scripts: `qrcodejs` from cdnjs, for the entry pass, and PayPal's button script from `www.paypal.com`, loaded only when the guest's reserved order can be paid with PayPal.
 - Calls the backend at `BACKEND_URL` (set near the top of the `<script>`, currently `https://control-1-0baa.onrender.com`). The backend's CORS list must include wherever this page is served (`ondroad.xyz`, `www.ondroad.xyz`, `FRONTEND_URL`).
 
 ## Page flow
@@ -17,6 +17,7 @@ On D' Road is an invite-only, 18+ Antigua Carnival band. This repo is the guest-
 - **`portal-view`:** package picker (with the costume warning when `requires_compliance`), order status with pay-by deadline, payment instructions, cancel/refund buttons, the event card, RSVP, the QR entry pass once paid, and "invite your people" (2 invites).
 - **Event card (`#event-card`):** filled from `/api/event`. Hidden when nothing is set. Paid-only details show once the order is paid; until then a note says more details unlock after payment.
 - **Reserving:** the "I agree to the terms" box must be ticked (sent as `terms: true`), and packages with sizes need one picked from "Your size". If `/api/orders` answers `code: 'AGE_REQUIRED'` (guests who joined before the 18+ check), the page asks "Are you 18 or older?" with `ask()` and resends with `adult: true`. The order panel lets the guest change the size (`/api/orders/size`).
+- **Pay now (`#paypal-box`):** on a reserved order, `/api/paypal/checkout` says whether PayPal is on for this guest and the USD amount. PayPal's buttons call `/api/paypal/create-order` and, once the guest approves, `/api/paypal/capture`. Codes: `ALREADY_PAID` (an earlier payment was found; reload the order), `PENDING` (PayPal is still processing; show the message instead of buttons), `CHECK` (problem with an earlier payment; contact us), `DECLINED` (`actions.restart()` so the guest can pick another card). When PayPal shows, the cash instructions are labelled "Other ways to pay".
 - **Footer and terms:** `/api/site` (public) is loaded on every visit. The footer shows the organizers' WhatsApp, Instagram and email when set, plus a "Terms" link that opens `#terms-dlg`. The login screen points people who don't get the email to the contact details.
 - The session is kept in `localStorage` as `control_token` and `control_user_email`. Requests go through `authFetch()` with `Authorization: Bearer <token>`.
 - The QR code encodes `ONDROAD:<reference>:<email>`; the door scanner in `control/door.js` depends on that format.
