@@ -5,191 +5,140 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>On D' Road</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Bowlby+One&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Archivo:wght@500;600;700;800&display=swap" rel="stylesheet">
   <style>
-    :root { --sun:#ffd400; --pink:#ff2e88; --teal:#00b8a9; --orange:#ff6b1a; --ink:#140b2e; --cream:#fff7e6; --gold:#d6176f; }
+    :root { --ink:#0d0d0d; --paper:#f4f1ea; --orange:#ff6a1f; --green:#7fd63c; --purple:#6b3fd6; --red:#e8322a; }
     * { box-sizing: border-box; }
-    html { scroll-behavior: smooth; }
-    body { margin: 0; font-family: 'Outfit', sans-serif; color: var(--ink); background: var(--cream); overflow-x: hidden; }
-    .display { font-family: 'Bowlby One', sans-serif; }
+    body { margin: 0; font-family: 'Archivo', sans-serif; color: var(--ink); background: var(--paper); }
+    .wrap { max-width: 560px; margin: 0 auto; }
 
-    /* confetti */
-    .confetti { position: fixed; top: 0; left: 0; width: 100vw; height: calc(100vh + 300px); z-index: -1; pointer-events: none; animation: fall 14s linear infinite;
-      background: url('data:image/svg+xml;utf8,<svg width="300" height="300" xmlns="http://www.w3.org/2000/svg"><rect x="30" y="20" width="9" height="14" fill="%23ff2e88" transform="rotate(25 30 20)"/><rect x="200" y="60" width="8" height="13" fill="%2300b8a9" transform="rotate(-30 200 60)"/><rect x="110" y="150" width="9" height="9" fill="%23ff6b1a"/><rect x="260" y="210" width="8" height="14" fill="%23ffd400" transform="rotate(50 260 210)"/><rect x="60" y="250" width="9" height="13" fill="%2300b8a9" transform="rotate(15 60 250)"/></svg>') repeat; }
-    .confetti.c2 { animation-duration: 23s; opacity: .7; background-size: 420px; }
+    .nav { display: flex; justify-content: space-between; align-items: center; padding: 20px 22px; border-bottom: 3px solid var(--ink); }
+    .logo { font-family: 'Archivo Black', sans-serif; font-size: 18px; letter-spacing: 1px; }
+    .navbtn { background: var(--ink); color: var(--paper); text-decoration: none; font-weight: 800; font-size: 12px; letter-spacing: 1px; padding: 10px 18px; border-radius: 999px; }
 
-    /* ticker + bunting */
-    .ticker { background: var(--ink); color: var(--sun); overflow: hidden; white-space: nowrap; padding: 10px 0; }
-    .ticker-track { display: inline-block; animation: marquee 22s linear infinite; font-family: 'Bowlby One', sans-serif; font-size: 14px; letter-spacing: 2px; }
-    .ticker-track span { padding-right: 40px; }
-    .bunting { height: 38px; transform-origin: top; animation: sway 4s ease-in-out infinite alternate;
-      background: url('data:image/svg+xml;utf8,<svg width="160" height="38" xmlns="http://www.w3.org/2000/svg"><polygon points="0,0 40,0 20,36" fill="%23ff2e88"/><polygon points="40,0 80,0 60,36" fill="%23ffd400"/><polygon points="80,0 120,0 100,36" fill="%2300b8a9"/><polygon points="120,0 160,0 140,36" fill="%23ff6b1a"/></svg>') repeat-x; }
+    .card { border: 3px solid var(--ink); padding: 26px 22px; margin: 18px; border-radius: 4px; }
+    .card.orange { background: var(--orange); color: var(--ink); }
+    .card.green { background: var(--green); color: var(--ink); }
+    .card.purple { background: var(--purple); color: #fff; }
+    .card.dark { background: var(--ink); color: var(--paper); }
+    .card.paper { background: var(--paper); }
+    .kicker { display: inline-block; font-family: 'Archivo Black', sans-serif; font-size: 11px; letter-spacing: 2px; border: 2px solid currentColor; padding: 5px 12px; border-radius: 999px; margin-bottom: 14px; }
+    .card h1, .card h2 { font-family: 'Archivo Black', sans-serif; text-transform: uppercase; line-height: 1.04; margin: 0 0 14px; }
+    .card h1 { font-size: clamp(38px, 11vw, 58px); } .card h2 { font-size: 22px; }
+    .card p { margin: 0 0 10px; font-size: 16px; line-height: 1.55; font-weight: 500; }
+    .card ul { margin: 10px 0 0; padding-left: 20px; } .card li { margin-bottom: 6px; font-weight: 600; }
 
-    /* hero */
-    .hero { position: relative; text-align: center; padding: 56px 20px 70px; overflow: hidden; isolation: isolate; }
-    .sun { position: absolute; inset: -70% -30%; z-index: -1; animation: spin 120s linear infinite;
-      background: repeating-conic-gradient(#ffd400 0 7.5deg, #ffe566 7.5deg 15deg);
-      -webkit-mask-image: radial-gradient(circle, #000 18%, transparent 62%); mask-image: radial-gradient(circle, #000 18%, transparent 62%); }
-    .eyebrow { display: inline-block; background: var(--ink); color: #fff; font-weight: 800; letter-spacing: 3px; font-size: 12px; padding: 8px 18px; border-radius: 999px; transform: rotate(-3deg); animation: pop .6s both; }
-    .wordmark { font-family: 'Bowlby One', sans-serif; margin: 22px 0 0; line-height: .86; text-transform: uppercase; color: var(--pink);
-      text-shadow: 3px 3px 0 var(--sun), 6px 6px 0 var(--teal), 9px 9px 0 var(--ink); }
-    .wordmark span { display: block; animation: pop .8s cubic-bezier(.3,1.6,.5,1) both; }
-    .w1 { font-size: clamp(34px, 9vw, 60px); animation-delay: .15s !important; }
-    .w2 { font-size: clamp(84px, 25vw, 200px); animation-delay: .3s !important; }
-    .tag { font-size: clamp(17px, 4vw, 22px); font-weight: 700; margin: 34px auto 24px; max-width: 520px; animation: pop .8s .5s both; }
-    .cta { display: inline-block; background: var(--ink); color: #fff; text-decoration: none; font-weight: 800; letter-spacing: 3px; padding: 18px 38px;
-      border-radius: 999px; font-size: 15px; box-shadow: 5px 5px 0 var(--pink); transition: transform .15s, box-shadow .15s; animation: pop .8s .65s both; }
-    .cta:hover { transform: translate(-3px,-3px); box-shadow: 8px 8px 0 var(--pink); }
+    input, select, textarea { width: 100%; padding: 14px 15px; font-size: 15px; font-family: 'Archivo', sans-serif; color: var(--ink); background: #fff;
+      border: 3px solid var(--ink); border-radius: 4px; margin-top: 10px; }
+    textarea { resize: vertical; min-height: 80px; } select option { background: #fff; }
+    .btn { width: 100%; background: var(--ink); color: var(--paper); border: 3px solid var(--ink); border-radius: 999px; padding: 15px; margin-top: 12px;
+      cursor: pointer; font-family: 'Archivo Black', sans-serif; font-size: 13px; letter-spacing: 2px; text-transform: uppercase; }
+    .btn:hover { background: #fff; color: var(--ink); }
+    .btn-light { background: transparent; color: inherit; border-color: currentColor; }
+    .btn-light:hover { background: rgba(0,0,0,.08); color: inherit; }
+    .btn-danger { background: transparent; color: var(--red); border-color: var(--red); font-size: 11px; }
 
-    /* access area */
-    .access { max-width: 520px; margin: 0 auto; padding: 10px 18px 50px; scroll-margin-top: 20px; }
-    .box { background: #fff; border: 3px solid var(--ink); border-radius: 24px; padding: 24px; margin-bottom: 26px; box-shadow: 7px 7px 0 var(--pink); animation: pop .6s both; }
-    #portal-view .box:nth-child(2) { box-shadow: 7px 7px 0 var(--teal); animation-delay: .1s; }
-    #portal-view .box:nth-child(3) { box-shadow: 7px 7px 0 var(--orange); animation-delay: .2s; }
-    #portal-view .box:nth-child(4) { box-shadow: 7px 7px 0 var(--sun); animation-delay: .3s; }
-    .label { font-family: 'Bowlby One', sans-serif; font-size: 13px; letter-spacing: 1.5px; text-transform: uppercase; }
-    input, select, textarea { width: 100%; padding: 15px 18px; font-size: 16px; font-family: 'Outfit', sans-serif; color: var(--ink); background: var(--cream);
-      border: 3px solid var(--ink); border-radius: 16px; margin-top: 12px; transition: box-shadow .2s; }
-    input:focus, select:focus, textarea:focus { outline: none; box-shadow: 4px 4px 0 var(--teal); }
-    textarea { resize: vertical; min-height: 90px; }
-    .btn { width: 100%; background: var(--ink); color: #fff; border: 3px solid var(--ink); border-radius: 999px; padding: 16px; margin-top: 14px; cursor: pointer;
-      font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 15px; letter-spacing: 2px; text-transform: uppercase; transition: transform .15s, box-shadow .15s; }
-    .btn:hover { transform: translate(-2px,-2px); box-shadow: 5px 5px 0 var(--pink); }
-    .btn:active { transform: translate(1px,1px); box-shadow: none; }
-    .btn-secondary { background: #fff; color: var(--ink); }
-    .btn-danger { background: #fff; color: #c0153d; border-color: #c0153d; font-size: 12px; margin-top: 4px; }
-    .badge { padding: 7px 14px; border-radius: 999px; font-size: 12px; font-weight: 800; letter-spacing: 1px; border: 2px solid var(--ink); }
-    .confirmed { background: #b6f5d4; }
-    .pending { background: #ffe07a; }
-    #qrcode { display: flex; justify-content: center; margin: 14px auto 0; padding: 12px; background: #fff; border: 3px solid var(--ink); border-radius: 16px; width: fit-content; }
+    .pkg { border: 3px solid var(--ink); border-radius: 4px; padding: 18px; margin-top: 14px; background: #fff; cursor: pointer; transition: transform .12s; }
+    .pkg:hover { transform: translate(-2px,-2px); }
+    .pkg.chosen { background: var(--green); }
+    .pkg h3 { font-family: 'Archivo Black', sans-serif; text-transform: uppercase; font-size: 18px; margin: 0 0 6px; }
+    .pkg .price { font-family: 'Archivo Black', sans-serif; font-size: 22px; }
+    .pkg ul { margin: 10px 0 0; padding-left: 18px; font-size: 14px; }
+    .pkg .spots { font-size: 12px; font-weight: 800; letter-spacing: 1px; margin-top: 8px; }
+    .warn { border: 3px solid var(--red); background: #fff2f1; color: var(--red); font-weight: 800; font-size: 13px; padding: 14px 16px; border-radius: 4px; margin-top: 14px; }
+
+    .badge { padding: 6px 13px; border-radius: 999px; font-size: 11px; font-weight: 800; letter-spacing: 1px; border: 2px solid var(--ink); }
+    .confirmed { background: var(--green); } .pending { background: #ffe07a; }
+    #qrcode { display: flex; justify-content: center; margin: 14px auto 0; padding: 12px; background: #fff; border: 3px solid var(--ink); border-radius: 4px; width: fit-content; }
     .hidden { display: none !important; }
-
-    /* how it works */
-    .steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 18px; max-width: 980px; margin: 0 auto; padding: 20px 18px 60px; }
-    .step { border: 3px solid var(--ink); border-radius: 26px; padding: 26px; box-shadow: 7px 7px 0 var(--ink); }
-    .step b { font-family: 'Bowlby One', sans-serif; font-size: 56px; line-height: 1; display: block; }
-    .step h3 { font-family: 'Bowlby One', sans-serif; margin: 10px 0 6px; font-size: 20px; text-transform: uppercase; }
-    .step p { margin: 0; font-weight: 600; }
-    .step:nth-child(1) { background: var(--pink); color: #fff; }
-    .step:nth-child(2) { background: var(--teal); }
-    .step:nth-child(3) { background: var(--orange); }
-    footer { background: var(--ink); color: var(--sun); text-align: center; padding: 34px 20px; font-family: 'Bowlby One', sans-serif; letter-spacing: 2px; }
-    footer small { display: block; color: #fff; font-family: 'Outfit', sans-serif; font-weight: 600; letter-spacing: 1px; margin-top: 8px; }
-
-    @keyframes marquee { to { transform: translateX(-50%); } }
-    @keyframes sway { from { transform: rotate(-.5deg); } to { transform: rotate(.5deg); } }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    @keyframes fall { to { transform: translateY(300px); } }
-    @keyframes pop { from { opacity: 0; transform: translateY(26px) scale(.9); } to { opacity: 1; transform: none; } }
-    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
-
-    /* ---- extra motion ---- */
-    .plumes { position: fixed; inset: 0; pointer-events: none; z-index: -1; overflow: hidden; }
-    .plumes span { position: absolute; bottom: -50px; width: 54px; height: 230px; border-radius: 50% 50% 50% 50% / 75% 75% 25% 25%; transform-origin: bottom center; opacity: .9; animation: plume 4.5s ease-in-out infinite alternate; }
-    .wordmark span span { display: inline-block; animation: bob 1.5s ease-in-out infinite; animation-delay: calc(var(--i) * .1s); }
-    .eq { display: flex; justify-content: center; align-items: flex-end; gap: 5px; height: 56px; margin-top: 36px; }
-    .eq i { width: 9px; height: 8px; background: var(--ink); border-radius: 5px; animation: eq .8s ease-in-out infinite alternate; }
-    .cta { animation: pop .8s .65s both, wiggle 2.6s 2s ease-in-out infinite; }
-    .ticker.rev { background: var(--pink); color: #fff; }
-    .ticker.rev .ticker-track { animation-direction: reverse; }
-    .step { opacity: 0; transform: translateY(46px) rotate(2deg); transition: opacity .7s, transform .8s cubic-bezier(.2,.9,.3,1.25); }
-    .step.in { opacity: 1; transform: none; }
-    .bit { position: fixed; width: 10px; height: 14px; border-radius: 2px; pointer-events: none; z-index: 99; animation: burst .9s ease-out forwards; }
-    @keyframes plume { from { transform: rotate(calc(var(--r) - 9deg)); } to { transform: rotate(calc(var(--r) + 9deg)); } }
-    @keyframes bob { 50% { transform: translateY(-12px) rotate(-3deg); } }
-    @keyframes eq { to { height: 56px; } }
-    @keyframes wiggle { 0%, 12%, 100% { transform: rotate(0); } 3% { transform: rotate(-4deg) scale(1.05); } 6% { transform: rotate(4deg) scale(1.05); } 9% { transform: rotate(-2deg); } }
-    @keyframes burst { to { transform: translate(var(--x), var(--y)) rotate(var(--r)); opacity: 0; } }
+    footer { border-top: 3px solid var(--ink); text-align: center; padding: 30px 20px; font-family: 'Archivo Black', sans-serif; letter-spacing: 1px; }
+    footer small { display: block; margin-top: 8px; font-family: 'Archivo', sans-serif; font-weight: 600; font-size: 12px; }
   </style>
 </head>
 <body>
-<div class="confetti"></div>
-<div class="confetti c2"></div>
+<div class="wrap">
+  <nav class="nav"><span class="logo">ON D' ROAD</span><a class="navbtn" href="#access">GET IN</a></nav>
 
-<div class="ticker"><div class="ticker-track">
-  <span>ON D' ROAD ✦ INVITE ONLY ✦ MAS ✦ FÊTE ✦ BRING YOUR PEOPLE ✦</span><span>ON D' ROAD ✦ INVITE ONLY ✦ MAS ✦ FÊTE ✦ BRING YOUR PEOPLE ✦</span>
-  <span>ON D' ROAD ✦ INVITE ONLY ✦ MAS ✦ FÊTE ✦ BRING YOUR PEOPLE ✦</span><span>ON D' ROAD ✦ INVITE ONLY ✦ MAS ✦ FÊTE ✦ BRING YOUR PEOPLE ✦</span>
-</div></div>
-<div class="bunting"></div>
-<div class="plumes"><span style="left:1%;background:linear-gradient(#ff2e88,#ffd400);--r:-14deg;animation-delay:-0.5s"></span><span style="left:6%;background:linear-gradient(#00b8a9,#ffd400);--r:6deg;animation-delay:-1.8s"></span><span style="left:11%;background:linear-gradient(#ff6b1a,#ff2e88);--r:-4deg;animation-delay:-3.1s"></span><span style="left:87%;background:linear-gradient(#ff2e88,#ffd400);--r:12deg;animation-delay:-0.9s"></span><span style="left:92%;background:linear-gradient(#00b8a9,#ff2e88);--r:-6deg;animation-delay:-2.4s"></span><span style="left:97%;background:linear-gradient(#ff6b1a,#ffd400);--r:14deg;animation-delay:-3.6s"></span></div>
-
-<header class="hero">
-  <div class="sun"></div>
-  <span class="eyebrow">THE INVITE-ONLY MAS EXPERIENCE</span>
-  <h1 class="wordmark"><span class="w1">On D'</span><span class="w2">Road</span></h1>
-  <p class="tag">Your invite is your way in. Get on the list, secure your package, and bring two of your people.</p>
-  <a class="cta" href="#access">GET IN</a>
-  <div class="eq" id="eq"></div>
-</header>
-
-<main class="access" id="access">
-  <!-- LOGIN VIEW -->
-  <div id="login-view" class="box">
-    <span class="label">Got an invite? Get in.</span>
-    <input type="email" id="login-email" placeholder="Your VIP email..." autocomplete="email">
-    <button class="btn" onclick="handleLogin()">LET ME IN</button>
-    <div id="login-error" style="color: #c0153d; font-weight: 700; font-size: 13px; text-align: center; margin-top: 12px;"></div>
+  <div class="card orange">
+    <span class="kicker">18+ · INVITE ONLY</span>
+    <h1>On D' Road</h1>
+    <p>Your invite is your way in. Get on the list, secure your package, and bring two of your people.</p>
   </div>
 
-  <!-- ACCEPT INVITE VIEW -->
-  <div id="accept-view" class="box hidden">
-    <span class="label">You've been invited</span>
-    <p id="accept-from" style="font-weight: 800; font-size: 18px; margin: 12px 0 6px;"></p>
-    <p id="accept-note" style="font-style: italic; font-weight: 600; color: var(--gold); margin: 0 0 6px;"></p>
-    <input type="email" id="accept-email" placeholder="Confirm your email to accept...">
-    <button class="btn" onclick="acceptInvite()">ACCEPT INVITATION</button>
-    <div id="accept-error" style="color: #c0153d; font-weight: 700; font-size: 13px; text-align: center; margin-top: 12px;"></div>
+  <div class="card dark">
+    <h2>How invites work</h2>
+    <p>Invitations aren't released to everyone at once. They circulate through the chain as guests register and invite others. Someone getting an invite before you doesn't mean you were skipped.</p>
+    <p style="margin-top:14px;">If you receive an invite, do not forward or publicly post your personal link. It's single-use and tied to your email.</p>
   </div>
 
-  <!-- PORTAL VIEW -->
-  <div id="portal-view" class="hidden">
-    <div class="box">
-      <div style="display: flex; justify-content: space-between; align-items: center;">
-        <span class="label">Your status</span>
-        <span id="rsvp-badge" class="badge pending">PENDING</span>
+  <main id="access">
+    <!-- LOGIN VIEW -->
+    <div id="login-view" class="card paper">
+      <h2>Got an invite? Get in.</h2>
+      <input type="email" id="login-email" placeholder="Your VIP email..." autocomplete="email">
+      <button class="btn" onclick="handleLogin()">LET ME IN</button>
+      <div id="login-error" style="color: var(--red); font-weight: 800; font-size: 13px; margin-top: 12px;"></div>
+    </div>
+
+    <!-- ACCEPT INVITE VIEW -->
+    <div id="accept-view" class="card paper hidden">
+      <h2>You've been invited</h2>
+      <p id="accept-from" style="font-weight: 800;"></p>
+      <p id="accept-note" style="font-style: italic;"></p>
+      <input type="email" id="accept-email" placeholder="Confirm your email to accept...">
+      <button class="btn" onclick="acceptInvite()">ACCEPT INVITATION</button>
+      <div id="accept-error" style="color: var(--red); font-weight: 800; font-size: 13px; margin-top: 12px;"></div>
+    </div>
+
+    <!-- PORTAL VIEW -->
+    <div id="portal-view" class="hidden">
+      <div class="card paper">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <h2 style="margin:0;">Your status</h2>
+          <span id="rsvp-badge" class="badge pending">PENDING</span>
+        </div>
+        <p style="font-weight: 800; margin: 12px 0 0; word-break: break-all;" id="user-email">--</p>
+        <button class="btn btn-light" id="rsvp-btn" onclick="toggleRSVP()">CONFIRM ATTENDANCE</button>
       </div>
-      <p style="font-weight: 800; margin: 12px 0 0; word-break: break-all;" id="user-email">--</p>
-      <button class="btn btn-secondary" id="rsvp-btn" onclick="toggleRSVP()">CONFIRM ATTENDANCE</button>
+
+      <div class="card purple">
+        <h2>Know your package</h2>
+        <p>Both packages include admission. What you get and what's required of you is different. Read before you pick.</p>
+        <div id="pkg-list"></div>
+        <div id="pkg-warn" class="warn hidden">You cannot wear regular clothes with makeup, dress all black and claim "unrecognizable," or wear minimal accessories and call it a costume. If you're not in proper costume or full package gear, you will be denied drinks, denied food, and not welcomed in the band — regardless of payment.</div>
+        <button class="btn" id="pkg-confirm" style="display:none;">SECURE THIS PACKAGE</button>
+        <div id="pkg-msg" style="font-weight:800; font-size:13px; margin-top:10px;"></div>
+      </div>
+
+      <div id="order-status" class="card dark hidden">
+        <h2>Your package</h2>
+        <p id="order-summary" style="font-weight:800;"></p>
+        <p id="order-ref" style="font-size:13px; opacity:.8;"></p>
+        <p style="font-size:13px; opacity:.8;">Payment isn't open yet. We'll follow up with how to pay to confirm your spot. This reservation is not yet confirmed.</p>
+        <button class="btn btn-light" onclick="cancelOrder()">CANCEL RESERVATION</button>
+      </div>
+
+      <div class="card paper">
+        <h2>Invite your people</h2>
+        <input type="email" id="invite-email" placeholder="Their email address...">
+        <textarea id="invite-note" maxlength="300" placeholder="Add a note... (e.g. 'Bro you have to come to this!')"></textarea>
+        <button class="btn" onclick="sendInvite()">SEND INVITE</button>
+        <p style="font-weight: 800; font-size: 13px; margin-top: 14px;"><span id="invites-count">0</span> INVITES LEFT</p>
+      </div>
+
+      <div class="card paper" style="text-align:center;">
+        <h2>Your entry pass</h2>
+        <div id="qrcode"></div>
+      </div>
+
+      <div class="card paper">
+        <button class="btn btn-danger" onclick="logout()">LOG OUT</button>
+      </div>
     </div>
+  </main>
 
-    <div class="box">
-      <label class="label">Your shirt size</label>
-      <select id="shirt-select">
-        <option value="Unassigned">Select size...</option>
-        <option value="S">Small</option>
-        <option value="M">Medium</option>
-        <option value="L">Large</option>
-        <option value="XL">Extra Large</option>
-      </select>
-      <button class="btn btn-secondary" onclick="saveShirt()">LOCK SIZE</button>
-    </div>
-
-    <div class="box">
-      <label class="label">Invite your people</label>
-      <input type="email" id="invite-email" placeholder="Their email address...">
-      <textarea id="invite-note" maxlength="300" placeholder="Add a note... (e.g. 'Bro you have to come to this!')"></textarea>
-      <button class="btn" onclick="sendInvite()">SEND INVITE</button>
-      <p style="font-weight: 800; text-align: center; margin: 14px 0 0;"><span id="invites-count">0</span> INVITES LEFT</p>
-    </div>
-
-    <div class="box" style="text-align: center;">
-      <span class="label">Your entry pass</span>
-      <div id="qrcode"></div>
-    </div>
-
-    <button class="btn btn-danger" onclick="logout()">LOG OUT</button>
-  </div>
-</main>
-
-<section class="steps">
-  <div class="step"><b>01</b><h3>Get invited</h3><p>Someone on the list picks you. Your invite is personal and single-use.</p></div>
-  <div class="step"><b>02</b><h3>Secure your package</h3><p>Choose your package and lock in your size.</p></div>
-  <div class="step"><b>03</b><h3>Pass it on</h3><p>Accept and you get two invites of your own for your people.</p></div>
-</section>
-
-<div class="ticker rev"><div class="ticker-track"><span>SECURE YOUR PACKAGE ✦ PASS IT ON ✦ ON D' ROAD ✦ MAS ✦ FÊTE ✦</span><span>SECURE YOUR PACKAGE ✦ PASS IT ON ✦ ON D' ROAD ✦ MAS ✦ FÊTE ✦</span><span>SECURE YOUR PACKAGE ✦ PASS IT ON ✦ ON D' ROAD ✦ MAS ✦ FÊTE ✦</span><span>SECURE YOUR PACKAGE ✦ PASS IT ON ✦ ON D' ROAD ✦ MAS ✦ FÊTE ✦</span></div></div>
-
-<footer>ON D' ROAD<small>Invite only. Bring your people.</small></footer>
+  <footer>ON D' ROAD<small>18+ only. Invite only. Please play responsibly.</small></footer>
+</div>
 
 <script>
   const BACKEND_URL = 'https://control-1-0baa.onrender.com';
@@ -244,6 +193,7 @@
   }
 
   async function loadUserData() {
+    await Promise.all([loadPackages(), loadOrder()]);
     if (!currentUser || !token) return logout();
     document.getElementById('user-email').innerText = currentUser;
     
@@ -400,7 +350,7 @@
   document.querySelectorAll('.step').forEach((el) => io.observe(el));
   addEventListener('pointerdown', (e) => {
     if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    const colors = ['#ff2e88', '#ffd400', '#00b8a9', '#ff6b1a'];
+    const colors = ['#e9b44c', '#ffd98a', '#ff2a6d', '#ffffff'];
     for (let i = 0; i < 16; i++) {
       const b = document.createElement('div'); b.className = 'bit';
       b.style.left = e.clientX + 'px'; b.style.top = e.clientY + 'px'; b.style.background = colors[i % 4];
@@ -409,6 +359,95 @@
       document.body.appendChild(b); setTimeout(() => b.remove(), 900);
     }
   });
+
+  // ---- packages / orders ----
+  let packages = [], chosenPkg = null, myOrder = null;
+
+  function money(cents, cur) { return (cur || 'XCD') + ' ' + (cents / 100).toFixed(2); }
+
+  function renderPackages() {
+    const list = document.getElementById('pkg-list');
+    list.innerHTML = '';
+    packages.forEach((p) => {
+      const div = document.createElement('div');
+      div.className = 'pkg' + (chosenPkg === p.id ? ' chosen' : '');
+      const h3 = document.createElement('h3'); h3.textContent = p.name; div.appendChild(h3);
+      const price = document.createElement('div'); price.className = 'price'; price.textContent = money(p.price_cents, p.currency); div.appendChild(price);
+      if (p.includes) {
+        const ul = document.createElement('ul');
+        p.includes.split('\n').map((s) => s.trim()).filter(Boolean).forEach((line) => {
+          const li = document.createElement('li'); li.textContent = line; ul.appendChild(li);
+        });
+        div.appendChild(ul);
+      }
+      const spots = document.createElement('div'); spots.className = 'spots';
+      spots.textContent = p.spots_left === undefined ? '' : (p.spots_left <= 0 ? 'SOLD OUT' : p.spots_left + ' SPOTS LEFT');
+      div.appendChild(spots);
+      if (p.spots_left > 0 || p.spots_left === undefined) {
+        div.addEventListener('click', () => { chosenPkg = p.id; renderPackages(); updatePkgControls(); });
+      } else {
+        div.style.opacity = '.5'; div.style.cursor = 'default';
+      }
+      list.appendChild(div);
+    });
+  }
+
+  function updatePkgControls() {
+    const warn = document.getElementById('pkg-warn');
+    const confirmBtn = document.getElementById('pkg-confirm');
+    const p = packages.find((x) => x.id === chosenPkg);
+    warn.classList.toggle('hidden', !p || !p.requires_compliance);
+    confirmBtn.style.display = p ? 'block' : 'none';
+  }
+
+  document.getElementById('pkg-confirm').addEventListener('click', async () => {
+    const msg = document.getElementById('pkg-msg');
+    msg.textContent = '';
+    if (!chosenPkg) return;
+    try {
+      const res = await authFetch('/api/orders', { package_id: chosenPkg });
+      const data = await res.json();
+      if (!res.ok) { msg.style.color = 'var(--red)'; msg.textContent = data.error; return; }
+      await loadOrder();
+      msg.textContent = '';
+    } catch (err) { if (err.message !== 'SESSION_EXPIRED') { msg.style.color = 'var(--red)'; msg.textContent = 'Network error. Try again.'; } }
+  });
+
+  async function loadPackages() {
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/packages`);
+      packages = await res.json();
+      renderPackages(); updatePkgControls();
+    } catch (err) { console.error(err); }
+  }
+
+  async function loadOrder() {
+    try {
+      const res = await authFetch('/api/my-order');
+      myOrder = await res.json();
+      const statusBox = document.getElementById('order-status');
+      const pkgBox = document.querySelector('.card.purple');
+      if (myOrder) {
+        statusBox.classList.remove('hidden');
+        pkgBox.style.display = 'none';
+        document.getElementById('order-summary').textContent = myOrder.package_name + ' — ' + money(myOrder.price_cents, myOrder.currency);
+        document.getElementById('order-ref').textContent = 'Reference: ' + myOrder.reference_code + ' — ' + myOrder.status;
+      } else {
+        statusBox.classList.add('hidden');
+        pkgBox.style.display = '';
+      }
+    } catch (err) { if (err.message !== 'SESSION_EXPIRED') console.error(err); }
+  }
+
+  async function cancelOrder() {
+    if (!confirm('Cancel your reservation?')) return;
+    try {
+      const res = await authFetch('/api/orders/cancel', {});
+      if (!res.ok) { const d = await res.json(); return alert(d.error); }
+      chosenPkg = null;
+      await loadOrder(); await loadPackages();
+    } catch (err) { if (err.message !== 'SESSION_EXPIRED') alert('Network error. Try again.'); }
+  }
 </script>
 </body>
 </html>
