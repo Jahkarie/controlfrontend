@@ -3,148 +3,545 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0b0a09">
   <title>On D' Road</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Archivo:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
   <style>
-    :root { --ink:#0d0d0d; --paper:#f4f1ea; --orange:#ff6a1f; --green:#7fd63c; --purple:#6b3fd6; --red:#e8322a; }
+    :root {
+      --bg: #0b0a09;
+      --surface: #141210;
+      --surface-2: #1b1815;
+      --line: rgba(243, 236, 226, .10);
+      --line-strong: rgba(243, 236, 226, .22);
+      --text: #f3ece2;
+      --muted: #9b9389;
+      --dim: #6c665e;
+      --accent: #ff5b1f;
+      --accent-ink: #120703;
+      --green: #4fc3a1;
+      --amber: #f0b43c;
+      --red: #ff6a5c;
+      --radius: 14px;
+      --display: 'Anton', 'Impact', sans-serif;
+      --body: 'Inter', system-ui, -apple-system, sans-serif;
+      --mono: 'JetBrains Mono', ui-monospace, monospace;
+    }
     * { box-sizing: border-box; }
-    body { margin: 0; font-family: 'Archivo', sans-serif; color: var(--ink); background: var(--paper); }
-    .wrap { max-width: 560px; margin: 0 auto; }
-    .nav { display: flex; justify-content: space-between; align-items: center; padding: 20px 22px; border-bottom: 3px solid var(--ink); }
-    .logo { font-family: 'Archivo Black', sans-serif; font-size: 18px; letter-spacing: 1px; }
-    .navbtn { background: var(--ink); color: var(--paper); text-decoration: none; font-weight: 800; font-size: 12px; letter-spacing: 1px; padding: 10px 18px; border-radius: 999px; }
-    .card { border: 3px solid var(--ink); padding: 26px 22px; margin: 18px; border-radius: 4px; }
-    .card.orange { background: var(--orange); color: var(--ink); }
-    .card.green { background: var(--green); color: var(--ink); }
-    .card.purple { background: var(--purple); color: #fff; }
-    .card.dark { background: var(--ink); color: var(--paper); }
-    .card.paper { background: var(--paper); }
-    .kicker { display: inline-block; font-family: 'Archivo Black', sans-serif; font-size: 11px; letter-spacing: 2px; border: 2px solid currentColor; padding: 5px 12px; border-radius: 999px; margin-bottom: 14px; }
-    .card h1, .card h2 { font-family: 'Archivo Black', sans-serif; text-transform: uppercase; line-height: 1.04; margin: 0 0 14px; }
-    .card h1 { font-size: clamp(38px, 11vw, 58px); } .card h2 { font-size: 22px; }
-    .card p { margin: 0 0 10px; font-size: 16px; line-height: 1.55; font-weight: 500; }
-    .card ul { margin: 10px 0 0; padding-left: 20px; } .card li { margin-bottom: 6px; font-weight: 600; }
-    input, select, textarea { width: 100%; padding: 14px 15px; font-size: 15px; font-family: 'Archivo', sans-serif; color: var(--ink); background: #fff;
-      border: 3px solid var(--ink); border-radius: 4px; margin-top: 10px; }
-    textarea { resize: vertical; min-height: 80px; } select option { background: #fff; }
-    .btn { width: 100%; background: var(--ink); color: var(--paper); border: 3px solid var(--ink); border-radius: 999px; padding: 15px; margin-top: 12px;
-      cursor: pointer; font-family: 'Archivo Black', sans-serif; font-size: 13px; letter-spacing: 2px; text-transform: uppercase; }
-    .btn:hover { background: #fff; color: var(--ink); }
-    .btn-light { background: transparent; color: inherit; border-color: currentColor; }
-    .btn-light:hover { background: rgba(0,0,0,.08); color: inherit; }
-    .btn-danger { background: transparent; color: var(--red); border-color: var(--red); font-size: 11px; }
-    .pkg { border: 3px solid var(--ink); border-radius: 4px; padding: 18px; margin-top: 14px; background: #fff; color: var(--ink); cursor: pointer; transition: transform .12s; }
-    .pkg:hover { transform: translate(-2px,-2px); }
-    .pkg.chosen { background: var(--green); }
-    .pkg h3 { font-family: 'Archivo Black', sans-serif; text-transform: uppercase; font-size: 18px; margin: 0 0 6px; }
-    .pkg .price { font-family: 'Archivo Black', sans-serif; font-size: 22px; }
-    .pkg ul { margin: 10px 0 0; padding-left: 18px; font-size: 14px; }
-    .pkg .spots { font-size: 12px; font-weight: 800; letter-spacing: 1px; margin-top: 8px; }
-    .warn { border: 3px solid var(--red); background: #fff2f1; color: var(--red); font-weight: 800; font-size: 13px; padding: 14px 16px; border-radius: 4px; margin-top: 14px; }
-    .deadline { border: 3px solid var(--orange); color: var(--orange); font-weight: 800; font-size: 14px; padding: 12px 14px; border-radius: 4px; margin: 12px 0; line-height: 1.4; }
-    .deadline.late { border-color: var(--red); color: #ff7a73; }
-    .instr { background: var(--paper); color: var(--ink); border: 3px solid var(--paper); border-radius: 4px; padding: 14px 16px; margin: 12px 0; font-weight: 600; font-size: 14px; line-height: 1.5; }
-    .instr b { display: block; font-family: 'Archivo Black', sans-serif; font-size: 11px; letter-spacing: 2px; margin-bottom: 6px; }
-    .instr span { white-space: pre-line; }
-    .badge { padding: 6px 13px; border-radius: 999px; font-size: 11px; font-weight: 800; letter-spacing: 1px; border: 2px solid var(--ink); }
-    .confirmed { background: var(--green); } .pending { background: #ffe07a; }
-    #qrcode { display: flex; justify-content: center; margin: 14px auto 0; padding: 12px; background: #fff; border: 3px solid var(--ink); border-radius: 4px; width: fit-content; }
+    html { -webkit-text-size-adjust: 100%; }
+    body {
+      margin: 0; background: var(--bg); color: var(--text);
+      font-family: var(--body); font-size: 16px; line-height: 1.55;
+      -webkit-font-smoothing: antialiased; overflow-x: hidden;
+    }
+    /* Film grain over everything, very faint */
+    body::before {
+      content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 100; opacity: .06;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    }
+    ::selection { background: var(--accent); color: var(--accent-ink); }
+    a { color: inherit; }
     .hidden { display: none !important; }
-    footer { border-top: 3px solid var(--ink); text-align: center; padding: 30px 20px; font-family: 'Archivo Black', sans-serif; letter-spacing: 1px; }
-    footer small { display: block; margin-top: 8px; font-family: 'Archivo', sans-serif; font-weight: 600; font-size: 12px; }
+
+    /* ---------- Nav ---------- */
+    .nav {
+      position: sticky; top: 0; z-index: 50;
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 16px clamp(16px, 4vw, 40px);
+      background: rgba(11, 10, 9, .72); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--line);
+    }
+    .logo { font-family: var(--display); font-size: 20px; letter-spacing: .04em; text-decoration: none; }
+    .logo span { color: var(--accent); }
+    .navbtn {
+      font-size: 12px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; text-decoration: none;
+      padding: 10px 16px; border: 1px solid var(--line-strong); border-radius: 999px; transition: border-color .2s, background .2s;
+    }
+    .navbtn:hover { border-color: var(--text); background: rgba(243,236,226,.05); }
+
+    /* ---------- Hero ---------- */
+    .hero {
+      position: relative; isolation: isolate; overflow: hidden;
+      min-height: min(92vh, 880px); display: flex; flex-direction: column; justify-content: flex-end;
+      padding: 120px clamp(16px, 4vw, 40px) clamp(32px, 5vw, 56px);
+      border-bottom: 1px solid var(--line);
+    }
+    .hero::before {
+      content: ''; position: absolute; z-index: -1; width: 120vmax; height: 120vmax; left: 50%; top: 10%;
+      transform: translateX(-50%);
+      background: radial-gradient(closest-side, rgba(255, 91, 31, .28), rgba(255, 91, 31, .06) 45%, transparent 70%);
+      animation: breathe 9s ease-in-out infinite;
+    }
+    .hero::after {
+      content: ''; position: absolute; z-index: -1; inset: 0;
+      background: repeating-linear-gradient(90deg, transparent 0 calc(25% - 1px), var(--line) calc(25% - 1px) 25%);
+      mask-image: linear-gradient(to bottom, transparent, #000 30%, #000 70%, transparent);
+      -webkit-mask-image: linear-gradient(to bottom, transparent, #000 30%, #000 70%, transparent);
+    }
+    @keyframes breathe { 50% { transform: translateX(-50%) scale(1.08); opacity: .8; } }
+    .meta-row {
+      display: flex; flex-wrap: wrap; gap: 8px 22px; margin-bottom: 22px;
+      font-family: var(--mono); font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted);
+    }
+    .meta-row b { color: var(--accent); font-weight: 500; }
+    .hero h1 {
+      font-family: var(--display); font-weight: 400; text-transform: uppercase;
+      font-size: clamp(92px, 27vw, 300px); line-height: .84; letter-spacing: -.01em; margin: 0;
+    }
+    .hero h1 .apos { color: var(--accent); }
+    .hero-foot {
+      display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 24px;
+      margin-top: clamp(24px, 4vw, 40px); padding-top: 22px; border-top: 1px solid var(--line);
+    }
+    .hero-foot p { max-width: 440px; margin: 0; color: var(--muted); font-size: 17px; }
+    .hero-foot p strong { color: var(--text); font-weight: 600; }
+
+    @media (max-width: 640px) { .hero { min-height: 76svh; padding-top: 96px; } }
+    /* Signed-in guests get a compact header so their account is right there. */
+    body.authed .hero { min-height: 0; padding-top: 40px; padding-bottom: 30px; }
+    body.authed .hero h1 { font-size: clamp(54px, 12.5vw, 120px); }
+    body.authed .hero h1 br { display: none; }
+    body.authed .meta-row { margin-bottom: 14px; }
+    body.authed #access { padding-top: clamp(32px, 5vw, 56px); }
+    body.authed .hero-foot, body.authed .how { display: none; }
+
+    /* ---------- Marquee ---------- */
+    .marquee { overflow: hidden; border-bottom: 1px solid var(--line); padding: 16px 0; white-space: nowrap; }
+    .marquee .track { display: inline-flex; gap: 28px; align-items: center; animation: slide 46s linear infinite; padding-right: 28px; }
+    .marquee span { font-family: var(--display); font-size: 26px; text-transform: uppercase; letter-spacing: .03em; color: var(--muted); }
+    .marquee i { font-style: normal; color: var(--accent); font-size: 14px; }
+    @keyframes slide { to { transform: translateX(-50%); } }
+
+    /* ---------- Layout ---------- */
+    .section { padding: clamp(48px, 8vw, 96px) clamp(16px, 4vw, 40px); border-bottom: 1px solid var(--line); }
+    .inner { max-width: 1080px; margin: 0 auto; }
+    .eyebrow {
+      display: flex; align-items: center; gap: 12px; margin: 0 0 18px;
+      font-family: var(--mono); font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted);
+    }
+    .eyebrow::before { content: ''; width: 22px; height: 1px; background: var(--accent); }
+    h2 {
+      font-family: var(--display); font-weight: 400; text-transform: uppercase; letter-spacing: .005em;
+      font-size: clamp(34px, 6vw, 56px); line-height: .95; margin: 0 0 18px;
+    }
+    h3 { font-family: var(--display); font-weight: 400; text-transform: uppercase; letter-spacing: .02em; font-size: 26px; line-height: 1; margin: 0; }
+    p { margin: 0 0 12px; }
+    .lead { color: var(--muted); font-size: 17px; max-width: 560px; }
+
+    .rules { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; margin-top: 34px; }
+    .rule { background: var(--bg); padding: 26px 24px; }
+    .rule .n { font-family: var(--mono); font-size: 12px; color: var(--accent); letter-spacing: .1em; }
+    .rule h4 { font-size: 17px; font-weight: 600; margin: 14px 0 8px; }
+    .rule p { color: var(--muted); font-size: 15px; margin: 0; }
+
+    /* ---------- Panels / forms ---------- */
+    .panel {
+      background: linear-gradient(180deg, var(--surface-2), var(--surface));
+      border: 1px solid var(--line); border-radius: var(--radius);
+      padding: clamp(22px, 4vw, 34px); position: relative;
+    }
+    .access { max-width: 560px; }
+    @media (min-width: 900px) {
+      .access { max-width: none; display: grid; grid-template-columns: 1fr minmax(0, 480px); gap: 64px; align-items: center; }
+      .access .panel { margin-top: 0 !important; }
+    }
+    .field { display: block; margin-top: 18px; }
+    .field > span { display: block; font-size: 12px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+    input, select, textarea {
+      width: 100%; padding: 15px 16px; font: 500 16px var(--body); color: var(--text);
+      background: rgba(0,0,0,.35); border: 1px solid var(--line-strong); border-radius: 10px;
+      transition: border-color .2s, box-shadow .2s; -webkit-appearance: none; appearance: none;
+    }
+    input::placeholder, textarea::placeholder { color: var(--dim); }
+    input:focus, select:focus, textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 4px rgba(255, 91, 31, .15); }
+    textarea { resize: vertical; min-height: 96px; }
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+      width: 100%; margin-top: 16px; padding: 17px 22px; cursor: pointer;
+      font: 600 13px var(--body); letter-spacing: .16em; text-transform: uppercase;
+      color: var(--accent-ink); background: var(--accent); border: 1px solid var(--accent); border-radius: 10px;
+      transition: transform .15s, box-shadow .2s, background .2s;
+    }
+    .btn:hover { box-shadow: 0 10px 30px -10px rgba(255, 91, 31, .7); transform: translateY(-1px); }
+    .btn:active { transform: translateY(0); }
+    .btn::after { content: '→'; font-size: 16px; letter-spacing: 0; transition: transform .2s; }
+    .btn:hover::after { transform: translateX(3px); }
+    .btn-light { background: transparent; color: var(--text); border-color: var(--line-strong); }
+    .btn-light::after { content: none; }
+    .btn-light:hover { border-color: var(--text); box-shadow: none; background: rgba(243,236,226,.04); }
+    .btn-danger { background: transparent; color: var(--muted); border-color: transparent; font-size: 12px; margin-top: 0; }
+    .btn-danger::after { content: none; }
+    .btn-danger:hover { color: var(--red); box-shadow: none; }
+    .msg { font-size: 14px; font-weight: 500; margin-top: 14px; min-height: 1px; }
+    .msg:empty { display: none; }
+
+    /* ---------- Portal ---------- */
+    .portal-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 20px; margin-bottom: 30px; }
+    .portal-head h2 { margin: 0; }
+    .who { font-family: var(--mono); font-size: 13px; color: var(--muted); word-break: break-all; margin-top: 10px; }
+    .grid { display: grid; gap: 18px; grid-template-columns: 1fr; }
+    @media (min-width: 900px) {
+      .grid { grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); align-items: start; }
+      .grid .col { display: grid; gap: 18px; }
+      .sticky { position: sticky; top: 90px; }
+    }
+    .col { display: grid; gap: 18px; }
+    /* Phones: one column, with the entry pass high up (it's what gets shown at the door). */
+    @media (max-width: 899px) {
+      .col { display: contents; }
+      #pkg-card, #order-status { order: 1; } .ticket { order: 2; } .rsvp { order: 3; } .invite { order: 4; }
+    }
+    .panel-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 6px; }
+    .badge {
+      display: inline-flex; align-items: center; gap: 8px; white-space: nowrap;
+      padding: 7px 12px; border-radius: 999px; border: 1px solid var(--line-strong);
+      font-size: 11px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase;
+    }
+    .badge::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+    .badge.confirmed { color: var(--green); border-color: rgba(79, 195, 161, .35); }
+    .badge.pending { color: var(--amber); border-color: rgba(240, 180, 60, .35); }
+
+    .pkg {
+      position: relative; margin-top: 14px; padding: 22px; cursor: pointer;
+      background: rgba(0,0,0,.28); border: 1px solid var(--line-strong); border-radius: 12px;
+      transition: border-color .2s, background .2s, transform .2s;
+    }
+    .pkg:hover { border-color: rgba(243,236,226,.4); transform: translateY(-2px); }
+    .pkg.chosen { border-color: var(--accent); background: rgba(255, 91, 31, .07); box-shadow: inset 0 0 0 1px var(--accent); }
+    .pkg.chosen::after {
+      content: '✓'; position: absolute; top: 18px; right: 18px; width: 26px; height: 26px; border-radius: 50%;
+      display: grid; place-items: center; font-size: 14px; font-weight: 700; background: var(--accent); color: var(--accent-ink);
+    }
+    .pkg h3 { padding-right: 36px; }
+    .pkg .price { font-family: var(--display); font-size: 34px; line-height: 1; margin-top: 10px; }
+    .pkg ul { list-style: none; margin: 16px 0 0; padding: 16px 0 0; border-top: 1px solid var(--line); font-size: 15px; color: var(--muted); }
+    .pkg li { position: relative; padding-left: 20px; margin-bottom: 8px; }
+    .pkg li::before { content: ''; position: absolute; left: 2px; top: .62em; width: 8px; height: 1px; background: var(--accent); }
+    .pkg .spots { font-family: var(--mono); font-size: 12px; letter-spacing: .1em; color: var(--amber); margin-top: 12px; }
+    .warn {
+      margin-top: 16px; padding: 16px 18px; border-radius: 10px; font-size: 14px; line-height: 1.5;
+      background: rgba(255, 106, 92, .07); border: 1px solid rgba(255, 106, 92, .35); color: #ffc2bb;
+    }
+    .warn::before { content: 'Costume rule'; display: block; font-size: 11px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--red); margin-bottom: 6px; }
+
+    .order-summary { font-family: var(--display); font-size: 30px; line-height: 1.05; text-transform: uppercase; margin: 12px 0 6px; }
+    .ref { font-family: var(--mono); font-size: 13px; color: var(--muted); }
+    .deadline {
+      margin: 16px 0 0; padding: 14px 16px; border-radius: 10px; font-size: 14px; font-weight: 600;
+      color: var(--amber); background: rgba(240, 180, 60, .07); border: 1px solid rgba(240, 180, 60, .3);
+    }
+    .deadline.late { color: var(--red); background: rgba(255, 106, 92, .07); border-color: rgba(255, 106, 92, .35); }
+    .instr { margin: 16px 0 0; padding: 16px 18px; border-radius: 10px; background: rgba(243,236,226,.04); border: 1px solid var(--line); font-size: 15px; }
+    .instr b { display: block; font-size: 11px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--accent); margin-bottom: 8px; }
+    .instr span { white-space: pre-line; }
+    .note { color: var(--muted); font-size: 14px; margin: 16px 0 0; }
+
+    /* Entry pass styled as a ticket */
+    .ticket { padding: 0; overflow: hidden; }
+    .ticket-top { padding: 26px 26px 22px; background: radial-gradient(120% 140% at 100% 0%, rgba(255, 91, 31, .22), transparent 60%); }
+    .ticket-top .t-label { font-family: var(--mono); font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
+    .ticket-top h3 { font-size: 34px; margin-top: 8px; }
+    .tear { position: relative; height: 0; border-top: 1px dashed var(--line-strong); margin: 0 18px; }
+    .tear::before, .tear::after { content: ''; position: absolute; top: -12px; width: 24px; height: 24px; border-radius: 50%; background: var(--bg); border: 1px solid var(--line); }
+    .tear::before { left: -31px; } .tear::after { right: -31px; }
+    .ticket-body { padding: 26px; text-align: center; }
+    #qrcode { display: inline-flex; padding: 14px; background: #fff; border-radius: 12px; box-shadow: 0 20px 50px -20px rgba(255, 91, 31, .45); }
+    #qrcode img, #qrcode canvas { display: block; }
+    #pass-note { color: var(--muted); font-size: 14px; margin: 16px auto 0; max-width: 300px; }
+    .pass-meta { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; margin: 22px 0 0; background: var(--line); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; text-align: left; }
+    .pass-meta div { background: var(--surface); padding: 12px 14px; min-width: 0; }
+    .pass-meta div.wide { grid-column: 1 / -1; }
+    .pass-meta dt { font-size: 10px; font-weight: 600; letter-spacing: .16em; text-transform: uppercase; color: var(--dim); }
+    .pass-meta dd { margin: 4px 0 0; font-family: var(--mono); font-size: 13px; color: var(--text); overflow-wrap: anywhere; }
+    .pass-locked { width: 100%; aspect-ratio: 1; max-width: 168px; margin: 0 auto; border: 1px dashed var(--line-strong); border-radius: 12px; display: grid; place-items: center; color: var(--dim); }
+    .pass-locked svg { width: 34px; height: 34px; }
+
+    .count { display: flex; align-items: baseline; gap: 10px; margin-top: 18px; color: var(--muted); font-size: 13px; letter-spacing: .1em; text-transform: uppercase; }
+    .count b { font-family: var(--display); font-weight: 400; font-size: 40px; color: var(--text); letter-spacing: 0; line-height: 1; }
+
+    /* ---------- Invite accept ---------- */
+    .from { font-size: 20px; font-weight: 600; margin: 4px 0 10px; }
+    .quote { border-left: 2px solid var(--accent); padding: 4px 0 4px 16px; color: var(--muted); font-style: italic; margin: 14px 0 6px; }
+    .quote:empty { display: none; }
+
+    /* ---------- Footer ---------- */
+    footer { padding: 56px clamp(16px, 4vw, 40px) 40px; }
+    footer .inner { display: flex; flex-wrap: wrap; gap: 18px; justify-content: space-between; align-items: flex-end; }
+    footer .big { font-family: var(--display); font-size: clamp(44px, 9vw, 96px); line-height: .9; text-transform: uppercase; color: var(--surface-2); -webkit-text-stroke: 1px var(--line-strong); }
+    footer small { color: var(--dim); font-size: 13px; }
+
+    /* ---------- Dialog ---------- */
+    dialog { width: min(440px, calc(100vw - 32px)); padding: 0; border: 1px solid var(--line-strong); border-radius: 18px; background: var(--surface-2); color: var(--text); box-shadow: 0 30px 80px -20px rgba(0, 0, 0, .85); }
+    dialog::backdrop { background: rgba(5, 4, 3, .72); backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px); }
+    dialog form { padding: 26px; }
+    dialog h3 { font-size: 30px; }
+    dialog p { color: var(--muted); font-size: 15px; margin: 12px 0 0; }
+    .dlg-fields .field { margin-top: 18px; }
+    .dlg-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 22px; }
+    .dlg-actions .btn { margin-top: 0; padding: 15px 10px; letter-spacing: .08em; }
+    .dlg-actions .btn::after { content: none; }
+    .btn.danger-solid { background: var(--red); border-color: var(--red); color: #1a0402; }
+    .btn.danger-solid:hover { box-shadow: 0 10px 30px -10px rgba(255, 106, 92, .6); }
+
+    /* ---------- Toast ---------- */
+    .toast {
+      position: fixed; left: 50%; bottom: 24px; z-index: 200; transform: translate(-50%, 20px);
+      max-width: calc(100vw - 32px); width: max-content; padding: 14px 18px; border-radius: 12px;
+      background: var(--text); color: var(--bg); font-size: 14px; font-weight: 600;
+      box-shadow: 0 20px 50px -10px rgba(0,0,0,.6); opacity: 0; pointer-events: none; transition: opacity .25s, transform .25s;
+    }
+    .toast.show { opacity: 1; transform: translate(-50%, 0); }
+    .toast.bad { background: var(--red); color: #1a0402; }
+
+    :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+    .pkg:focus-visible { outline-offset: 2px; }
+
+    /* ---------- Motion ---------- */
+    .reveal { opacity: 0; transform: translateY(18px); transition: opacity .8s cubic-bezier(.2,.7,.2,1), transform .8s cubic-bezier(.2,.7,.2,1); }
+    .reveal.in { opacity: 1; transform: none; }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation: none !important; transition: none !important; }
+      .reveal { opacity: 1; transform: none; }
+    }
   </style>
 </head>
 <body>
-<div class="wrap">
-  <nav class="nav"><span class="logo">ON D' ROAD</span><a class="navbtn" href="#access">GET IN</a></nav>
+  <nav class="nav">
+    <a class="logo" href="#">ON D<span>'</span> ROAD</a>
+    <a class="navbtn" id="nav-cta" href="#access">Get in</a>
+  </nav>
 
-  <div class="card orange">
-    <span class="kicker">18+ · INVITE ONLY</span>
-    <h1>On D' Road</h1>
-    <p>Your invite is your way in. Get on the list, secure your package, and bring two of your people.</p>
-  </div>
-
-  <div class="card dark">
-    <h2>How invites work</h2>
-    <p>Invitations aren't released to everyone at once. They circulate through the chain as guests register and invite others. Someone getting an invite before you doesn't mean you were skipped.</p>
-    <p style="margin-top:14px;">If you receive an invite, do not forward or publicly post your personal link. It's single-use and tied to your email.</p>
-  </div>
-
-  <main id="access">
-    <!-- LOGIN VIEW -->
-    <div id="login-view" class="card paper">
-      <h2>Got an invite? Get in.</h2>
-      <input type="email" id="login-email" placeholder="Your VIP email..." autocomplete="email">
-      <button class="btn" onclick="handleLogin()">SEND LOGIN LINK</button>
-      <div id="login-error" style="color: var(--red); font-weight: 800; font-size: 13px; margin-top: 12px;"></div>
+  <header class="hero">
+    <div class="inner" style="width:100%;">
+      <div class="meta-row reveal"><span><b>●</b> Antigua Carnival</span><span>18+</span><span>Invite only</span></div>
+      <h1 class="reveal">On D<span class="apos">'</span><br> Road</h1>
+      <div class="hero-foot reveal">
+        <p><strong>Your invite is your way in.</strong> Get on the list, secure your package, and bring two of your people.</p>
+        <a class="navbtn" href="#access">I have an invite ↓</a>
+      </div>
     </div>
+  </header>
 
-    <!-- ACCEPT INVITE VIEW -->
-    <div id="accept-view" class="card paper hidden">
-      <h2>You've been invited</h2>
-      <p id="accept-from" style="font-weight: 800;"></p>
-      <p id="accept-note" style="font-style: italic;"></p>
-      <input type="email" id="accept-email" placeholder="Confirm your email to accept...">
-      <button class="btn" onclick="acceptInvite()">ACCEPT INVITATION</button>
-      <div id="accept-error" style="color: var(--red); font-weight: 800; font-size: 13px; margin-top: 12px;"></div>
+  <div class="marquee" aria-hidden="true"><div class="track">
+    <span>Invite only</span><i>✦</i><span>18+</span><i>✦</i><span>Antigua Carnival</span><i>✦</i><span>On D' Road</span><i>✦</i><span>Bring two</span><i>✦</i>
+    <span>Invite only</span><i>✦</i><span>18+</span><i>✦</i><span>Antigua Carnival</span><i>✦</i><span>On D' Road</span><i>✦</i><span>Bring two</span><i>✦</i>
+  </div></div>
+
+  <section class="section how">
+    <div class="inner">
+      <p class="eyebrow reveal">How it works</p>
+      <h2 class="reveal">The chain decides<br>who gets in.</h2>
+      <div class="rules reveal">
+        <div class="rule"><span class="n">01</span><h4>Invites move through people</h4><p>They aren't released to everyone at once. Someone getting one before you doesn't mean you were skipped.</p></div>
+        <div class="rule"><span class="n">02</span><h4>Your link is yours</h4><p>Single-use and tied to your email. Don't forward it or post it anywhere.</p></div>
+        <div class="rule"><span class="n">03</span><h4>You get two</h4><p>Once you're in, you can bring two of your people with their own personal invites.</p></div>
+      </div>
     </div>
+  </section>
 
-    <!-- PORTAL VIEW -->
-    <div id="portal-view" class="hidden">
-      <div class="card paper">
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-          <h2 style="margin:0;">Your status</h2>
-          <span id="rsvp-badge" class="badge pending">PENDING</span>
+  <main id="access" class="section">
+    <div class="inner">
+      <!-- LOGIN VIEW -->
+      <div id="login-view" class="access reveal">
+        <div>
+          <p class="eyebrow">Members</p>
+          <h2>Got an invite?<br>Get in.</h2>
+          <p class="lead">Enter the email your invite was sent to. We'll email you a one-time login link.</p>
         </div>
-        <p style="font-weight: 800; margin: 12px 0 0; word-break: break-all;" id="user-email">--</p>
-        <button class="btn btn-light" id="rsvp-btn" onclick="toggleRSVP()">CONFIRM ATTENDANCE</button>
+        <div class="panel" style="margin-top:26px;">
+          <label class="field" style="margin-top:0;"><span>Email</span>
+            <input type="email" id="login-email" placeholder="you@example.com" autocomplete="email" onkeydown="if(event.key==='Enter')handleLogin()">
+          </label>
+          <button class="btn" onclick="handleLogin()">Send login link</button>
+          <div id="login-error" class="msg" style="color: var(--red);"></div>
+        </div>
       </div>
 
-      <div class="card purple">
-        <h2>Know your package</h2>
-        <p>Both packages include admission. What you get and what's required of you is different. Read before you pick.</p>
-        <div id="pkg-list"></div>
-        <div id="pkg-warn" class="warn hidden">You cannot wear regular clothes with makeup, dress all black and claim "unrecognizable," or wear minimal accessories and call it a costume. If you're not in proper costume or full package gear, you will be denied drinks, denied food, and not welcomed in the band — regardless of payment.</div>
-        <button class="btn" id="pkg-confirm" style="display:none;">SECURE THIS PACKAGE</button>
-        <div id="pkg-msg" style="font-weight:800; font-size:13px; margin-top:10px;"></div>
+      <!-- ACCEPT INVITE VIEW -->
+      <div id="accept-view" class="access hidden">
+        <div>
+          <p class="eyebrow">You're on the list</p>
+          <h2>You've been<br>invited.</h2>
+          <p class="lead">Accept with the email this invite was sent to. It only works once.</p>
+        </div>
+        <div class="panel" style="margin-top:26px;">
+          <p id="accept-from" class="from"></p>
+          <p id="accept-note" class="quote"></p>
+          <label class="field"><span>Confirm your email</span>
+            <input type="email" id="accept-email" placeholder="The email this invite was sent to" autocomplete="email">
+          </label>
+          <button class="btn" onclick="acceptInvite()">Accept invitation</button>
+          <div id="accept-error" class="msg" style="color: var(--red);"></div>
+        </div>
       </div>
 
-      <div id="order-status" class="card dark hidden">
-        <h2>Your package</h2>
-        <p id="order-summary" style="font-weight:800;"></p>
-        <p id="order-ref" style="font-size:13px; opacity:.8;"></p>
-        <div id="order-deadline" class="deadline hidden"></div>
-        <div id="order-instr" class="instr hidden"><b>HOW TO PAY</b><span id="order-instr-text"></span></div>
-        <p id="order-note" style="font-size:13px; opacity:.8;"></p>
-        <button class="btn btn-light" id="order-cancel" onclick="cancelOrder()">CANCEL RESERVATION</button>
-      </div>
+      <!-- PORTAL VIEW -->
+      <div id="portal-view" class="hidden">
+        <div class="portal-head">
+          <div>
+            <p class="eyebrow">Your account</p>
+            <h2>You're in.</h2>
+            <p class="who" id="user-email">--</p>
+          </div>
+          <button class="btn btn-danger" style="width:auto;" onclick="logout()">Log out</button>
+        </div>
 
-      <div class="card paper">
-        <h2>Invite your people</h2>
-        <input type="email" id="invite-email" placeholder="Their email address...">
-        <textarea id="invite-note" maxlength="300" placeholder="Add a note... (e.g. 'Bro you have to come to this!')"></textarea>
-        <button class="btn" onclick="sendInvite()">SEND INVITE</button>
-        <p style="font-weight: 800; font-size: 13px; margin-top: 14px;"><span id="invites-count">0</span> INVITES LEFT</p>
-      </div>
+        <div class="grid">
+          <div class="col">
+            <div class="panel" id="pkg-card">
+              <p class="eyebrow" style="margin-bottom:12px;">Packages</p>
+              <h3 style="font-size:32px;">Know your package</h3>
+              <p class="lead" style="font-size:15px; margin-top:10px;">Both packages include admission. What you get and what's required of you is different. Read before you pick.</p>
+              <div id="pkg-list"></div>
+              <div id="pkg-warn" class="warn hidden">You cannot wear regular clothes with makeup, dress all black and claim "unrecognizable," or wear minimal accessories and call it a costume. If you're not in proper costume or full package gear, you will be denied drinks, denied food, and not welcomed in the band — regardless of payment.</div>
+              <button class="btn" id="pkg-confirm" style="display:none;">Secure this package</button>
+              <div id="pkg-msg" class="msg"></div>
+            </div>
 
-      <div class="card paper" style="text-align:center;">
-        <h2>Your entry pass</h2>
-        <div id="qrcode"></div>
-      </div>
+            <div id="order-status" class="panel hidden">
+              <p class="eyebrow" style="margin-bottom:6px;">Your package</p>
+              <p id="order-summary" class="order-summary"></p>
+              <p id="order-ref" class="ref"></p>
+              <div id="order-deadline" class="deadline hidden"></div>
+              <div id="order-instr" class="instr hidden"><b>How to pay</b><span id="order-instr-text"></span></div>
+              <p id="order-note" class="note"></p>
+              <button class="btn btn-light" id="order-cancel" onclick="cancelOrder()">Cancel reservation</button>
+              <button class="btn btn-light hidden" id="order-refund" onclick="requestRefund()">Request refund</button>
+              <button class="btn btn-light hidden" id="order-withdraw" onclick="withdrawRefund()">Keep my spot</button>
+            </div>
 
-      <div class="card paper">
-        <button class="btn btn-danger" onclick="logout()">LOG OUT</button>
+            <div class="panel invite">
+              <p class="eyebrow" style="margin-bottom:12px;">Bring your people</p>
+              <h3 style="font-size:32px;">Invite your people</h3>
+              <label class="field"><span>Their email</span>
+                <input type="email" id="invite-email" placeholder="friend@example.com">
+              </label>
+              <label class="field"><span>Personal note <em style="text-transform:none; letter-spacing:0; font-style:normal; color:var(--dim);">(optional)</em></span>
+                <textarea id="invite-note" maxlength="300" placeholder="Bro you have to come to this!"></textarea>
+              </label>
+              <button class="btn" onclick="sendInvite()">Send invite</button>
+              <p class="count"><b id="invites-count">0</b> invites left</p>
+            </div>
+          </div>
+
+          <div class="col sticky">
+            <div class="panel rsvp">
+              <div class="panel-head">
+                <p class="eyebrow" style="margin:0;">Attendance</p>
+                <span id="rsvp-badge" class="badge pending">PENDING</span>
+              </div>
+              <button class="btn btn-light" id="rsvp-btn" onclick="toggleRSVP()">Confirm attendance</button>
+            </div>
+
+            <div class="panel ticket">
+              <div class="ticket-top">
+                <p class="t-label">Entry pass · Admit one</p>
+                <h3>On D' Road</h3>
+              </div>
+              <div class="tear"></div>
+              <div class="ticket-body">
+                <div id="pass-locked" class="pass-locked"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg></div>
+                <div id="qrcode" class="hidden"></div>
+                <p id="pass-note">Your entry pass appears here once your payment is confirmed.</p>
+                <dl id="pass-meta" class="pass-meta hidden">
+                  <div class="wide"><dt>Holder</dt><dd id="pass-holder"></dd></div>
+                  <div><dt>Package</dt><dd id="pass-pkg"></dd></div>
+                  <div><dt>Reference</dt><dd id="pass-ref"></dd></div>
+                </dl>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </main>
 
-  <footer>ON D' ROAD<small>18+ only. Invite only. Please play responsibly.</small></footer>
-</div>
+  <footer>
+    <div class="inner">
+      <span class="big">On D' Road</span>
+      <small>18+ only. Invite only. Please play responsibly.</small>
+    </div>
+  </footer>
 
+  <dialog id="dlg" aria-labelledby="dlg-title">
+    <form id="dlg-form">
+      <h3 id="dlg-title"></h3>
+      <p id="dlg-text"></p>
+      <div id="dlg-fields" class="dlg-fields"></div>
+      <div class="dlg-actions">
+        <button class="btn btn-light" type="button" id="dlg-cancel">Never mind</button>
+        <button class="btn" type="submit" id="dlg-ok">Confirm</button>
+      </div>
+    </form>
+  </dialog>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
 <script>
   const BACKEND_URL = 'https://control-1-0baa.onrender.com';
   const $ = (id) => document.getElementById(id);
+
+  // Small on-page notice instead of browser alert boxes.
+  let toastTimer;
+  function toast(text, bad) {
+    const t = $('toast');
+    t.textContent = text;
+    t.className = 'toast show' + (bad ? ' bad' : '');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => { t.className = 'toast' + (bad ? ' bad' : ''); }, 4200);
+  }
+
+  // On-brand replacement for confirm()/prompt(). Resolves to field values, or null if dismissed.
+  function ask(o) {
+    return new Promise((resolve) => {
+      const dlg = $('dlg'), form = $('dlg-form'), box = $('dlg-fields');
+      if (!dlg.showModal) return resolve(window.confirm(o.title) ? {} : null);
+      $('dlg-title').textContent = o.title;
+      $('dlg-text').textContent = o.text || '';
+      box.replaceChildren();
+      const inputs = {};
+      (o.fields || []).forEach((f) => {
+        const wrap = document.createElement('label'); wrap.className = 'field';
+        const lab = document.createElement('span'); lab.textContent = f.label; wrap.appendChild(lab);
+        const input = document.createElement(f.type === 'textarea' ? 'textarea' : 'input');
+        if (f.placeholder) input.placeholder = f.placeholder;
+        if (f.maxlength) input.maxLength = f.maxlength;
+        wrap.appendChild(input); box.appendChild(wrap);
+        inputs[f.name] = input;
+      });
+      $('dlg-ok').textContent = o.ok || 'Confirm';
+      $('dlg-ok').className = 'btn' + (o.danger ? ' danger-solid' : '');
+      $('dlg-cancel').textContent = o.cancel || 'Never mind';
+      let settled = false;
+      const finish = (val) => {
+        if (settled) return;
+        settled = true;
+        form.onsubmit = null; $('dlg-cancel').onclick = null; dlg.onclose = null;
+        if (dlg.open) dlg.close();
+        resolve(val);
+      };
+      form.onsubmit = (e) => {
+        e.preventDefault();
+        const vals = {};
+        Object.keys(inputs).forEach((k) => { vals[k] = inputs[k].value; });
+        finish(vals);
+      };
+      $('dlg-cancel').onclick = () => finish(null);
+      dlg.onclose = () => finish(null);
+      dlg.showModal();
+      $('dlg-cancel').focus();
+    });
+  }
+
+  // Fade sections in as they scroll into view.
+  (function () {
+    const els = document.querySelectorAll('.reveal');
+    if (!('IntersectionObserver' in window)) return els.forEach((e) => e.classList.add('in'));
+    const io = new IntersectionObserver((entries) => entries.forEach((e) => {
+      if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
+    }), { threshold: 0.12 });
+    els.forEach((e, n) => { e.style.transitionDelay = (n < 3 ? n * 90 : 0) + 'ms'; io.observe(e); });
+  })();
 
   let currentUser = localStorage.getItem('control_user_email');
   let token = localStorage.getItem('control_token');
@@ -235,18 +632,14 @@
         badge.className = 'badge pending';
         rsvpBtn.innerText = 'CONFIRM ATTENDANCE';
       }
-      $('qrcode').innerHTML = '';
-      new QRCode($('qrcode'), {
-        text: `ONDROAD:${currentUser}:${data.rsvp_status}`,
-        width: 140, height: 140,
-        colorDark: '#000000', colorLight: '#ffffff'
-      });
     } catch (err) { console.error(err); }
   }
 
   function showPortal() {
     $('login-view').classList.add('hidden');
     $('portal-view').classList.remove('hidden');
+    document.body.classList.add('authed');
+    $('nav-cta').textContent = 'My pass';
     loadUserData();
   }
 
@@ -257,6 +650,8 @@
     token = null;
     $('login-view').classList.remove('hidden');
     $('portal-view').classList.add('hidden');
+    document.body.classList.remove('authed');
+    $('nav-cta').textContent = 'Get in';
     $('login-email').value = '';
     $('login-error').innerText = '';
   }
@@ -268,18 +663,18 @@
       const res = await authFetch('/api/update-rsvp', { rsvp_status: next });
       if (!res.ok) {
         const data = await res.json();
-        return alert(data.error || 'Update failed.');
+        return toast(data.error || 'Update failed.', true);
       }
       loadUserData();
     } catch (err) {
-      if (err.message !== 'SESSION_EXPIRED') alert('Network error. Try again.');
+      if (err.message !== 'SESSION_EXPIRED') toast('Network error. Try again.', true);
     }
   }
 
   async function sendInvite() {
     const recipient = $('invite-email').value;
     const note = $('invite-note').value;
-    if (!recipient) return alert('Target email required.');
+    if (!recipient) return toast('Enter their email first.', true);
     try {
       const res = await authFetch('/api/send-invite', {
         recipient_email: recipient,
@@ -287,15 +682,15 @@
       });
       const data = await res.json();
       if (res.ok) {
-        alert('Transmission successful.');
+        toast('Invite sent.');
         $('invite-email').value = '';
         $('invite-note').value = '';
         loadUserData();
       } else {
-        alert(data.error);
+        toast(data.error, true);
       }
     } catch (err) {
-      if (err.message !== 'SESSION_EXPIRED') alert('Network error. Try again.');
+      if (err.message !== 'SESSION_EXPIRED') toast('Network error. Try again.', true);
     }
   }
 
@@ -356,6 +751,7 @@
   function renderPackages() {
     const list = $('pkg-list');
     list.innerHTML = '';
+    list.setAttribute('role', 'radiogroup');
     packages.forEach((p) => {
       const div = document.createElement('div');
       div.className = 'pkg' + (chosenPkg === p.id ? ' chosen' : '');
@@ -369,10 +765,16 @@
         div.appendChild(ul);
       }
       const spots = document.createElement('div'); spots.className = 'spots';
-      spots.textContent = p.spots_left === undefined ? '' : (p.spots_left <= 0 ? 'SOLD OUT' : p.spots_left + ' SPOTS LEFT');
+      const limited = p.capacity !== null && p.capacity !== undefined;
+      spots.textContent = !limited ? '' : (p.spots_left <= 0 ? 'Sold out' : p.spots_left + (p.spots_left === 1 ? ' spot left' : ' spots left'));
       div.appendChild(spots);
-      if (p.spots_left > 0 || p.spots_left === undefined) {
-        div.addEventListener('click', () => { chosenPkg = p.id; renderPackages(); updatePkgControls(); });
+      if (!limited || p.spots_left > 0) {
+        const pick = () => { chosenPkg = p.id; renderPackages(); updatePkgControls(); $('pkg-confirm').focus({ preventScroll: true }); };
+        div.tabIndex = 0;
+        div.setAttribute('role', 'radio');
+        div.setAttribute('aria-checked', chosenPkg === p.id ? 'true' : 'false');
+        div.addEventListener('click', pick);
+        div.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pick(); } });
       } else {
         div.style.opacity = '.5'; div.style.cursor = 'default';
       }
@@ -409,12 +811,37 @@
     } catch (err) { console.error(err); }
   }
 
+  // The entry pass only exists for a paid order.
+  function renderPass() {
+    const paid = myOrder && myOrder.status === 'PAID';
+    $('qrcode').innerHTML = '';
+    $('qrcode').classList.toggle('hidden', !paid);
+    $('pass-locked').classList.toggle('hidden', paid);
+    $('pass-note').textContent = !paid
+      ? 'Your entry pass appears here once your payment is confirmed.'
+      : (myOrder.cancel_requested_at ? 'Cancellation requested. This pass stays valid until your refund is approved.' : 'Show this at the entrance.');
+    $('pass-meta').classList.toggle('hidden', !paid);
+    if (paid) {
+      $('pass-holder').textContent = currentUser;
+      $('pass-pkg').textContent = myOrder.package_name;
+      $('pass-ref').textContent = myOrder.reference_code;
+    }
+    if (paid) {
+      new QRCode($('qrcode'), {
+        text: 'ONDROAD:' + myOrder.reference_code + ':' + currentUser,
+        width: 168, height: 168,
+        colorDark: '#0b0a09', colorLight: '#ffffff'
+      });
+    }
+  }
+
   async function loadOrder() {
     try {
       const res = await authFetch('/api/my-order');
       myOrder = await res.json();
       const statusBox = $('order-status');
-      const pkgBox = document.querySelector('.card.purple');
+      const pkgBox = $('pkg-card');
+      renderPass();
       if (!myOrder) {
         statusBox.classList.add('hidden');
         pkgBox.style.display = '';
@@ -424,7 +851,7 @@
       statusBox.classList.remove('hidden');
       pkgBox.style.display = 'none';
       $('order-summary').textContent = myOrder.package_name + ' — ' + money(myOrder.price_cents, myOrder.currency);
-      $('order-ref').textContent = 'Reference: ' + myOrder.reference_code + ' — ' + (reserved ? 'RESERVED' : 'PAID');
+      $('order-ref').textContent = myOrder.reference_code + ' · ' + (reserved ? 'Reserved, awaiting payment' : 'Paid');
 
       // Pay-by deadline (only while reserved and a deadline is set)
       const dl = $('order-deadline');
@@ -448,23 +875,55 @@
         instr.classList.add('hidden');
       }
 
-      $('order-note').textContent = !reserved
-        ? "Payment received. You're confirmed and your entry pass is below."
+      const requested = !reserved && !!myOrder.cancel_requested_at;
+      $('order-note').textContent = requested
+        ? 'Cancellation requested on ' + fmtDate(myOrder.cancel_requested_at) + ". We'll email you when your refund is approved."
+        : !reserved
+        ? "Payment received. You're confirmed and your entry pass is ready."
         : (myOrder.payment_instructions
             ? 'Your spot is not confirmed until your payment is received.'
             : "We'll follow up with how to pay to confirm your spot. This reservation is not yet confirmed.");
       $('order-cancel').classList.toggle('hidden', !reserved);
+      $('order-refund').classList.toggle('hidden', reserved || requested);
+      $('order-withdraw').classList.toggle('hidden', !requested);
     } catch (err) { if (err.message !== 'SESSION_EXPIRED') console.error(err); }
   }
 
   async function cancelOrder() {
-    if (!confirm('Cancel your reservation?')) return;
+    const ok = await ask({ title: 'Cancel reservation?', text: "Your spot will be released for someone else. You haven't paid, so nothing is owed.", ok: 'Cancel it', cancel: 'Keep it', danger: true });
+    if (!ok) return;
     try {
       const res = await authFetch('/api/orders/cancel', {});
-      if (!res.ok) { const d = await res.json(); return alert(d.error); }
+      if (!res.ok) { const d = await res.json(); return toast(d.error, true); }
       chosenPkg = null;
       await loadOrder(); await loadPackages();
-    } catch (err) { if (err.message !== 'SESSION_EXPIRED') alert('Network error. Try again.'); }
+    } catch (err) { if (err.message !== 'SESSION_EXPIRED') toast('Network error. Try again.', true); }
+  }
+
+  async function requestRefund() {
+    const v = await ask({
+      title: 'Request a refund?',
+      text: "Your package will be cancelled and your money returned once it's approved. Your pass keeps working until then.",
+      fields: [{ name: 'reason', label: 'Reason (optional)', type: 'textarea', maxlength: 500, placeholder: "Anything we should know" }],
+      ok: 'Send request', cancel: 'Never mind'
+    });
+    if (!v) return;
+    const reason = v.reason;
+    try {
+      const res = await authFetch('/api/orders/request-refund', { reason });
+      if (!res.ok) { const d = await res.json(); return toast(d.error, true); }
+      await loadOrder();
+      toast("Refund requested. We'll email you when it's approved.");
+    } catch (err) { if (err.message !== 'SESSION_EXPIRED') toast('Network error. Try again.', true); }
+  }
+
+  async function withdrawRefund() {
+    try {
+      const res = await authFetch('/api/orders/withdraw-refund', {});
+      if (!res.ok) { const d = await res.json(); return toast(d.error, true); }
+      await loadOrder();
+      toast("Request withdrawn. You're still in.");
+    } catch (err) { if (err.message !== 'SESSION_EXPIRED') toast('Network error. Try again.', true); }
   }
 
   // An invite link opens the accept screen, a login link exchanges itself for a session,
