@@ -199,6 +199,7 @@
     /* ---------- Portal ---------- */
     .portal-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 20px; margin-bottom: 30px; }
     .portal-head h2 { margin: 0; }
+    .portal-sub { color: var(--text); font-size: 17px; font-weight: 500; margin: 12px 0 0; max-width: 640px; }
     .who { font-family: var(--mono); font-size: 13px; color: var(--muted); word-break: break-all; margin-top: 10px; }
     .grid { display: grid; gap: 18px; grid-template-columns: 1fr; }
     @media (min-width: 900px) {
@@ -239,6 +240,18 @@
     .pkg li { position: relative; padding-left: 20px; margin-bottom: 8px; }
     .pkg li::before { content: ''; position: absolute; left: 2px; top: .62em; width: 8px; height: 1px; background: var(--accent); }
     .pkg .spots { font-family: var(--mono); font-size: 12px; letter-spacing: .1em; color: var(--amber); margin-top: 12px; }
+    /* Price tiers: the tier on sale sits above the price, its end date and what comes next below it. */
+    .pkg .tier { margin-top: 12px; font-family: var(--mono); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); }
+    .pkg .tier + .price { margin-top: 6px; }
+    .pkg .tier-info { display: flex; flex-wrap: wrap; gap: 4px 14px; margin-top: 10px; font-family: var(--mono); font-size: 12px; letter-spacing: .04em; color: var(--muted); }
+    .pkg .tier-info .left { color: var(--amber); }
+    .pkg .tier-info .next { color: var(--dim); }
+    .promo { margin-top: 18px; font-size: 15px; color: var(--muted); }
+    .promo .field { margin-top: 0; }
+    .promo-row { display: flex; gap: 10px; }
+    .promo-row input { flex: 1; min-width: 0; text-transform: uppercase; letter-spacing: .06em; }
+    .promo-row input::placeholder { text-transform: none; letter-spacing: 0; }
+    .promo-row .btn { flex: none; width: auto; margin-top: 0; padding: 0 20px; }
     .warn {
       margin-top: 16px; padding: 16px 18px; border-radius: 10px; font-size: 14px; line-height: 1.5;
       background: rgba(255, 106, 92, .07); border: 1px solid rgba(255, 106, 92, .35); color: #ffc2bb;
@@ -247,6 +260,9 @@
 
     .order-summary { font-family: var(--display); font-size: 30px; line-height: 1.05; text-transform: uppercase; margin: 12px 0 6px; }
     .ref { font-family: var(--mono); font-size: 13px; color: var(--muted); }
+    .price-note { font-size: 14px; color: var(--muted); margin: 0 0 6px; }
+    .picked { font-family: var(--mono); font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--green); margin: 10px 0 0; }
+    select:disabled { opacity: .6; cursor: not-allowed; }
     .deadline {
       margin: 16px 0 0; padding: 14px 16px; border-radius: 10px; font-size: 14px; font-weight: 600;
       color: var(--amber); background: rgba(240, 180, 60, .07); border: 1px solid rgba(240, 180, 60, .3);
@@ -255,6 +271,9 @@
     .instr { margin: 16px 0 0; padding: 16px 18px; border-radius: 10px; background: rgba(243,236,226,.04); border: 1px solid var(--line); font-size: 15px; }
     .instr b { display: block; font-size: 11px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--accent); margin-bottom: 8px; }
     .instr span { white-space: pre-line; }
+    /* The package's own cash details go under the general instructions. */
+    .instr .pay-note { display: block; }
+    .instr span:not(:empty) + .pay-note:not(:empty) { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line); }
     .note { color: var(--muted); font-size: 14px; margin: 16px 0 0; }
     .paybox { margin: 16px 0 0; padding: 16px 18px; border-radius: 10px; background: rgba(243,236,226,.04); border: 1px solid var(--line); }
     .paybox-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; margin: 0 0 12px; font-size: 15px; font-weight: 600; }
@@ -307,10 +326,50 @@
     footer .big { font-family: var(--display); font-size: clamp(44px, 9vw, 96px); line-height: .9; text-transform: uppercase; color: var(--surface-2); -webkit-text-stroke: 1px var(--line-strong); }
     footer small { color: var(--dim); font-size: 13px; }
     .foot-info { display: grid; gap: 10px; justify-items: end; text-align: right; }
-    @media (max-width: 640px) { .foot-info { justify-items: start; text-align: left; } }
     .contact { margin: 0; font-size: 15px; line-height: 1.9; color: var(--muted); }
     .contact a { color: var(--text); text-decoration: none; border-bottom: 1px solid var(--line-strong); margin-left: 12px; white-space: nowrap; }
     .contact a:hover { border-color: var(--accent); }
+    /* Phones: the links go on their own line under "Questions?", lined up with the text instead of indented. */
+    @media (max-width: 640px) {
+      .foot-info { justify-items: start; text-align: left; }
+      #contact-links { display: flex; flex-wrap: wrap; gap: 0 14px; }
+      .contact a { margin-left: 0; }
+    }
+    .foot-info .linkish + .linkish { margin-left: 10px; }
+    /* Sponsor logos: a quiet row, muted until hovered or focused. */
+    footer .inner.sponsors { justify-content: flex-start; align-items: center; gap: 14px 28px; margin-top: 34px; padding-top: 22px; border-top: 1px solid var(--line); }
+    .sponsors .with { font-family: var(--mono); font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--dim); }
+    .sponsor-logos { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 28px; }
+    .sponsor { display: inline-flex; border-radius: 6px; }
+    .sponsor img { display: block; height: 32px; width: auto; max-width: 140px; object-fit: contain; opacity: .55; filter: grayscale(1); transition: opacity .2s, filter .2s; }
+    .sponsor:hover img, .sponsor:focus-visible img { opacity: 1; filter: none; }
+
+    /* ---------- FAQ ---------- */
+    #faq, #contact { scroll-margin-top: 64px; }
+    .faq-wrap { display: grid; gap: 8px; }
+    @media (min-width: 900px) {
+      .faq-wrap { grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr); gap: 64px; align-items: start; }
+      .faq-wrap > div:first-child { position: sticky; top: 90px; }
+    }
+    .faq-list { border-top: 1px solid var(--line); }
+    .qa { border-bottom: 1px solid var(--line); }
+    .qa summary { position: relative; display: block; list-style: none; cursor: pointer; padding: 20px 52px 20px 0; font-size: 17px; font-weight: 600; line-height: 1.4; }
+    .qa summary::-webkit-details-marker { display: none; }
+    /* Open/closed indicator: a plus that turns into a cross. */
+    .qa summary::after {
+      content: '+'; position: absolute; right: 0; top: 16px; width: 30px; height: 30px; border-radius: 50%;
+      display: grid; place-items: center; font-size: 20px; font-weight: 400; line-height: 1;
+      border: 1px solid var(--line-strong); color: var(--muted); transition: transform .2s, background .2s, color .2s, border-color .2s;
+    }
+    .qa summary:hover::after { border-color: var(--text); color: var(--text); }
+    .qa[open] summary::after { transform: rotate(45deg); background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+    .qa-body { padding: 0 52px 22px 0; font-size: 15px; line-height: 1.6; color: var(--muted); }
+    .qa-body p { margin: 0 0 10px; }
+    .qa-body ul { margin: 0 0 10px; padding-left: 20px; }
+    .qa-body li { margin-bottom: 6px; }
+    .qa-body li::marker { color: var(--accent); }
+    .qa-body > :last-child { margin-bottom: 0; }
+    @media (max-width: 640px) { .qa-body { padding-right: 0; } }
 
     /* ---------- Dialog ---------- */
     dialog { width: min(440px, calc(100vw - 32px)); padding: 0; border: 1px solid var(--line-strong); border-radius: 18px; background: var(--surface-2); color: var(--text); box-shadow: 0 30px 80px -20px rgba(0, 0, 0, .85); }
@@ -409,7 +468,7 @@
           </label>
           <button class="btn" onclick="handleLogin()">Send login link</button>
           <div id="login-error" class="msg" style="color: var(--red);"></div>
-          <p class="help">Not getting the email? Check your spam folder<span id="login-help-contact" class="hidden">, or <a href="#contact">contact us</a></span>.</p>
+          <p class="help">Not getting the email? Check your spam folder<span id="login-help-contact" class="hidden">, or <a href="#contact">contact us</a></span>.<span id="login-help-faq" class="hidden"> More help in the <a href="#faq">FAQ</a>.</span></p>
         </div>
       </div>
 
@@ -437,7 +496,8 @@
         <div class="portal-head">
           <div>
             <p class="eyebrow">Your account</p>
-            <h2>You're in.</h2>
+            <h2 id="portal-title">You're in.</h2>
+            <p id="portal-sub" class="portal-sub hidden"></p>
             <p class="who" id="user-email">--</p>
           </div>
           <button class="btn btn-danger" style="width:auto;" onclick="logout()">Log out</button>
@@ -452,6 +512,17 @@
               <div id="pkg-list"></div>
               <div id="pkg-warn" class="warn hidden">You cannot wear regular clothes with makeup, dress all black and claim "unrecognizable," or wear minimal accessories and call it a costume. If you're not in proper costume or full package gear, you will be denied drinks, denied food, and not welcomed in the band — regardless of payment.</div>
               <label id="pkg-size-wrap" class="field hidden"><span>Your size</span><select id="pkg-size"></select></label>
+              <div id="pkg-promo" class="promo hidden">
+                <button type="button" class="linkish" id="promo-open" aria-controls="promo-box" aria-expanded="false">Have a code?</button>
+                <div id="promo-box" class="field hidden">
+                  <span id="promo-label">Your code</span>
+                  <div class="promo-row">
+                    <input id="promo-code" aria-labelledby="promo-label" maxlength="24" autocomplete="off" autocapitalize="characters" spellcheck="false" enterkeyhint="go" placeholder="Enter code">
+                    <button type="button" class="btn btn-light" id="promo-apply">Apply</button>
+                  </div>
+                  <p id="promo-msg" class="msg" role="status"></p>
+                </div>
+              </div>
               <label id="pkg-terms-wrap" class="check hidden"><input type="checkbox" id="pkg-terms"> <span>I agree to the <button type="button" class="linkish" onclick="showTerms()">terms</button></span></label>
               <button class="btn" id="pkg-confirm" style="display:none;">Secure this package</button>
               <div id="pkg-msg" class="msg"></div>
@@ -460,15 +531,19 @@
             <div id="order-status" class="panel hidden">
               <p class="eyebrow" style="margin-bottom:6px;">Your package</p>
               <p id="order-summary" class="order-summary"></p>
+              <p id="order-price-note" class="price-note hidden"></p>
               <p id="order-ref" class="ref"></p>
+              <p id="order-pickup" class="picked hidden"></p>
               <label id="order-size-wrap" class="field hidden"><span>Your size</span><select id="order-size"></select></label>
+              <p id="order-size-lock" class="help hidden">Sizes are locked. Contact us if yours needs to change.</p>
               <div id="order-deadline" class="deadline hidden"></div>
+              <p id="order-promo" class="note hidden"><button type="button" class="linkish" onclick="addOrderCode()">Have a code?</button></p>
               <div id="paypal-box" class="paybox hidden">
                 <p class="paybox-head"><b>Pay now</b><span id="paypal-amount"></span></p>
                 <div id="paypal-buttons" class="paypal-frame"></div>
                 <p id="paypal-msg" class="note hidden" role="status"></p>
               </div>
-              <div id="order-instr" class="instr hidden"><b id="order-instr-label">How to pay</b><span id="order-instr-text"></span></div>
+              <div id="order-instr" class="instr hidden"><b id="order-instr-label">How to pay</b><span id="order-instr-text"></span><span id="order-pay-note" class="pay-note"></span></div>
               <p id="order-note" class="note"></p>
               <button class="btn btn-light" id="order-cancel" onclick="cancelOrder()">Cancel reservation</button>
               <button class="btn btn-light hidden" id="order-refund" onclick="requestRefund()">Request refund</button>
@@ -529,13 +604,28 @@
     </div>
   </main>
 
+  <!-- FAQ: shown logged in or out, once the organizers' questions load (see control/site.js) -->
+  <section id="faq" class="section hidden" aria-labelledby="faq-title">
+    <div class="inner faq-wrap">
+      <div>
+        <p class="eyebrow">Questions</p>
+        <h2 id="faq-title">Good to know.</h2>
+      </div>
+      <div id="faq-list" class="faq-list"></div>
+    </div>
+  </section>
+
   <footer id="contact">
     <div class="inner">
       <span class="big">On D' Road</span>
       <div class="foot-info">
         <p id="contact-line" class="contact hidden">Questions?<span id="contact-links"></span></p>
-        <small>18+ only. Invite only. Please play responsibly. <button type="button" class="linkish" onclick="showTerms()">Terms</button></small>
+        <small>18+ only. Invite only. Please play responsibly. <button type="button" class="linkish" onclick="showTerms()">Terms</button><a id="foot-faq" class="linkish hidden" href="#faq">FAQ</a></small>
       </div>
+    </div>
+    <div id="sponsors" class="inner sponsors hidden" role="group" aria-label="Sponsors">
+      <span class="with">With</span>
+      <div id="sponsor-logos" class="sponsor-logos"></div>
     </div>
   </footer>
 
@@ -630,7 +720,8 @@
   let token = localStorage.getItem('control_token');
 
   // Packages and orders state. Declared up here so nothing below can run before it exists.
-  let packages = [], chosenPkg = null, myOrder = null;
+  // promo is the code checked for the chosen package at its current price (see checkCode).
+  let packages = [], chosenPkg = null, myOrder = null, orderLoaded = false, eventData = null, promo = null;
 
   // Sends a request with the login token attached.
   // If the server says the session is invalid or expired, log the user out.
@@ -731,6 +822,8 @@
     localStorage.removeItem('control_token');
     currentUser = null;
     token = null;
+    myOrder = null; orderLoaded = false; eventData = null;
+    renderHead(); resetPromo();
     $('login-view').classList.remove('hidden');
     $('portal-view').classList.add('hidden');
     document.body.classList.remove('authed');
@@ -824,6 +917,11 @@
     return new Date(iso).toLocaleString('en-US', { dateStyle: 'full', timeStyle: 'short', timeZone: 'America/Antigua' });
   }
 
+  // "Sat, Oct 10, 6:00 PM" in Antigua time.
+  function shortDate(iso) {
+    return new Date(iso).toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', timeZone: 'America/Antigua' });
+  }
+
   function timeLeft(iso) {
     const ms = new Date(iso).getTime() - Date.now();
     if (ms <= 0) return null;
@@ -831,6 +929,15 @@
     if (d > 0) return d + 'd ' + h + 'h left';
     return h > 0 ? h + 'h left' : 'under 1h left';
   }
+
+  // A package can be picked unless it's sold out or every one of its price tiers has ended or sold out.
+  function canPick(p) {
+    const limited = p.capacity !== null && p.capacity !== undefined;
+    return !p.sales_closed && (!limited || p.spots_left > 0);
+  }
+
+  // Codes and price tiers need the newer backend. An older one doesn't send sales_closed, so the code box stays hidden.
+  const codesOn = () => packages.some((p) => p.sales_closed !== undefined);
 
   function renderPackages() {
     const list = $('pkg-list');
@@ -840,7 +947,18 @@
       const div = document.createElement('div');
       div.className = 'pkg' + (chosenPkg === p.id ? ' chosen' : '');
       const h3 = document.createElement('h3'); h3.textContent = p.name; div.appendChild(h3);
+      // The price tier on sale now (Early bird, Standard...), when the package has tiers.
+      if (p.tier) { const tier = document.createElement('div'); tier.className = 'tier'; tier.textContent = p.tier.name; div.appendChild(tier); }
       const price = document.createElement('div'); price.className = 'price'; price.textContent = money(p.price_cents, p.currency); div.appendChild(price);
+      const info = [];
+      if (p.tier && p.tier.ends_at) info.push(['', 'Until ' + shortDate(p.tier.ends_at)]);
+      if (p.tier && p.tier.left !== null && p.tier.left !== undefined) info.push(['left', p.tier.left + ' left at this price']);
+      if (p.next_tier) info.push(['next', 'Then ' + money(p.next_tier.price_cents, p.currency)]);
+      if (info.length) {
+        const row = document.createElement('div'); row.className = 'tier-info';
+        info.forEach(([cls, text]) => { const s = document.createElement('span'); s.className = cls; s.textContent = text; row.appendChild(s); });
+        div.appendChild(row);
+      }
       if (p.includes) {
         const ul = document.createElement('ul');
         p.includes.split('\n').map((s) => s.trim()).filter(Boolean).forEach((line) => {
@@ -850,9 +968,10 @@
       }
       const spots = document.createElement('div'); spots.className = 'spots';
       const limited = p.capacity !== null && p.capacity !== undefined;
-      spots.textContent = !limited ? '' : (p.spots_left <= 0 ? 'Sold out' : p.spots_left + (p.spots_left === 1 ? ' spot left' : ' spots left'));
+      spots.textContent = p.sales_closed ? 'Sales closed'
+        : !limited ? '' : (p.spots_left <= 0 ? 'Sold out' : p.spots_left + (p.spots_left === 1 ? ' spot left' : ' spots left'));
       div.appendChild(spots);
-      if (!limited || p.spots_left > 0) {
+      if (canPick(p)) {
         const pick = () => { chosenPkg = p.id; renderPackages(); updatePkgControls(); $('pkg-confirm').focus({ preventScroll: true }); };
         div.tabIndex = 0;
         div.setAttribute('role', 'radio');
@@ -888,23 +1007,107 @@
     const sel = $('pkg-size'), key = chosenPkg + '|' + sizes.join(',');
     if (sel.dataset.key !== key) { fillSizes(sel, sizes, ''); sel.dataset.key = key; } // keep the pick while the package stays the same
     $('pkg-size-wrap').classList.toggle('hidden', !sizes.length);
+    $('pkg-promo').classList.toggle('hidden', !p || !codesOn());
+    // A code is checked again when the guest picks another package or the price moves on.
+    if (promo && promo.key !== pkgKey(p)) promo = null;
+    const code = typedCode();
+    if (p && code && code + '|' + pkgKey(p) !== lastCheck) checkCode();
     $('pkg-terms-wrap').classList.toggle('hidden', !p);
+    setConfirmLabel();
     confirmBtn.style.display = p ? 'block' : 'none';
   }
 
+  // ---- promo codes in the package picker ----
+  let lastCheck = ''; // "CODE|package key" of the last check, so the same one isn't sent twice
+
+  // The package and the price it's on sale at. A checked code only counts for this exact combination.
+  const pkgKey = (p) => (p ? p.id + '|' + p.price_cents + '|' + (p.tier ? p.tier.id : '') : '');
+  const typedCode = () => (codesOn() && !$('promo-box').classList.contains('hidden') ? $('promo-code').value.trim().toUpperCase() : '');
+
+  function setConfirmLabel() {
+    $('pkg-confirm').textContent = promo && promo.amount_cents === 0 ? 'Claim my free pass' : 'Secure this package';
+  }
+
+  // bad: true = red, false = green, anything else = plain.
+  function promoMsg(text, bad) {
+    const m = $('promo-msg');
+    m.style.color = bad === true ? 'var(--red)' : bad === false ? 'var(--green)' : 'var(--muted)';
+    m.textContent = text;
+  }
+
+  // Asks the server what the typed code takes off the chosen package right now, and says so under the code.
+  async function checkCode() {
+    const p = packages.find((x) => x.id === chosenPkg);
+    const code = typedCode(), key = pkgKey(p);
+    promo = null; setConfirmLabel();
+    if (!p) return;
+    if (!code) return promoMsg('Enter your code first.', true);
+    const mine = lastCheck = code + '|' + key;
+    promoMsg('Checking your code...');
+    try {
+      const res = await authFetch('/api/promo/check', { code, package_id: p.id });
+      const d = res.status === 404 ? { error: "Codes aren't available right now." } : await res.json();
+      // The guest changed the code or the package meanwhile: a newer check (or none) takes over.
+      if (lastCheck !== mine || typedCode() !== code || pkgKey(packages.find((x) => x.id === chosenPkg)) !== key) return;
+      if (!res.ok) return promoMsg(d.error || 'Something went wrong.', true);
+      promo = { code, key, amount_cents: d.amount_cents, currency: d.currency };
+      promoMsg(d.label + '. You pay ' + (d.amount_cents ? money(d.amount_cents, d.currency) : 'nothing') + '.', false);
+      setConfirmLabel();
+    } catch (err) {
+      if (lastCheck === mine) lastCheck = '';
+      if (err.message !== 'SESSION_EXPIRED') promoMsg('Network error. Try again.', true);
+    }
+  }
+
+  function resetPromo() {
+    promo = null; lastCheck = '';
+    $('promo-code').value = ''; promoMsg('');
+    $('promo-box').classList.add('hidden');
+    $('promo-open').classList.remove('hidden');
+    $('promo-open').setAttribute('aria-expanded', 'false');
+    setConfirmLabel();
+  }
+
+  $('promo-open').addEventListener('click', () => {
+    $('promo-open').setAttribute('aria-expanded', 'true');
+    $('promo-open').classList.add('hidden');
+    $('promo-box').classList.remove('hidden');
+    $('promo-code').focus();
+  });
+  $('promo-apply').addEventListener('click', () => { lastCheck = ''; checkCode(); });
+  $('promo-code').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); lastCheck = ''; checkCode(); } });
+  // Editing the code forgets the old result until it's applied again.
+  $('promo-code').addEventListener('input', () => {
+    if (!promo && !lastCheck) return;
+    promo = null; lastCheck = ''; promoMsg(''); setConfirmLabel();
+  });
+
+  let reserving = false;
   $('pkg-confirm').addEventListener('click', async () => {
     const msg = $('pkg-msg');
     msg.textContent = '';
-    if (!chosenPkg) return;
+    if (!chosenPkg || reserving) return;
     const fail = (text) => { msg.style.color = 'var(--red)'; msg.textContent = text; };
     const p = packages.find((x) => x.id === chosenPkg);
     const body = { package_id: chosenPkg, terms: true };
+    // Only sent when the backend has price tiers, so it can say if the price moved on since this page loaded
+    // (a new tier, or the organizers changed the price).
+    if (p && p.tier !== undefined) { body.tier_id = p.tier ? p.tier.id : null; body.price_cents = p.price_cents; }
     if (p && sizeList(p.sizes).length) {
       if (!$('pkg-size').value) return fail('Choose your size.');
       body.size = $('pkg-size').value;
     }
     if (!$('pkg-terms').checked) return fail('Tick the box to agree to the terms.');
+    reserving = true;
     try {
+      // A code that was typed but not applied is checked first. If it doesn't work, the reason shows under it.
+      const code = typedCode();
+      if (code && !(promo && promo.code === code && promo.key === pkgKey(p))) {
+        lastCheck = '';
+        await checkCode();
+        if (!promo) return;
+      }
+      if (promo && promo.key === pkgKey(p)) body.promo_code = promo.code;
       let res = await authFetch('/api/orders', body);
       let data = await res.json();
       // Guests who joined before the 18+ check confirm it once, here.
@@ -917,17 +1120,48 @@
       }
       // The organizers added sizes since this page loaded: show them.
       if (data.code === 'SIZE_REQUIRED') await loadPackages();
+      if (data.code === 'PROMO_INVALID') {
+        promo = null; setConfirmLabel();
+        return promoMsg(data.error, true);
+      }
+      // The price moved on, or the package sold out, since this page loaded: show what's on sale now
+      // (a typed code is checked again against the new price).
+      if (data.code === 'PRICE_CHANGED' || data.code === 'SOLD_OUT') await loadPackages();
       if (!res.ok) return fail(data.error);
+      resetPromo();
       await loadOrder();
       msg.textContent = '';
-    } catch (err) { if (err.message !== 'SESSION_EXPIRED') { msg.style.color = 'var(--red)'; msg.textContent = 'Network error. Try again.'; } }
+      if (data.status === 'PAID') toast("You're in. Your pass is ready.");
+    } catch (err) {
+      if (err.message !== 'SESSION_EXPIRED') { msg.style.color = 'var(--red)'; msg.textContent = 'Network error. Try again.'; }
+    } finally { reserving = false; }
   });
+
+  // The line at the top of the account: where the guest stands, from their order and the event date.
+  function renderHead() {
+    const o = myOrder;
+    let title = "You're in.", parts = [];
+    if (orderLoaded && !o) parts = ['Pick your package to secure your spot.'];
+    else if (o && o.status === 'RESERVED') {
+      title = 'Spot held.';
+      parts = [o.package_name, o.pay_by ? 'Pay by ' + shortDate(o.pay_by) : 'Pay to confirm your spot'];
+    } else if (o && o.status === 'PAID') {
+      title = "You're going.";
+      parts = [o.package_name, o.size && 'Size ' + o.size, eventData && eventData.when && String(eventData.when).trim()];
+    }
+    $('portal-title').textContent = title;
+    const sub = parts.filter(Boolean).join(' · ');
+    $('portal-sub').textContent = sub;
+    $('portal-sub').classList.toggle('hidden', !sub);
+  }
 
   // Event details set by the organizers. Paid-only details come back only once the order is paid.
   async function loadEvent() {
     try {
       const res = await authFetch('/api/event');
       const ev = res.ok ? await res.json() : null;
+      eventData = ev;
+      renderHead();
       const show = ev && (ev.when || ev.info || ev.has_paid_info);
       $('event-card').classList.toggle('hidden', !show);
       if (!show) return;
@@ -942,7 +1176,11 @@
   async function loadPackages() {
     try {
       const res = await fetch(`${BACKEND_URL}/api/packages`);
-      packages = await res.json();
+      const data = await res.json();
+      if (!res.ok || !Array.isArray(data)) throw new Error((data && data.error) || 'Packages did not load');
+      packages = data;
+      // A package that sold out or closed since it was picked can't stay picked.
+      if (chosenPkg && !packages.some((p) => p.id === chosenPkg && canPick(p))) chosenPkg = null;
       renderPackages(); updatePkgControls();
     } catch (err) { console.error(err); }
   }
@@ -955,7 +1193,9 @@
     $('pass-locked').classList.toggle('hidden', paid);
     $('pass-note').textContent = !paid
       ? 'Your entry pass appears here once your payment is confirmed.'
-      : (myOrder.cancel_requested_at ? 'Cancellation requested. This pass stays valid until your refund is approved.' : 'Show this at the entrance.');
+      : !myOrder.cancel_requested_at ? 'Show this at the entrance.'
+      : isFree(myOrder) ? 'Cancellation requested. This pass stays valid until we cancel it.'
+      : 'Cancellation requested. This pass stays valid until your refund is approved.';
     $('pass-meta').classList.toggle('hidden', !paid);
     if (paid) {
       $('pass-holder').textContent = currentUser;
@@ -971,27 +1211,54 @@
     }
   }
 
+  // What the guest owes: the order's own amount (after its price tier and any code). Older backends only send price_cents.
+  const orderAmount = (o) => o.amount_cents ?? o.price_cents;
+  // A free pass: a code covered the whole price, so there was nothing to pay.
+  const isFree = (o) => o.status === 'PAID' && (o.paid_via === 'COMP' || orderAmount(o) === 0);
+
   async function loadOrder() {
     try {
       const res = await authFetch('/api/my-order');
-      myOrder = await res.json();
+      const data = await res.json();
+      if (!res.ok) throw new Error((data && data.error) || 'Order did not load');
+      const first = !orderLoaded, was = myOrder ? myOrder.status : null;
+      myOrder = data; orderLoaded = true;
       const statusBox = $('order-status');
       const pkgBox = $('pkg-card');
       renderPass();
       renderPayPal();
+      renderHead();
       if (!myOrder) {
         statusBox.classList.add('hidden');
         pkgBox.style.display = '';
         return;
       }
+      // Paid-only event details unlock as soon as the order is confirmed (PayPal, a free pass).
+      if (!first && myOrder.status === 'PAID' && was !== 'PAID') loadEvent();
       const reserved = myOrder.status === 'RESERVED';
+      const free = isFree(myOrder);
       statusBox.classList.remove('hidden');
       pkgBox.style.display = 'none';
-      $('order-summary').textContent = myOrder.package_name + ' — ' + money(myOrder.price_cents, myOrder.currency);
+      $('order-summary').textContent = myOrder.package_name + ' — ' + money(orderAmount(myOrder), myOrder.currency);
+      // The price tier and code behind that amount: "Early bird price · Code SAVE20: XCD 50.00 off".
+      const notes = [];
+      if (myOrder.tier_name) notes.push(/price$/i.test(myOrder.tier_name) ? myOrder.tier_name : myOrder.tier_name + ' price');
+      if (free) notes.push('Free pass');
+      else if (myOrder.promo_code) {
+        notes.push('Code ' + myOrder.promo_code + ': '
+          + (myOrder.discount_cents > 0 ? money(myOrder.discount_cents, myOrder.currency) + ' off' : myOrder.promo_label || 'applied'));
+      }
+      $('order-price-note').textContent = notes.join(' · ');
+      $('order-price-note').classList.toggle('hidden', !notes.length);
       $('order-ref').textContent = myOrder.reference_code + ' · ' + (reserved ? 'Reserved, awaiting payment' : 'Paid');
+      $('order-pickup').textContent = myOrder.picked_up_at ? 'Package collected ' + shortDate(myOrder.picked_up_at) : '';
+      $('order-pickup').classList.toggle('hidden', !myOrder.picked_up_at);
       const sizes = sizeList(myOrder.package_sizes);
       $('order-size-wrap').classList.toggle('hidden', !sizes.length);
       if (sizes.length) fillSizes($('order-size'), sizes, myOrder.size);
+      // The organizers can lock sizes (for everyone, or once paid). They can still change one for the guest.
+      $('order-size').disabled = !!myOrder.size_locked;
+      $('order-size-lock').classList.toggle('hidden', !sizes.length || !myOrder.size_locked);
 
       // Pay-by deadline (only while reserved and a deadline is set)
       const dl = $('order-deadline');
@@ -1005,25 +1272,29 @@
       } else {
         dl.classList.add('hidden');
       }
+      // A code can be added until the guest starts paying with PayPal. Older backends don't send paypal_started.
+      $('order-promo').classList.toggle('hidden', !(reserved && !myOrder.promo_code && myOrder.paypal_started === false));
 
-      // Payment instructions typed in by the organizer
-      const instr = $('order-instr');
-      if (reserved && myOrder.payment_instructions) {
-        $('order-instr-text').textContent = myOrder.payment_instructions;
-        instr.classList.remove('hidden');
-      } else {
-        instr.classList.add('hidden');
-      }
+      // How to pay: the organizers' general instructions, then this package's own cash details.
+      const instrText = reserved ? myOrder.payment_instructions || '' : '';
+      const payNote = reserved ? myOrder.pay_note || '' : '';
+      $('order-instr-text').textContent = instrText;
+      $('order-pay-note').textContent = payNote;
+      $('order-instr').classList.toggle('hidden', !instrText && !payNote);
 
       const requested = !reserved && !!myOrder.cancel_requested_at;
       $('order-note').textContent = requested
-        ? 'Cancellation requested on ' + fmtDate(myOrder.cancel_requested_at) + ". We'll email you when your refund is approved."
+        ? 'Cancellation requested on ' + fmtDate(myOrder.cancel_requested_at)
+          + (free ? ". We'll email you once your free pass is cancelled." : ". We'll email you when your refund is approved.")
+        : free
+        ? 'Your free pass is confirmed and your entry pass is ready.'
         : !reserved
         ? "Payment received. You're confirmed and your entry pass is ready."
-        : (myOrder.payment_instructions
+        : (instrText || payNote
             ? 'Your spot is not confirmed until your payment is received.'
             : "We'll follow up with how to pay to confirm your spot. This reservation is not yet confirmed.");
       $('order-cancel').classList.toggle('hidden', !reserved);
+      $('order-refund').textContent = free ? 'Cancel my free pass' : 'Request refund';
       $('order-refund').classList.toggle('hidden', reserved || requested);
       $('order-withdraw').classList.toggle('hidden', !requested);
     } catch (err) { if (err.message !== 'SESSION_EXPIRED') console.error(err); }
@@ -1035,6 +1306,7 @@
       const data = await res.json();
       if (!res.ok) { toast(data.error, true); return loadOrder(); }
       myOrder.size = data.size;
+      renderHead();
       toast('Size saved: ' + data.size + '.');
     } catch (err) { if (err.message !== 'SESSION_EXPIRED') { toast('Network error. Try again.', true); loadOrder(); } }
   });
@@ -1070,7 +1342,7 @@
     } catch (err) { /* PayPal stays hidden */ }
     if (!info || !info.enabled || !myOrder || myOrder.status !== 'RESERVED') return show(false);
     show(true);
-    $('paypal-amount').textContent = 'USD ' + info.amount + (myOrder.currency !== 'USD' ? ' (' + money(myOrder.price_cents, myOrder.currency) + ')' : '');
+    $('paypal-amount').textContent = 'USD ' + info.amount + (myOrder.currency !== 'USD' ? ' (' + money(orderAmount(myOrder), myOrder.currency) + ')' : '');
     if (info.pending) {
       $('paypal-buttons').replaceChildren(); paypalKey = null;
       msg.textContent = "PayPal is still processing your payment. We'll email you as soon as it's confirmed.";
@@ -1128,11 +1400,15 @@
   }
 
   async function requestRefund() {
+    // A free pass has nothing to refund: the same request cancels it.
+    const free = !!myOrder && isFree(myOrder);
     const v = await ask({
-      title: 'Request a refund?',
-      text: "Your package will be cancelled and your money returned once it's approved. Your pass keeps working until then.",
+      title: free ? 'Cancel your free pass?' : 'Request a refund?',
+      text: free
+        ? "Your free pass will be cancelled once we've confirmed it. It keeps working until then."
+        : "Your package will be cancelled and your money returned once it's approved. Your pass keeps working until then.",
       fields: [{ name: 'reason', label: 'Reason (optional)', type: 'textarea', maxlength: 500, placeholder: "Anything we should know" }],
-      ok: 'Send request', cancel: 'Never mind'
+      ok: free ? 'Cancel my pass' : 'Send request', cancel: 'Never mind'
     });
     if (!v) return;
     const reason = v.reason;
@@ -1140,7 +1416,7 @@
       const res = await authFetch('/api/orders/request-refund', { reason });
       if (!res.ok) { const d = await res.json(); return toast(d.error, true); }
       await loadOrder();
-      toast("Refund requested. We'll email you when it's approved.");
+      toast(free ? "Request sent. We'll email you once your pass is cancelled." : "Refund requested. We'll email you when it's approved.");
     } catch (err) { if (err.message !== 'SESSION_EXPIRED') toast('Network error. Try again.', true); }
   }
 
@@ -1153,7 +1429,27 @@
     } catch (err) { if (err.message !== 'SESSION_EXPIRED') toast('Network error. Try again.', true); }
   }
 
-  // ---- contact details and terms (public; set by the organizers at /admin/site) ----
+  // Adds a code to an unpaid reservation. A code that covers the whole price confirms the spot straight away.
+  async function addOrderCode() {
+    const v = await ask({
+      title: 'Have a code?',
+      text: 'Add it before you pay and it comes off what you owe.',
+      fields: [{ name: 'code', label: 'Your code', maxlength: 24, placeholder: 'Enter code' }],
+      ok: 'Apply', cancel: 'Never mind'
+    });
+    const code = v && String(v.code || '').trim();
+    if (!code) return;
+    try {
+      const res = await authFetch('/api/orders/promo', { code });
+      if (res.status === 404) return toast("Codes aren't available right now.", true);
+      const d = await res.json();
+      if (!res.ok) return toast(d.error || 'Something went wrong.', true);
+      await loadOrder();
+      toast(d.status === 'PAID' ? "You're in. Your pass is ready." : (d.label ? d.label + '. ' : '') + 'You pay ' + money(d.amount_cents, d.currency) + '.');
+    } catch (err) { if (err.message !== 'SESSION_EXPIRED') toast('Network error. Try again.', true); }
+  }
+
+  // ---- contact details, terms, FAQ and sponsors (public; set by the organizers at /admin/site) ----
   let site = null;
 
   async function loadSite() {
@@ -1161,7 +1457,7 @@
       const res = await fetch(`${BACKEND_URL}/api/site`);
       if (!res.ok) return;
       site = await res.json();
-      renderContact();
+      renderContact(); renderFaq(); renderSponsors();
     } catch (err) { console.error(err); }
   }
 
@@ -1183,9 +1479,10 @@
     $('login-help-contact').classList.toggle('hidden', !links.length);
   }
 
+  function renderTerms(text) { renderRich($('terms-body'), text); }
+
   // "# " lines become headings and "- " lines bullet points. Everything is set as text, never as HTML.
-  function renderTerms(text) {
-    const box = $('terms-body');
+  function renderRich(box, text) {
     box.replaceChildren();
     let list = null;
     String(text || '').split(/\r?\n/).forEach((raw) => {
@@ -1201,6 +1498,63 @@
       el.textContent = line.startsWith('# ') ? line.slice(2) : line;
       box.appendChild(el);
     });
+  }
+
+  // FAQ text: "# " starts a question and the lines under it are its answer (paragraphs and "- " bullets).
+  function parseFaq(text) {
+    const qs = [];
+    String(text || '').split(/\r?\n/).forEach((raw) => {
+      const line = raw.trim();
+      if (/^# +\S/.test(line)) qs.push({ q: line.replace(/^# +/, ''), a: [] });
+      else if (qs.length) qs[qs.length - 1].a.push(line);
+    });
+    return qs;
+  }
+
+  // One <details> per question. Hidden (with its links) when the organizers have no questions up.
+  function renderFaq() {
+    const qs = parseFaq(site && typeof site.faq === 'string' ? site.faq : '');
+    const box = $('faq-list');
+    box.replaceChildren();
+    qs.forEach(({ q, a }) => {
+      const item = document.createElement('details'); item.className = 'qa';
+      const sum = document.createElement('summary'); sum.textContent = q;
+      const body = document.createElement('div'); body.className = 'qa-body';
+      renderRich(body, a.join('\n'));
+      item.append(sum, body);
+      box.appendChild(item);
+    });
+    const on = qs.length > 0;
+    $('faq').classList.toggle('hidden', !on);
+    $('foot-faq').classList.toggle('hidden', !on);
+    $('login-help-faq').classList.toggle('hidden', !on);
+    if (on && location.hash === '#faq') $('faq').scrollIntoView();
+  }
+
+  // Sponsor logos: an https:// image, or a file served next to this page like "sponsors/acme.png" (same rules as
+  // control/site.js). Anything else is skipped, and so is a link that isn't https://.
+  const LOGO_PATH = /^[A-Za-z0-9_-]+(\/[A-Za-z0-9_-]+)*\.(png|jpe?g|svg|webp|gif)$/;
+  const isHttps = (v) => { try { return new URL(v).protocol === 'https:'; } catch (err) { return false; } };
+
+  function renderSponsors() {
+    const row = $('sponsors'), box = $('sponsor-logos');
+    const list = (site && Array.isArray(site.sponsors) ? site.sponsors : []).slice(0, 12).filter((sp) => sp
+      && typeof sp.name === 'string' && sp.name.trim() && typeof sp.logo === 'string' && (LOGO_PATH.test(sp.logo) || isHttps(sp.logo)));
+    box.replaceChildren();
+    list.forEach((sp) => {
+      const linked = typeof sp.url === 'string' && isHttps(sp.url);
+      const el = document.createElement(linked ? 'a' : 'span');
+      el.className = 'sponsor';
+      if (linked) { el.href = sp.url; el.target = '_blank'; el.rel = 'noopener'; }
+      const img = document.createElement('img');
+      img.alt = sp.name.trim(); img.loading = 'lazy'; img.decoding = 'async'; img.height = 32;
+      // A logo that doesn't load is dropped rather than shown broken.
+      img.onerror = () => { el.remove(); row.classList.toggle('hidden', !box.children.length); };
+      img.src = sp.logo;
+      el.appendChild(img);
+      box.appendChild(el);
+    });
+    row.classList.toggle('hidden', !box.children.length);
   }
 
   async function showTerms() {
