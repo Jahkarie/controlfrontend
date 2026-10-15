@@ -5,7 +5,9 @@ On D' Road is an invite-only, 18+ Antigua Carnival band. This repo is the guest-
 ## Stack
 
 - One static page, `index.html`: HTML, CSS and plain JavaScript. No build step, no framework.
-- Images next to it: `og.png` (1200×630 link preview), `favicon.svg`, `favicon-32.png`, `apple-touch-icon.png`. The `og:url` and `og:image` tags point at `https://ondroad.xyz/`.
+- The look is "Paint & Powder": a black canvas with neon paint splats (hot pink, yellow, cyan, lime), dripping condensed headlines, torn-tape labels, sticker buttons and a paper ticket for the entry pass.
+- Fonts from Google Fonts: Archivo (variable; extra-condensed black for headlines, normal width for body), Space Mono (labels, codes) and Permanent Marker (graffiti tags like "Play mas!"). If they don't load, headlines fall back to a local narrow bold font (`Display Narrow`/`Display Wide`) so the big words still fit.
+- Images next to it: `og.png` (1200×630 link preview: ON D' ROAD over a pink splat with drips and an "ANTIGUA CARNIVAL · 18+ · INVITE ONLY" tape label; a 256-colour PNG, kept under 300 KB for WhatsApp), `favicon.svg` (a pink splat with a chalk "D" and yellow apostrophe on black; paths only, no fonts), and `favicon-32.png` and `apple-touch-icon.png` (180×180, opaque black) rendered from the same mark. `art/powder-burst.webp` (AI-made neon powder cloud on black, about 64 KB) sits behind the hero as the `.dust` layer, screen-blended and `aria-hidden`. The `og:url` and `og:image` tags point at `https://ondroad.xyz/`.
 - External scripts: `qrcodejs` from cdnjs, for the entry pass, and PayPal's button script from `www.paypal.com`, loaded only when the guest's reserved order can be paid with PayPal.
 - Calls the backend at `BACKEND_URL` (set near the top of the `<script>`, currently `https://control-1-0baa.onrender.com`). The backend's CORS list must include wherever this page is served (`ondroad.xyz`, `www.ondroad.xyz`, `FRONTEND_URL`).
 
@@ -30,6 +32,7 @@ On D' Road is an invite-only, 18+ Antigua Carnival band. This repo is the guest-
 
 - Use `toast()` for notices and `ask()` for confirm/prompt dialogs, never `alert`/`confirm`/`prompt`.
 - Set user data with `textContent`, not `innerHTML`.
-- Colors and fonts are CSS variables in `:root`; reuse them.
-- Animations respect `prefers-reduced-motion`. Keep `:focus-visible` outlines.
+- Colors, fonts and paint shapes are CSS variables in `:root`; reuse them. Palette: `--bg` (night `#09080b`), `--surface` (card `#131117`), `--text` (chalk `#f6f1e8`), `--muted`, `--dim`, `--ink` (`#0b0a0d`, text on paint), `--pink` `#ff2e93`, `--yellow` `#ffe500`, `--cyan` `#1ee3ff`, `--lime` `#a3ff2b`, `--red` `#ff4d4d`; the script also uses `--accent`, `--green` and `--amber`. Fonts: `--display`, `--body`, `--mono`, `--tag`. Shapes: `--m-splat`/`--m-drip` (CSS masks), `--torn` (torn-tape clip-path) and the `#sp-*` splats in the SVG sprite at the top of `<body>`.
+- Decorative SVG and art (splats, sprite, seal, "Play mas!" tags, the marquee tape) is `aria-hidden="true"`. Body text keeps AA contrast; text on paint is `--ink`.
+- Animations respect `prefers-reduced-motion`. Keep `:focus-visible` outlines. No sideways scrolling at 390px.
 - Guest-facing text is short, plain and on-brand ("Get in", "Bring your people").
