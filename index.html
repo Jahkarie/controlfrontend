@@ -1229,12 +1229,13 @@
 
         <div class="grid hidden" id="acct-grid">
           <div class="col">
-            <div class="panel rsvp">
+            <div class="panel rsvp hidden" id="rsvp-card">
               <div class="panel-head">
                 <p class="eyebrow" style="margin:0;">Attendance</p>
                 <span id="rsvp-badge" class="badge pending">PENDING</span>
               </div>
               <button class="btn btn-light" id="rsvp-btn" onclick="toggleRSVP()">Confirm attendance</button>
+              <p class="help" id="rsvp-note"></p>
             </div>
 
             <!-- The old event card: its "when" and info now live on the event page above. Kept (hidden) for older code. -->
@@ -1625,17 +1626,6 @@
       me = data && typeof data === 'object' ? data : {};
       renderHead();
       $('invites-count').innerText = data.invites_left;
-      const badge = $('rsvp-badge');
-      const rsvpBtn = $('rsvp-btn');
-      if (data.rsvp_status === 'CONFIRMED') {
-        badge.innerText = 'CONFIRMED';
-        badge.className = 'badge confirmed';
-        rsvpBtn.innerText = 'REVOKE ATTENDANCE';
-      } else {
-        badge.innerText = 'PENDING';
-        badge.className = 'badge pending';
-        rsvpBtn.innerText = 'CONFIRM ATTENDANCE';
-      }
     } catch (err) {
       if (err.message === 'SESSION_EXPIRED') return;
       console.error(err);
@@ -1669,16 +1659,17 @@
     $('login-error').innerText = '';
   }
 
+  // Confirming is one-way: once confirmed it's locked, and pulling out goes through a refund request.
   async function toggleRSVP() {
-    const current = $('rsvp-badge').innerText;
-    const next = current === 'CONFIRMED' ? 'PENDING' : 'CONFIRMED';
+    if (me && me.rsvp_status === 'CONFIRMED') return;
+    const ok = await ask({ title: 'Confirm you\'re coming?', text: "Once you confirm, it's locked. If you can't make it later, you'd request a refund instead.", ok: "Yes, I'm coming", cancel: 'Not yet' });
+    if (!ok) return;
     try {
-      const res = await authFetch('/api/update-rsvp', { rsvp_status: next });
-      if (!res.ok) {
-        const data = await res.json();
-        return toast(data.error || 'Update failed.', true);
-      }
-      loadUserData();
+      const res = await authFetch('/api/update-rsvp', { rsvp_status: 'CONFIRMED' });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) return toast(data.error || 'Update failed.', true);
+      toast("You're confirmed. See you on the road.");
+      loadStatus();
     } catch (err) {
       if (err.message !== 'SESSION_EXPIRED') toast('Network error. Try again.', true);
     }
@@ -2121,10 +2112,28 @@
     if (currentUser) $('nav-cta').textContent = st === 'pending' || st === 'declined' ? 'My account' : 'My pass';
     // Invites open once the order is paid (a free pass counts).
     $('invite-card').classList.toggle('hidden', !(approved && (orderPaid() || !!(me && me.has_paid))));
+    renderRsvp(approved);
     if (!approved) closeMenu();
     renderDetails(st);
     renderRequest(st);
     renderEvp();
+  }
+
+  // Attendance shows once the order is paid (a free pass counts). Confirming is one-way, so a confirmed guest sees
+  // no button, only how to pull out.
+  function renderRsvp(approved) {
+    const paid = orderPaid() || !!(me && me.has_paid);
+    const confirmed = !!me && me.rsvp_status === 'CONFIRMED';
+    $('rsvp-card').classList.toggle('hidden', !(approved && paid));
+    const badge = $('rsvp-badge');
+    badge.textContent = confirmed ? 'CONFIRMED' : 'PENDING';
+    badge.className = 'badge ' + (confirmed ? 'confirmed' : 'pending');
+    $('rsvp-btn').textContent = 'Confirm attendance';
+    $('rsvp-btn').classList.toggle('hidden', confirmed);
+    const out = myOrder && isFree(myOrder) ? 'cancel your free pass' : 'request a refund';
+    $('rsvp-note').textContent = confirmed
+      ? "You're locked in. Can't make it after all? " + out.charAt(0).toUpperCase() + out.slice(1) + ' from More.'
+      : "Tell us you're coming. Once you confirm, it's locked.";
   }
 
   // "Jada O'Neil · Age 27 · @jada", with Edit. Only with the newer backend, and only for approved guests.
