@@ -353,20 +353,14 @@
     .portal-head h2 { margin: 0; }
     .portal-sub { color: var(--text); font-size: 18px; font-weight: 600; margin: 4px 0 0; max-width: 640px; }
     .who { font-family: var(--mono); font-size: 13px; color: var(--muted); word-break: break-all; margin-top: 10px; }
+    /* Under the event page: attendance and (once paid) invites. */
     .grid { display: grid; gap: 22px; grid-template-columns: 1fr; }
     @media (min-width: 900px) {
-      .grid { grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); align-items: start; gap: 26px; }
+      .grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; gap: 26px; }
       .grid .col { display: grid; gap: 26px; }
-      .sticky { position: sticky; top: 90px; }
-      /* Desktop: the entry pass leads the right-hand column; it's what paid guests come back for. */
-      .sticky .ticket { order: -1; }
     }
     .col { display: grid; gap: 22px; }
-    /* Phones: one column, with the entry pass high up (it's what gets shown at the door). */
-    @media (max-width: 899px) {
-      .col { display: contents; }
-      #pkg-card, #order-status { order: 1; } .ticket { order: 2; } .event, .rsvp { order: 3; } .invite { order: 4; }
-    }
+    @media (max-width: 899px) { .col { display: contents; } }
     .panel-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 6px; }
     .badge {
       display: inline-flex; align-items: center; gap: 8px; white-space: nowrap;
@@ -393,13 +387,52 @@
     .pkg:hover { border-color: rgba(246, 241, 232, .4); transform: translateY(-2px); }
     .pkg.chosen { border-color: var(--pink); background: linear-gradient(160deg, rgba(255, 46, 147, .16), rgba(255, 46, 147, .03) 60%), var(--well); box-shadow: 6px 6px 0 var(--pink); transform: translate(-3px, -3px); }
     .pkg.chosen::before { opacity: .32; transform: rotate(-20deg) scale(1); }
-    .pkg.chosen::after {
-      content: '✓'; position: absolute; top: 16px; right: 16px; width: 36px; height: 36px; border-radius: 50%;
-      display: grid; place-items: center; font-family: var(--body); font-size: 19px; font-weight: 900; line-height: 1;
-      background: var(--pink); color: var(--ink); box-shadow: 0 0 0 3px var(--ink), 0 0 0 5px var(--pink); transform: rotate(-12deg);
+    /* Top row: the pick mark, the name and the price. Single choice: the chosen card's mark fills with a check. */
+    .pkg-top { display: flex; align-items: center; gap: 12px; }
+    .pkg-pick {
+      flex: none; width: 28px; height: 28px; border-radius: 50%; border: 2px solid rgba(246, 241, 232, .45);
+      display: grid; place-items: center; font-family: var(--body); font-size: 16px; font-weight: 900; line-height: 1; color: var(--ink);
+      transition: background .2s, border-color .2s, transform .2s;
     }
-    .pkg h3 { padding-right: 44px; font-size: 32px; }
-    .pkg .price { font-size: 50px; line-height: .9; margin-top: 12px; letter-spacing: .005em; color: var(--yellow); }
+    .pkg:hover .pkg-pick { border-color: var(--yellow); }
+    .pkg.chosen .pkg-pick { background: var(--pink); border-color: var(--pink); box-shadow: 0 0 0 2px var(--ink), 0 0 0 4px var(--pink); transform: rotate(-12deg); }
+    .pkg.chosen .pkg-pick::after { content: '✓'; }
+    .pkg h3 { flex: 1 1 auto; min-width: 0; font-size: 30px; overflow-wrap: break-word; }
+    .pkg .price { flex: none; margin-left: auto; font-size: 32px; line-height: .9; letter-spacing: .005em; color: var(--yellow); white-space: nowrap; }
+    /* Phones: smaller type and padding, so the name and price share one row. */
+    @media (max-width: 480px) {
+      .pkg { padding: 18px 16px 18px; }
+      .pkg h3 { font-size: 26px; }
+      .pkg .price { font-size: 26px; }
+      .pkg-top { gap: 10px; }
+      .pkg-pick { width: 24px; height: 24px; font-size: 14px; }
+    }
+    .pkg-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+    .pkg .pkg-tags .tier { margin-top: 0; }
+    .pkg .tag {
+      display: inline-block; padding: 5px 10px 4px; font-family: var(--mono); font-weight: 700; font-size: 11px; letter-spacing: .14em; text-transform: uppercase;
+      color: var(--ink); background: var(--red); clip-path: var(--torn); transform: rotate(1.5deg);
+    }
+    .pkg .cash { margin: 12px 0 0; font-size: 14px; line-height: 1.5; color: var(--muted); white-space: pre-line; }
+    .pkg .cash b { font-family: var(--mono); font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--cyan); margin-right: 6px; }
+    .pkg-none { margin: 16px 0 0; font-size: 15.5px; font-weight: 600; color: var(--text); }
+    /* Packages that can't be picked right now fold away under the ones on sale. */
+    .pkg-fold { margin-top: 18px; }
+    .pkg-fold > summary {
+      position: relative; display: block; list-style: none; cursor: pointer; padding: 14px 52px 13px 16px; border-radius: 10px;
+      font-family: var(--mono); font-weight: 700; font-size: 12.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted);
+      border: 2px dashed var(--line-strong); transition: color .2s, border-color .2s;
+    }
+    .pkg-fold > summary::-webkit-details-marker { display: none; }
+    .pkg-fold > summary::after {
+      content: '+'; position: absolute; right: 12px; top: 50%; width: 28px; height: 28px; margin-top: -14px; border-radius: 50%;
+      display: grid; place-items: center; font-family: var(--body); font-size: 20px; line-height: 1; border: 2px solid var(--line-strong); transition: transform .25s;
+    }
+    .pkg-fold > summary:hover { color: var(--text); border-color: rgba(246, 241, 232, .4); }
+    .pkg-fold[open] > summary { color: var(--text); }
+    .pkg-fold[open] > summary::after { transform: rotate(135deg); }
+    .pkg-fold .pkg { cursor: default; }
+    .pkg-fold .pkg:hover { transform: none; border-color: rgba(246, 241, 232, .14); }
     .pkg ul { list-style: none; margin: 16px 0 0; padding: 14px 0 0; border-top: 2px dashed var(--line); font-size: 15px; color: var(--muted); }
     .pkg li { position: relative; padding-left: 22px; margin-bottom: 7px; }
     .pkg li::before { content: ''; position: absolute; left: 2px; top: .45em; width: 10px; height: 10px; border-radius: 50% 50% 50% 8%; background: var(--pink); transform: rotate(-30deg); }
@@ -418,8 +451,13 @@
       display: inline-block; margin-top: 12px; padding: 5px 10px 4px; font-family: var(--mono); font-weight: 700; font-size: 11px; letter-spacing: .14em; text-transform: uppercase;
       color: var(--ink); background: var(--cyan); clip-path: var(--torn); transform: rotate(-2deg);
     }
-    .pkg .tier + .price { margin-top: 8px; }
-    .pkg .tier-info { display: flex; flex-wrap: wrap; gap: 4px 14px; margin-top: 10px; font-family: var(--mono); font-size: 12px; letter-spacing: .02em; color: var(--muted); }
+    .pkg .tier-info { display: flex; flex-wrap: wrap; gap: 4px 14px; margin-top: 14px; font-family: var(--mono); font-size: 12px; letter-spacing: .02em; color: var(--muted); }
+    .pkg .tier-info .until { flex-basis: 100%; display: block; color: var(--text); font-weight: 700; }
+    .pkg .tier-info .until small { font-size: 11px; font-weight: 400; color: var(--dim); white-space: nowrap; }
+    .pkg .tier-info .until time { white-space: nowrap; }
+    /* The little "on sale" light */
+    .pkg .live { display: inline-block; vertical-align: middle; margin: -2px 9px 0 1px; width: 8px; height: 8px; border-radius: 50%; background: var(--lime); box-shadow: 0 0 0 3px rgba(163, 255, 43, .18), 0 0 10px rgba(163, 255, 43, .7); animation: live 2s ease-in-out infinite; }
+    @keyframes live { 50% { box-shadow: 0 0 0 5px rgba(163, 255, 43, .08), 0 0 14px rgba(163, 255, 43, .9); } }
     .pkg .tier-info .left { color: var(--yellow); font-weight: 700; }
     .pkg .tier-info .next { color: var(--dim); }
     .promo { margin-top: 20px; font-size: 15px; color: var(--muted); }
@@ -573,6 +611,182 @@
 
     .count { display: flex; align-items: center; gap: 14px; margin-top: 22px; color: var(--muted); font-family: var(--mono); font-weight: 700; font-size: 12px; letter-spacing: .12em; text-transform: uppercase; }
     .count b { font-family: var(--tag); font-weight: 400; font-size: 64px; color: var(--lime); letter-spacing: 0; line-height: .8; transform: rotate(-8deg); text-shadow: 3px 3px 0 var(--ink); }
+
+    /* ---------- Event page: the top of an approved guest's account ---------- */
+    /* The event page has its own cover, so the big header and the tape make way for it. */
+    body.evp-on .hero, body.evp-on .tapes { display: none; }
+    body.evp-on #access { padding-top: 24px; }
+    .evp { display: flex; flex-direction: column; gap: 24px; margin-bottom: clamp(56px, 8vw, 88px); }
+    /* Phones: one column. Cover, details, the picker (or the order), the pass, then host and about. */
+    .evp-side, .evp-main { display: contents; }
+    .evp-cover { order: 1; } .evp-top { order: 2; } .evp-slot { order: 3; } .evp .ticket { order: 4; } .evp-bottom { order: 5; }
+    .evp-top, .evp-slot, .evp-bottom { display: grid; gap: 22px; min-width: 0; }
+    @media (min-width: 900px) {
+      /* Desktop: cover and pass on the left, everything else on the right. */
+      .evp { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.12fr); gap: 48px; align-items: start; }
+      .evp-side, .evp-main { display: grid; gap: 26px; min-width: 0; }
+      .evp-top, .evp-slot, .evp-bottom { gap: 26px; }
+    }
+    #pkg-card, #order-status, #pass-card { scroll-margin-top: 84px; }
+    .evp-cover {
+      position: relative; isolation: isolate; overflow: hidden; border-radius: 16px; background: var(--bg);
+      box-shadow: 0 0 0 2px var(--line-strong), 8px 8px 0 var(--pink), 0 30px 70px -30px rgba(255, 46, 147, .5);
+    }
+    .evp-cover .poster { display: block; width: 100%; height: auto; max-height: 82vh; object-fit: cover; }
+    .evp-art { position: relative; aspect-ratio: 1; overflow: hidden; }
+    @media (max-width: 640px) { .evp-art { aspect-ratio: 5 / 4; } }
+    .evp-art .glow { position: absolute; border-radius: 50%; mix-blend-mode: screen; }
+    .evp-art .g1 { width: 120%; aspect-ratio: 1; top: -40%; right: -50%; background: radial-gradient(closest-side, rgba(255, 46, 147, .45), rgba(255, 46, 147, .1) 55%, transparent); }
+    .evp-art .g2 { width: 90%; aspect-ratio: 1; bottom: -40%; left: -36%; background: radial-gradient(closest-side, rgba(30, 227, 255, .35), transparent); }
+    .evp-art .dust {
+      position: absolute; inset: -6% -10% auto auto; width: 110%; aspect-ratio: 1200 / 1607;
+      background: url("art/powder-burst.webp") right top / contain no-repeat; mix-blend-mode: screen; opacity: .85; animation: dust-in 1.6s ease-out both;
+    }
+    .evp-art .sp { animation: splat-in .9s cubic-bezier(.2, 1.4, .3, 1) both; }
+    .evp-art .c1 { color: var(--pink); width: 74%; top: 10%; left: -14%; transform: rotate(-16deg); }
+    .evp-art .c2 { color: var(--yellow); width: 34%; bottom: 4%; right: 22%; transform: rotate(40deg); animation-delay: .12s; }
+    .evp-art .c3 { color: var(--lime); width: 26%; top: 6%; right: 8%; transform: rotate(120deg); animation-delay: .22s; }
+    .evp-art .c4 { color: var(--cyan); width: 100%; bottom: -30%; left: -10%; opacity: .65; transform: rotate(150deg); }
+    .evp-art .tag { position: absolute; left: 7%; bottom: 10%; z-index: 2; font-family: var(--tag); font-size: clamp(34px, 10vw, 58px); line-height: 1; color: var(--yellow); transform: rotate(-9deg); text-shadow: 3px 3px 0 var(--ink); white-space: nowrap; }
+    .evp-art svg.seal { position: absolute; top: 15%; left: auto; right: 6%; bottom: auto; z-index: 2; width: clamp(92px, 26%, 140px); height: auto; }
+    .evp-tape {
+      position: absolute; top: 18px; left: -6px; z-index: 3; margin: 0; padding: 9px 18px 8px 22px;
+      font-family: var(--mono); font-weight: 700; font-size: 11.5px; letter-spacing: .14em; text-transform: uppercase; line-height: 1.2;
+      color: var(--ink); background: var(--yellow); clip-path: var(--torn); transform: rotate(-4deg); transform-origin: left center; white-space: nowrap;
+    }
+    .evp-title {
+      margin: 0; font-family: var(--display); font-weight: 900; font-stretch: 62%; text-transform: uppercase;
+      font-size: clamp(66px, 19vw, 112px); line-height: .84; letter-spacing: .002em; color: var(--text);
+      text-shadow: .03em .03em 0 var(--ink), .055em .05em 0 var(--pink);
+    }
+    .evp-title .apos { color: var(--yellow); }
+    .evp-when { margin: 10px 0 0; font-family: var(--display); font-weight: 900; font-stretch: 75%; text-transform: uppercase; font-size: clamp(26px, 6.4vw, 36px); line-height: 1; letter-spacing: .02em; color: var(--cyan); }
+    .evp-when.soon { color: var(--muted); font-size: 22px; }
+    .evp-status {
+      display: inline-flex; align-items: center; gap: 10px; width: fit-content; max-width: 100%; margin: 18px 0 0; padding: 10px 16px 9px 14px;
+      font-size: 16px; font-weight: 700; line-height: 1.35; color: var(--text); background: var(--surface-2);
+      border: 2px solid var(--line-strong); border-radius: 14px; transform: rotate(-.6deg);
+    }
+    .evp-status:empty { display: none; }
+    .evp-status::before { content: ''; flex: none; width: 10px; height: 10px; border-radius: 50%; background: var(--pink); box-shadow: 0 0 10px currentColor; }
+    .evp-status[data-tone="held"] { border-color: rgba(255, 229, 0, .55); }
+    .evp-status[data-tone="held"]::before { background: var(--yellow); color: var(--yellow); }
+    .evp-status[data-tone="going"] { border-color: rgba(163, 255, 43, .6); }
+    .evp-status[data-tone="going"]::before { background: var(--lime); color: var(--lime); }
+    .evp-status[data-tone="pick"]::before { color: var(--pink); }
+    /* Three sticker buttons */
+    .evp-actions { display: flex; gap: 14px; margin-top: 4px; }
+    .evp-actions > * { flex: 1 1 0; min-width: 0; }
+    .evp-more { position: relative; }
+    .evp-btn {
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; width: 100%; min-height: 86px; padding: 14px 6px 12px; cursor: pointer;
+      font-family: var(--display); font-weight: 900; font-stretch: 75%; font-size: 16px; line-height: 1.05; letter-spacing: .05em; text-transform: uppercase; text-align: center;
+      color: var(--ink); background: var(--yellow); border: 0; border-radius: 14px;
+      box-shadow: 0 0 0 3px var(--ink), 4px 5px 0 3px var(--pink); transform: rotate(-1.5deg); transition: transform .15s, box-shadow .2s;
+    }
+    .evp-btn svg { width: 26px; height: 26px; flex: none; }
+    .evp-btn.b-contact { background: var(--cyan); box-shadow: 0 0 0 3px var(--ink), 4px 5px 0 3px var(--yellow); transform: rotate(1deg); }
+    .evp-btn.b-more { background: var(--pink); box-shadow: 0 0 0 3px var(--ink), 4px 5px 0 3px var(--cyan); transform: rotate(-.5deg); }
+    .evp-btn:hover { transform: rotate(0) translateY(-2px); }
+    .evp-btn:active, .evp-btn[aria-expanded="true"] { transform: translate(2px, 2px); box-shadow: 0 0 0 3px var(--ink), 1px 2px 0 3px var(--cyan); }
+    /* The More menu */
+    .evp-menu {
+      position: absolute; z-index: 60; right: 0; top: calc(100% + 16px); width: min(280px, calc(100vw - 32px)); padding: 8px;
+      display: grid; gap: 2px; background: var(--surface-2); border: 2px solid var(--line-strong); border-radius: 12px;
+      box-shadow: 6px 6px 0 var(--pink), 0 24px 60px -10px rgba(0, 0, 0, .9);
+    }
+    .evp-menu .mi {
+      display: flex; align-items: center; gap: 12px; width: 100%; padding: 12px 12px 11px; cursor: pointer; text-align: left;
+      font: 600 16px var(--body); color: var(--text); background: none; border: 0; border-radius: 8px;
+    }
+    .evp-menu .mi svg { width: 20px; height: 20px; flex: none; color: var(--muted); }
+    .evp-menu .mi:hover, .evp-menu .mi:focus-visible { background: rgba(255, 229, 0, .1); color: var(--yellow); }
+    .evp-menu .mi:hover svg, .evp-menu .mi:focus-visible svg { color: var(--yellow); }
+    .evp-menu .mi:focus-visible { outline-offset: -3px; }
+    .evp-menu .sep { height: 0; margin: 6px 4px; border-top: 2px dashed var(--line); }
+    .evp-menu .mi.warn-mi { color: #ffb3b3; }
+    /* Rows: location, host, about */
+    .evp-rows { display: grid; border-top: 2px dashed var(--line); }
+    .evp-row { display: grid; grid-template-columns: 44px minmax(0, 1fr) auto; gap: 14px; align-items: start; padding: 16px 0; border-bottom: 2px dashed var(--line); }
+    .evp-row .ic { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; color: var(--ink); background: var(--pink); box-shadow: 2px 3px 0 var(--ink); }
+    .evp-row .ic svg { width: 22px; height: 22px; }
+    .evp-row.r-host .ic { display: flex; align-items: center; justify-content: center; background: var(--yellow); font-family: var(--display); font-weight: 900; font-stretch: 62%; font-size: 24px; line-height: 1; }
+    .evp-row.r-host .ic span { color: var(--pink); }
+    .evp-row.r-about .ic { background: var(--cyan); }
+    .evp-row .k { margin: 2px 0 2px; font-family: var(--mono); font-size: 11px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+    .evp-row .v { margin: 0; font-size: 17px; font-weight: 700; line-height: 1.4; color: var(--text); overflow-wrap: anywhere; }
+    .evp-row.locked .v { color: var(--muted); font-weight: 600; }
+    .evp-row.r-about .v { white-space: pre-line; font-size: 15.5px; font-weight: 500; color: var(--muted); }
+    .evp-row > div:nth-child(2) { grid-column: 2 / -1; }
+    .evp-row.r-host > div:nth-child(2) { grid-column: auto; }
+    .host-links { display: flex; gap: 8px; align-self: center; }
+    .host-links a {
+      width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; color: var(--text);
+      border: 2px solid var(--line-strong); transition: color .2s, background .2s, border-color .2s;
+    }
+    .host-links a svg { width: 19px; height: 19px; }
+    .host-links a:hover { color: var(--ink); background: var(--yellow); border-color: var(--yellow); }
+    /* Paid guest with details missing */
+    .nudge { --tape: var(--yellow); border: 2px solid var(--yellow); box-shadow: 6px 6px 0 var(--pink); }
+    .nudge h3 { font-size: 34px; }
+    .nudge p:not(.eyebrow) { color: var(--text); font-size: 15.5px; margin: 10px 0 0; }
+    .nudge .btn { margin-top: 16px; }
+
+    /* ---------- Sheets (Contact, pass QR) ---------- */
+    dialog.sheet { width: min(460px, calc(100vw - 40px)); }
+    .sheet-in { padding: 22px 24px 26px; }
+    .sheet-head { display: flex; justify-content: space-between; align-items: center; gap: 16px; }
+    .sheet-head h3 { font-size: 38px; }
+    .x { flex: none; background: none; border: 2px solid var(--line-strong); color: var(--text); font-size: 15px; line-height: 1; cursor: pointer; width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; }
+    .x:hover { color: var(--ink); background: var(--yellow); border-color: var(--yellow); }
+    .sheet-sub { color: var(--muted); font-size: 15px; margin: 10px 0 0; }
+    .sheet-list { display: grid; gap: 10px; margin-top: 18px; }
+    .sheet-item {
+      display: grid; grid-template-columns: 44px minmax(0, 1fr) auto; align-items: center; gap: 14px; padding: 12px 14px; border-radius: 12px;
+      color: var(--text); text-decoration: none; background: var(--well); border: 2px solid var(--line); transition: border-color .2s, background .2s;
+    }
+    .sheet-item:hover { border-color: var(--yellow); background: rgba(255, 229, 0, .05); }
+    .sheet-item .ic { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; color: var(--ink); background: var(--lime); }
+    .sheet-item:nth-child(2) .ic { background: var(--pink); }
+    .sheet-item:nth-child(3) .ic { background: var(--cyan); }
+    .sheet-item .ic svg { width: 22px; height: 22px; }
+    .sheet-item b { display: block; font-size: 16.5px; }
+    .sheet-item small { display: block; color: var(--muted); font-family: var(--mono); font-size: 12.5px; overflow-wrap: anywhere; }
+    .sheet-item .go { color: var(--yellow); font-weight: 700; font-size: 20px; }
+    .qr-big { display: flex; justify-content: center; margin: 20px auto 0; padding: 18px; width: fit-content; background: #fff; border-radius: 12px; box-shadow: 0 0 0 3px var(--ink), 6px 6px 0 3px var(--cyan); }
+    .qr-big img, .qr-big canvas { display: block; }
+    .qr-ref { text-align: center; margin: 18px 0 0; font-family: var(--mono); font-weight: 700; font-size: 15px; letter-spacing: .06em; color: var(--text); }
+    @media (max-width: 640px) {
+      /* Phones: sheets come up from the bottom. */
+      dialog.sheet { width: 100%; max-width: 100%; margin: auto 0 0; border-radius: 18px 18px 0 0; border-width: 2px 0 0; box-shadow: 0 -6px 0 var(--pink), 0 -20px 60px rgba(0, 0, 0, .8); }
+      .sheet-in { padding-bottom: max(26px, env(safe-area-inset-bottom)); }
+    }
+
+    /* ---------- Your details, request state ---------- */
+    .my-details { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; margin: 12px 0 0; font-size: 15px; }
+    .my-details .k { font-family: var(--mono); font-size: 11px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+    .my-details .v { font-weight: 700; color: var(--text); overflow-wrap: anywhere; }
+    .my-details .v.missing { color: var(--yellow); }
+    .lock-note { flex-basis: 100%; margin: 2px 0 0; font-size: 13.5px; color: var(--dim); }
+    #portal-view[data-acct="approved"] .portal-head { padding-top: clamp(36px, 6vw, 56px); border-top: 2px dashed var(--line-strong); }
+    #portal-view[data-acct="approved"] .portal-head h2 { font-size: clamp(44px, 11vw, 72px); }
+    .acct-state { --tape: var(--cyan); max-width: 640px; margin-bottom: 26px; }
+    .req-meta { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 10px 18px; margin: 18px 0 0; padding: 16px 0 0; border-top: 2px dashed var(--line); }
+    .req-meta dt { font-family: var(--mono); font-size: 11px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); padding-top: 3px; }
+    .req-meta dd { margin: 0; font-weight: 700; overflow-wrap: anywhere; }
+    .acct-state .btn { width: auto; padding-left: 26px; padding-right: 26px; }
+    .loading-line { font-family: var(--mono); font-size: 13px; color: var(--muted); margin: 22px 0 0; }
+
+    /* ---------- Profile fields (accept form and the details dialog) ---------- */
+    .dob { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr) minmax(0, 1.25fr); gap: 8px; }
+    .dob select { padding: 15px 28px 15px 12px; background-position: right 10px center; }
+    .field > .at-wrap { position: relative; display: block; margin: 0; letter-spacing: 0; text-transform: none; }
+    .at-wrap .at { position: absolute; left: 16px; top: 50%; transform: translateY(-52%); font: 700 17px var(--body); color: var(--pink); pointer-events: none; }
+    .at-wrap input { padding-left: 34px; }
+    .field-err { margin: 8px 0 0; font-size: 14px; font-weight: 600; line-height: 1.4; color: var(--red); }
+    .field-err:empty { display: none; }
+    input[aria-invalid="true"], select[aria-invalid="true"] { border-color: var(--red); }
+    .dlg-fields .msg { color: var(--red); }
 
     /* ---------- Invite accept ---------- */
     .from { font-size: 21px; font-weight: 700; line-height: 1.3; margin: 4px 0 10px; }
@@ -788,111 +1002,69 @@
         <div>
           <p class="eyebrow">You're on the list</p>
           <h2>You've been<br>invited.</h2>
-          <p class="lead">Accept with the email this invite was sent to. It only works once.</p>
+          <p class="lead">Accept with the email this invite was sent to and a few details about you. The link only works once.</p>
         </div>
         <div class="panel" style="margin-top:26px;">
           <p id="accept-from" class="from"></p>
           <p id="accept-note" class="quote"></p>
-          <label class="field"><span>Confirm your email</span>
-            <input type="email" id="accept-email" placeholder="The email this invite was sent to" autocomplete="email">
-          </label>
-          <label class="check"><input type="checkbox" id="accept-adult"> <span>I'm 18 or older</span></label>
-          <button class="btn" onclick="acceptInvite()">Accept invitation</button>
-          <div id="accept-error" class="msg" style="color: var(--red);"></div>
+          <form id="accept-form" novalidate>
+            <label class="field"><span>Confirm your email</span>
+              <input type="email" id="accept-email" placeholder="The email this invite was sent to" autocomplete="email" aria-describedby="accept-email-err">
+            </label>
+            <p id="accept-email-err" class="field-err"></p>
+            <label class="field"><span>Full name (as on your ID)</span>
+              <input id="accept-name" autocomplete="name" maxlength="80" autocapitalize="words" spellcheck="false" placeholder="First and last name" aria-describedby="accept-name-err">
+            </label>
+            <p id="accept-name-err" class="field-err"></p>
+            <div class="field" role="group" aria-labelledby="accept-dob-label">
+              <span id="accept-dob-label">Date of birth</span>
+              <div class="dob">
+                <select id="accept-dob-d" aria-label="Day" autocomplete="bday-day" aria-describedby="accept-dob-err"></select>
+                <select id="accept-dob-m" aria-label="Month" autocomplete="bday-month" aria-describedby="accept-dob-err"></select>
+                <select id="accept-dob-y" aria-label="Year" autocomplete="bday-year" aria-describedby="accept-dob-err"></select>
+              </div>
+            </div>
+            <p id="accept-dob-err" class="field-err"></p>
+            <label class="field"><span>Instagram</span>
+              <span class="at-wrap"><span class="at" aria-hidden="true">@</span><input id="accept-ig" maxlength="60" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="yourhandle" aria-describedby="accept-ig-err"></span>
+            </label>
+            <p id="accept-ig-err" class="field-err"></p>
+            <p class="help">18+ only. Use your name and date of birth exactly as they show on your photo ID: we check it when you collect your package.</p>
+            <button class="btn" type="submit">Accept invitation</button>
+            <div id="accept-error" class="msg" style="color: var(--red);" role="alert"></div>
+          </form>
         </div>
       </div>
 
       <!-- PORTAL VIEW -->
-      <div id="portal-view" class="hidden">
-        <div class="portal-head">
-          <div>
-            <p class="eyebrow">Your account</p>
-            <h2 id="portal-title">You're in.</h2>
-            <p id="portal-sub" class="portal-sub hidden"></p>
-            <p class="who" id="user-email">--</p>
-          </div>
-          <button class="btn btn-danger" style="width:auto;" onclick="logout()">Log out</button>
-        </div>
-
-        <div class="grid">
-          <div class="col">
-            <div class="panel" id="pkg-card">
-              <p class="eyebrow" style="margin-bottom:12px;">Packages</p>
-              <h3 style="font-size:32px;">Know your package</h3>
-              <p class="lead" style="font-size:15px; margin-top:10px;">Both packages include admission. What you get and what's required of you is different. Read before you pick.</p>
-              <div id="pkg-list"></div>
-              <div id="pkg-warn" class="warn hidden">You cannot wear regular clothes with makeup, dress all black and claim "unrecognizable," or wear minimal accessories and call it a costume. If you're not in proper costume or full package gear, you will be denied drinks, denied food, and not welcomed in the band — regardless of payment.</div>
-              <label id="pkg-size-wrap" class="field hidden"><span>Your size</span><select id="pkg-size"></select></label>
-              <div id="pkg-promo" class="promo hidden">
-                <button type="button" class="linkish" id="promo-open" aria-controls="promo-box" aria-expanded="false">Have a code?</button>
-                <div id="promo-box" class="field hidden">
-                  <span id="promo-label">Your code</span>
-                  <div class="promo-row">
-                    <input id="promo-code" aria-labelledby="promo-label" maxlength="24" autocomplete="off" autocapitalize="characters" spellcheck="false" enterkeyhint="go" placeholder="Enter code">
-                    <button type="button" class="btn btn-light" id="promo-apply">Apply</button>
-                  </div>
-                  <p id="promo-msg" class="msg" role="status"></p>
-                </div>
+      <div id="portal-view" class="hidden" data-acct="loading">
+        <!-- EVENT PAGE (approved guests): the cover and the event, then the picker or the order, then the pass -->
+        <section id="ev-page" class="evp hidden" aria-labelledby="evp-title">
+          <div class="evp-side">
+            <div class="evp-cover">
+              <img id="evp-poster" class="poster hidden" alt="On D' Road event poster" decoding="async">
+              <div id="evp-art" class="evp-art" aria-hidden="true">
+                <div class="glow g1"></div><div class="glow g2"></div>
+                <div class="dust"></div>
+                <svg class="sp c4" viewBox="0 0 200 200"><use href="#sp-speck"/></svg>
+                <svg class="sp c1" viewBox="0 0 200 200"><use href="#sp-a"/></svg>
+                <svg class="sp c2" viewBox="0 0 200 200"><use href="#sp-c"/></svg>
+                <svg class="sp c3" viewBox="0 0 200 200"><use href="#sp-d"/></svg>
+                <span class="tag">Play mas!</span>
+                <svg class="seal" viewBox="0 0 120 120">
+                  <circle class="disc" cx="60" cy="60" r="57"/>
+                  <g class="ring">
+                    <path id="evp-seal-path" d="M60 60m-45 0a45 45 0 1 1 90 0a45 45 0 1 1-90 0" fill="none"/>
+                    <text><textPath href="#evp-seal-path" textLength="280" lengthAdjust="spacing">PLAY MAS ✦ ON D' ROAD ✦ ANTIGUA ✦ 18+ ✦</textPath></text>
+                  </g>
+                  <circle class="core" cx="60" cy="60" r="23"/>
+                  <path class="star" d="M60 47l3.4 9.6 9.6 3.4-9.6 3.4-3.4 9.6-3.4-9.6-9.6-3.4 9.6-3.4z"/>
+                </svg>
               </div>
-              <label id="pkg-terms-wrap" class="check hidden"><input type="checkbox" id="pkg-terms"> <span>I agree to the <button type="button" class="linkish" onclick="showTerms()">terms</button></span></label>
-              <button class="btn" id="pkg-confirm" style="display:none;">Secure this package</button>
-              <div id="pkg-msg" class="msg"></div>
+              <p class="evp-tape">Private · Invite only · 18+</p>
             </div>
 
-            <div id="order-status" class="panel hidden">
-              <p class="eyebrow" style="margin-bottom:6px;">Your package</p>
-              <p id="order-summary" class="order-summary"></p>
-              <p id="order-price-note" class="price-note hidden"></p>
-              <p id="order-ref" class="ref"></p>
-              <p id="order-pickup" class="picked hidden"></p>
-              <label id="order-size-wrap" class="field hidden"><span>Your size</span><select id="order-size"></select></label>
-              <p id="order-size-lock" class="help hidden">Sizes are locked. Contact us if yours needs to change.</p>
-              <div id="order-deadline" class="deadline hidden"></div>
-              <p id="order-promo" class="note hidden"><button type="button" class="linkish" onclick="addOrderCode()">Have a code?</button></p>
-              <div id="paypal-box" class="paybox hidden">
-                <p class="paybox-head"><b>Pay now</b><span id="paypal-amount"></span></p>
-                <div id="paypal-buttons" class="paypal-frame"></div>
-                <p id="paypal-msg" class="note hidden" role="status"></p>
-              </div>
-              <div id="order-instr" class="instr hidden"><b id="order-instr-label">How to pay</b><span id="order-instr-text"></span><span id="order-pay-note" class="pay-note"></span></div>
-              <p id="order-note" class="note"></p>
-              <button class="btn btn-light" id="order-cancel" onclick="cancelOrder()">Cancel reservation</button>
-              <button class="btn btn-light hidden" id="order-refund" onclick="requestRefund()">Request refund</button>
-              <button class="btn btn-light hidden" id="order-withdraw" onclick="withdrawRefund()">Keep my spot</button>
-            </div>
-
-            <div id="event-card" class="panel event hidden">
-              <p class="eyebrow" style="margin-bottom:12px;">The event</p>
-              <h3 id="event-when" class="event-when"></h3>
-              <p id="event-info" class="event-text"></p>
-              <div id="event-paid" class="instr hidden"><b>For paid guests</b><span id="event-paid-text"></span></div>
-              <p id="event-locked" class="note hidden">More details unlock once your payment is confirmed.</p>
-            </div>
-
-            <div class="panel invite">
-              <p class="eyebrow" style="margin-bottom:12px;">Bring your people</p>
-              <h3 style="font-size:32px;">Invite your people</h3>
-              <label class="field"><span>Their email</span>
-                <input type="email" id="invite-email" placeholder="friend@example.com">
-              </label>
-              <label class="field"><span>Personal note <em style="text-transform:none; letter-spacing:0; font-style:normal; color:var(--dim);">(optional)</em></span>
-                <textarea id="invite-note" maxlength="300" placeholder="Bro you have to come to this!"></textarea>
-              </label>
-              <button class="btn" onclick="sendInvite()">Send invite</button>
-              <p class="count"><b id="invites-count">0</b> invites left</p>
-            </div>
-          </div>
-
-          <div class="col sticky">
-            <div class="panel rsvp">
-              <div class="panel-head">
-                <p class="eyebrow" style="margin:0;">Attendance</p>
-                <span id="rsvp-badge" class="badge pending">PENDING</span>
-              </div>
-              <button class="btn btn-light" id="rsvp-btn" onclick="toggleRSVP()">Confirm attendance</button>
-            </div>
-
-            <div class="panel ticket">
+            <div class="panel ticket" id="pass-card" tabindex="-1" aria-label="Your entry pass">
               <div class="ticket-top">
                 <svg class="sp tspk" viewBox="0 0 200 200" aria-hidden="true"><use href="#sp-speck"/></svg>
                 <svg class="sp tsp1" viewBox="0 0 200 200" aria-hidden="true"><use href="#sp-a"/></svg>
@@ -914,6 +1086,177 @@
                 </dl>
               </div>
               <div class="band" aria-hidden="true"><span>On D' Road ✦ Admit one</span></div>
+            </div>
+          </div>
+
+          <div class="evp-main">
+            <div class="evp-top">
+              <div>
+                <h1 id="evp-title" class="evp-title">On D<span class="apos">'</span> Road</h1>
+                <p id="evp-when" class="evp-when"></p>
+                <p id="evp-status" class="evp-status" data-tone="pick"></p>
+              </div>
+              <div class="evp-actions">
+                <button type="button" class="evp-btn b-pass" id="evp-pass">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" aria-hidden="true"><path d="M3 7h18v3a2 2 0 0 0 0 4v3H3v-3a2 2 0 0 0 0-4z"/><path d="M14.5 7.5v9" stroke-dasharray="2 2.2"/></svg>
+                  <span id="evp-pass-label">Get your pass</span>
+                </button>
+                <button type="button" class="evp-btn b-contact hidden" id="evp-contact" aria-haspopup="dialog">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" aria-hidden="true"><path d="M20.5 11.5a8 8 0 0 1-11.7 7.1L4 20l1.3-4.4A8 8 0 1 1 20.5 11.5z"/><path d="M8.5 11.5h.01M12.5 11.5h.01M16.5 11.5h.01" stroke-width="3" stroke-linecap="round"/></svg>
+                  <span>Contact</span>
+                </button>
+                <div class="evp-more" id="evp-more-wrap">
+                  <button type="button" class="evp-btn b-more" id="evp-more" aria-expanded="false" aria-controls="evp-menu">
+                    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="2.4"/><circle cx="12" cy="12" r="2.4"/><circle cx="19" cy="12" r="2.4"/></svg>
+                    <span>More</span>
+                  </button>
+                  <div id="evp-menu" class="evp-menu hidden" role="group" aria-label="More">
+                    <button type="button" class="mi" id="mi-qr" data-act="qr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3.5" y="3.5" width="7" height="7" rx="1"/><rect x="13.5" y="3.5" width="7" height="7" rx="1"/><rect x="3.5" y="13.5" width="7" height="7" rx="1"/><path d="M14 14h2.5v2.5H14zM18 18h2.5v2.5H18zM18 14h2.5M14 18v2.5"/></svg>Show my pass QR</button>
+                    <button type="button" class="mi warn-mi" id="mi-cancel" data-act="cancel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M9 9l6 6M15 9l-6 6"/></svg>Cancel my spot</button>
+                    <button type="button" class="mi" id="mi-refund" data-act="refund"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12a8 8 0 1 0 2.3-5.7"/><path d="M4 4v4h4"/></svg><span id="mi-refund-label">Request a refund</span></button>
+                    <button type="button" class="mi" id="mi-withdraw" data-act="withdraw"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg><span id="mi-withdraw-label">Withdraw refund request</span></button>
+                    <div class="sep" id="mi-sep"></div>
+                    <button type="button" class="mi" id="mi-faq" data-act="faq"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M9.6 9.4a2.5 2.5 0 1 1 3.4 2.3c-.6.3-1 .8-1 1.5v.6M12 16.8h.01"/></svg>FAQ</button>
+                    <button type="button" class="mi" id="mi-terms" data-act="terms"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M6 3.5h8.5L18 7v13.5H6z"/><path d="M9 11h6M9 14.5h6M9 18h4"/></svg>Terms</button>
+                    <button type="button" class="mi" id="mi-logout" data-act="logout"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 4h5v16h-5"/><path d="M10 8l-4 4 4 4M6 12h9"/></svg>Log out</button>
+                  </div>
+                </div>
+              </div>
+              <div id="profile-nudge" class="panel nudge hidden">
+                <p class="eyebrow" style="margin-bottom:12px;">Before pickup</p>
+                <h3>Finish your profile</h3>
+                <p>Staff match your name to your photo ID when you collect your package. Add your details now and pickup is quick.</p>
+                <button type="button" class="btn" id="nudge-btn">Add my details</button>
+              </div>
+              <div class="evp-rows">
+                <div class="evp-row r-where locked" id="evp-where-row">
+                  <span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d="M12 21s-6.5-5.8-6.5-11A6.5 6.5 0 0 1 18.5 10c0 5.2-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.4"/></svg></span>
+                  <div><p class="k">Location</p><p class="v" id="evp-where">Secret location, revealed once you've paid</p></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="evp-slot">
+              <div class="panel" id="pkg-card">
+                <p class="eyebrow" style="margin-bottom:12px;">Packages</p>
+                <h3 style="font-size:32px;">Get your pass</h3>
+                <p class="lead" style="font-size:15px; margin-top:10px;">You made it in. Pick the one package that's you, read what comes with it, then lock in your spot.</p>
+                <div id="pkg-list"></div>
+                <div id="pkg-warn" class="warn hidden">You cannot wear regular clothes with makeup, dress all black and claim "unrecognizable," or wear minimal accessories and call it a costume. If you're not in proper costume or full package gear, you will be denied drinks, denied food, and not welcomed in the band — regardless of payment.</div>
+                <label id="pkg-size-wrap" class="field hidden"><span>Your size</span><select id="pkg-size"></select></label>
+                <div id="pkg-promo" class="promo hidden">
+                  <button type="button" class="linkish" id="promo-open" aria-controls="promo-box" aria-expanded="false">Have a code?</button>
+                  <div id="promo-box" class="field hidden">
+                    <span id="promo-label">Your code</span>
+                    <div class="promo-row">
+                      <input id="promo-code" aria-labelledby="promo-label" maxlength="24" autocomplete="off" autocapitalize="characters" spellcheck="false" enterkeyhint="go" placeholder="Enter code">
+                      <button type="button" class="btn btn-light" id="promo-apply">Apply</button>
+                    </div>
+                    <p id="promo-msg" class="msg" role="status"></p>
+                  </div>
+                </div>
+                <label id="pkg-terms-wrap" class="check hidden"><input type="checkbox" id="pkg-terms"> <span>I agree to the <button type="button" class="linkish" onclick="showTerms()">terms</button></span></label>
+                <button class="btn" id="pkg-confirm" style="display:none;">Secure this package</button>
+                <div id="pkg-msg" class="msg"></div>
+              </div>
+
+              <div id="order-status" class="panel hidden">
+                <p class="eyebrow" style="margin-bottom:6px;">Your package</p>
+                <p id="order-summary" class="order-summary"></p>
+                <p id="order-price-note" class="price-note hidden"></p>
+                <p id="order-ref" class="ref"></p>
+                <p id="order-pickup" class="picked hidden"></p>
+                <label id="order-size-wrap" class="field hidden"><span>Your size</span><select id="order-size"></select></label>
+                <p id="order-size-lock" class="help hidden">Sizes are locked. Contact us if yours needs to change.</p>
+                <div id="order-deadline" class="deadline hidden"></div>
+                <p id="order-promo" class="note hidden"><button type="button" class="linkish" onclick="addOrderCode()">Have a code?</button></p>
+                <div id="paypal-box" class="paybox hidden">
+                  <p class="paybox-head"><b>Pay now</b><span id="paypal-amount"></span></p>
+                  <div id="paypal-buttons" class="paypal-frame"></div>
+                  <p id="paypal-msg" class="note hidden" role="status"></p>
+                </div>
+                <div id="order-instr" class="instr hidden"><b id="order-instr-label">How to pay</b><span id="order-instr-text"></span><span id="order-pay-note" class="pay-note"></span></div>
+                <p id="order-note" class="note"></p>
+                <button class="btn btn-light" id="order-cancel" onclick="cancelOrder()">Cancel reservation</button>
+                <button class="btn btn-light hidden" id="order-refund" onclick="requestRefund()">Request refund</button>
+                <button class="btn btn-light hidden" id="order-withdraw" onclick="withdrawRefund()">Keep my spot</button>
+              </div>
+            </div>
+
+            <div class="evp-bottom">
+              <div class="evp-rows">
+                <div class="evp-row r-host">
+                  <span class="ic" aria-hidden="true">D<span>'</span></span>
+                  <div><p class="k">Host</p><p class="v">On D' Road</p></div>
+                  <div class="host-links" id="host-links"></div>
+                </div>
+                <div class="evp-row r-about hidden" id="evp-about-row">
+                  <span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 11v5.5M12 7.6h.01"/></svg></span>
+                  <div><p class="k">About</p><p class="v" id="evp-about"></p></div>
+                </div>
+              </div>
+              <div id="event-paid" class="instr hidden"><b>For paid guests</b><span id="event-paid-text"></span></div>
+              <p id="event-locked" class="note hidden">More details unlock once your payment is confirmed.</p>
+            </div>
+          </div>
+        </section>
+
+        <div class="portal-head">
+          <div>
+            <p class="eyebrow">Your account</p>
+            <h2 id="portal-title">Hold tight.</h2>
+            <p id="portal-sub" class="portal-sub hidden"></p>
+            <p class="who" id="user-email">--</p>
+            <div id="my-details" class="my-details hidden">
+              <span class="k">Your details</span>
+              <span class="v" id="my-details-v"></span>
+              <button type="button" class="linkish" id="my-details-edit">Edit</button>
+              <p id="my-details-lock" class="lock-note hidden">Your name and date of birth are locked now that you've paid. Message us if they need to change.</p>
+            </div>
+          </div>
+          <button class="btn btn-danger" style="width:auto;" onclick="logout()">Log out</button>
+        </div>
+        <p id="acct-loading" class="loading-line">Loading your account…</p>
+
+        <!-- Waiting for approval: their request, with who invited them -->
+        <div id="acct-state" class="panel acct-state hidden">
+          <p class="eyebrow" style="margin-bottom:12px;">Your request</p>
+          <p id="req-by" class="from"></p>
+          <dl id="req-meta" class="req-meta"></dl>
+          <button type="button" class="btn btn-light hidden" id="req-edit">Edit my details</button>
+          <p class="help">Keep an eye on your inbox, spam folder included.</p>
+        </div>
+
+        <div class="grid hidden" id="acct-grid">
+          <div class="col">
+            <div class="panel rsvp">
+              <div class="panel-head">
+                <p class="eyebrow" style="margin:0;">Attendance</p>
+                <span id="rsvp-badge" class="badge pending">PENDING</span>
+              </div>
+              <button class="btn btn-light" id="rsvp-btn" onclick="toggleRSVP()">Confirm attendance</button>
+            </div>
+
+            <!-- The old event card: its "when" and info now live on the event page above. Kept (hidden) for older code. -->
+            <div id="event-card" class="panel event hidden">
+              <p class="eyebrow" style="margin-bottom:12px;">The event</p>
+              <h3 id="event-when" class="event-when"></h3>
+              <p id="event-info" class="event-text"></p>
+            </div>
+          </div>
+
+          <div class="col">
+            <div class="panel invite hidden" id="invite-card">
+              <p class="eyebrow" style="margin-bottom:12px;">Bring your people</p>
+              <h3 style="font-size:32px;">Invite your people</h3>
+              <label class="field"><span>Their email</span>
+                <input type="email" id="invite-email" placeholder="friend@example.com">
+              </label>
+              <label class="field"><span>Personal note <em style="text-transform:none; letter-spacing:0; font-style:normal; color:var(--dim);">(optional)</em></span>
+                <textarea id="invite-note" maxlength="300" placeholder="Bro you have to come to this!"></textarea>
+              </label>
+              <button class="btn" onclick="sendInvite()">Send invite</button>
+              <p class="count"><b id="invites-count">0</b> invites left</p>
             </div>
           </div>
         </div>
@@ -955,6 +1298,29 @@
     <div class="terms-foot"><span id="terms-updated"></span><button type="button" class="btn btn-light" onclick="$('terms-dlg').close()">Close</button></div>
   </dialog>
 
+  <dialog id="contact-dlg" class="sheet" aria-labelledby="contact-title">
+    <div class="sheet-in">
+      <div class="sheet-head">
+        <h3 id="contact-title">Talk to us</h3>
+        <button type="button" class="x" data-close aria-label="Close">&#10005;</button>
+      </div>
+      <p class="sheet-sub">Questions about your package, paying or pickup? Reach the crew here.</p>
+      <div id="contact-list" class="sheet-list"></div>
+    </div>
+  </dialog>
+
+  <dialog id="qr-dlg" class="sheet" aria-labelledby="qr-title">
+    <div class="sheet-in">
+      <div class="sheet-head">
+        <h3 id="qr-title">Your pass</h3>
+        <button type="button" class="x" data-close aria-label="Close">&#10005;</button>
+      </div>
+      <div id="qr-big" class="qr-big"></div>
+      <p id="qr-ref" class="qr-ref"></p>
+      <p class="sheet-sub" style="text-align:center;">Turn your brightness up and show this at the entrance.</p>
+    </div>
+  </dialog>
+
   <dialog id="dlg" aria-labelledby="dlg-title">
     <form id="dlg-form">
       <h3 id="dlg-title"></h3>
@@ -982,44 +1348,114 @@
   }
 
   // On-brand replacement for confirm()/prompt(). Resolves to field values, or null if dismissed.
+  // Each field: { name, label, type ('textarea', 'select' or an input type), value, placeholder, maxlength, autocomplete,
+  //   options: [[value, label]] for a select, prefix (like '@'), attrs: { attribute: value } }.
+  // A field with group: [fields] puts several inputs on one row under one label (date of birth); each of those has its own
+  //   label for screen readers.
+  // o.focus === 'first' focuses the first field instead of the cancel button.
+  // o.onSubmit(values, ui) runs before the dialog closes: return false to keep it open (ui.error(name, text) shows a message
+  //   at that field, or under the fields when name is null), or anything else to close and resolve with it.
   function ask(o) {
     return new Promise((resolve) => {
-      const dlg = $('dlg'), form = $('dlg-form'), box = $('dlg-fields');
+      const dlg = $('dlg'), form = $('dlg-form'), box = $('dlg-fields'), ok = $('dlg-ok');
       if (!dlg.showModal) return resolve(window.confirm(o.title) ? {} : null);
       $('dlg-title').textContent = o.title;
       $('dlg-text').textContent = o.text || '';
       box.replaceChildren();
-      const inputs = {};
-      (o.fields || []).forEach((f) => {
-        const wrap = document.createElement('label'); wrap.className = 'field';
-        const lab = document.createElement('span'); lab.textContent = f.label; wrap.appendChild(lab);
-        const input = document.createElement(f.type === 'textarea' ? 'textarea' : 'input');
-        if (f.placeholder) input.placeholder = f.placeholder;
-        if (f.maxlength) input.maxLength = f.maxlength;
-        wrap.appendChild(input); box.appendChild(wrap);
+      const inputs = {}, errs = {};
+      let first = null;
+      const make = (f) => {
+        let input;
+        if (f.type === 'select') {
+          input = document.createElement('select');
+          (f.options || []).forEach(([v, label]) => { const op = document.createElement('option'); op.value = v; op.textContent = label; input.appendChild(op); });
+        } else {
+          input = document.createElement(f.type === 'textarea' ? 'textarea' : 'input');
+          if (f.type && f.type !== 'textarea') input.type = f.type;
+          if (f.placeholder) input.placeholder = f.placeholder;
+          if (f.maxlength) input.maxLength = f.maxlength;
+        }
+        if (f.autocomplete) input.setAttribute('autocomplete', f.autocomplete);
+        Object.entries(f.attrs || {}).forEach(([k, v]) => input.setAttribute(k, v));
+        if (f.value !== undefined && f.value !== null) input.value = f.value;
         inputs[f.name] = input;
+        if (!first) first = input;
+        return input;
+      };
+      (o.fields || []).forEach((f, n) => {
+        const err = document.createElement('p'); err.className = 'field-err'; err.id = 'dlg-err-' + n;
+        let els;
+        if (f.group) {
+          const wrap = document.createElement('div'); wrap.className = 'field'; wrap.setAttribute('role', 'group');
+          const lab = document.createElement('span'); lab.id = 'dlg-lab-' + n; lab.textContent = f.label; wrap.appendChild(lab);
+          wrap.setAttribute('aria-labelledby', lab.id);
+          const row = document.createElement('div'); row.className = f.rowClass || 'dob';
+          els = f.group.map((g) => { const el = make(g); if (g.label) el.setAttribute('aria-label', g.label); row.appendChild(el); return el; });
+          wrap.appendChild(row); box.appendChild(wrap);
+        } else {
+          const wrap = document.createElement('label'); wrap.className = 'field';
+          const lab = document.createElement('span'); lab.textContent = f.label; wrap.appendChild(lab);
+          const input = make(f);
+          if (f.prefix) {
+            const pre = document.createElement('span'); pre.className = 'at-wrap';
+            const at = document.createElement('span'); at.className = 'at'; at.setAttribute('aria-hidden', 'true'); at.textContent = f.prefix;
+            pre.append(at, input); wrap.appendChild(pre);
+          } else wrap.appendChild(input);
+          box.appendChild(wrap);
+          els = [input];
+        }
+        if (o.onSubmit) { els.forEach((el) => el.setAttribute('aria-describedby', err.id)); box.appendChild(err); }
+        errs[f.name] = { err, els };
       });
-      $('dlg-ok').textContent = o.ok || 'Confirm';
-      $('dlg-ok').className = 'btn' + (o.danger ? ' danger-solid' : '');
+      const general = document.createElement('p'); general.className = 'msg'; general.setAttribute('role', 'alert');
+      if (o.onSubmit) box.appendChild(general);
+      ok.textContent = o.ok || 'Confirm';
+      ok.className = 'btn' + (o.danger ? ' danger-solid' : '');
+      ok.disabled = false;
       $('dlg-cancel').textContent = o.cancel || 'Never mind';
-      let settled = false;
+      let settled = false, busy = false;
       const finish = (val) => {
         if (settled) return;
         settled = true;
-        form.onsubmit = null; $('dlg-cancel').onclick = null; dlg.onclose = null;
+        form.onsubmit = null; $('dlg-cancel').onclick = null; dlg.onclose = null; ok.disabled = false;
         if (dlg.open) dlg.close();
         resolve(val);
       };
-      form.onsubmit = (e) => {
+      const clearErrors = () => {
+        general.textContent = '';
+        Object.values(errs).forEach(({ err, els }) => { err.textContent = ''; els.forEach((el) => el.removeAttribute('aria-invalid')); });
+      };
+      let firstBad = null;
+      const ui = {
+        error(name, text) {
+          const e = name && errs[name];
+          if (!e) { general.textContent = text; return; }
+          e.err.textContent = text;
+          e.els.forEach((el) => el.setAttribute('aria-invalid', 'true'));
+          if (!firstBad) firstBad = e.els.find((el) => !el.value) || e.els[0];
+        }
+      };
+      form.onsubmit = async (e) => {
         e.preventDefault();
+        if (busy) return;
         const vals = {};
         Object.keys(inputs).forEach((k) => { vals[k] = inputs[k].value; });
-        finish(vals);
+        if (!o.onSubmit) return finish(vals);
+        clearErrors(); firstBad = null;
+        busy = true; ok.disabled = true;
+        let out;
+        try { out = await o.onSubmit(vals, ui); } catch (err) { out = false; general.textContent = 'Something went wrong. Try again.'; }
+        busy = false; ok.disabled = false;
+        if (settled) return;
+        if (out === false) { if (firstBad) firstBad.focus(); return; }
+        finish(out);
       };
       $('dlg-cancel').onclick = () => finish(null);
-      dlg.onclose = () => finish(null);
+      // The close event comes a moment later. If a previous ask() just closed and this one already reopened the
+      // dialog, that late event is the old one's: ignore it.
+      dlg.onclose = () => { if (!dlg.open) finish(null); };
       dlg.showModal();
-      $('dlg-cancel').focus();
+      if (o.focus === 'first' && first) first.focus(); else $('dlg-cancel').focus();
     });
   }
 
@@ -1039,6 +1475,77 @@
   // Packages and orders state. Declared up here so nothing below can run before it exists.
   // promo is the code checked for the chosen package at its current price (see checkCode).
   let packages = [], chosenPkg = null, myOrder = null, orderLoaded = false, eventData = null, promo = null;
+  // The guest's row from /api/user-status (null until it loads). approval, full_name, birth_date, instagram, has_paid and
+  // invited_by(_name) only come from the newer backend: no approval means approved, and no full_name key keeps the
+  // profile UI off. profileApi turns false if /api/profile answers 404 (not deployed yet).
+  let me = null, profileApi = true;
+
+  // ---- account state and profile ----
+  const acctState = () => {
+    if (!me) return 'loading';
+    return me.approval === 'PENDING' ? 'pending' : me.approval === 'DECLINED' ? 'declined' : 'approved';
+  };
+  const profileOn = () => !!me && 'full_name' in me && profileApi;
+  const orderPaid = () => !!myOrder && myOrder.status === 'PAID';
+  // Name and date of birth lock once the guest has a paid order (a free pass counts). Instagram never locks.
+  const profileLocked = () => !!(me && me.has_paid) || orderPaid();
+  const profileMissing = () => !!me && (!me.full_name || !me.birth_date || !me.instagram);
+
+  // Today's date in Antigua as 'YYYY-MM-DD'.
+  const antiguaToday = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Antigua' });
+  const ymdOf = (v) => (typeof v === 'string' && /^\d{4}-\d{2}-\d{2}/.test(v) ? v.slice(0, 10) : '');
+  function ageOf(ymd) {
+    if (!ymd) return null;
+    const [y, m, d] = ymd.split('-').map(Number), [ty, tm, td] = antiguaToday().split('-').map(Number);
+    return ty - y - (tm < m || (tm === m && td < d) ? 1 : 0);
+  }
+  const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+  // "March 14, 1998"
+  function longDob(ymd) {
+    const [y, m, d] = ymd.split('-').map(Number);
+    return MONTHS[m - 1] + ' ' + d + ', ' + y;
+  }
+  // Options for the Day / Month / Year selects. Years run from 18 to 100 years back.
+  function dobOptions() {
+    const year = Number(antiguaToday().slice(0, 4));
+    const pad = (n) => String(n).padStart(2, '0');
+    return {
+      d: [['', 'Day']].concat(Array.from({ length: 31 }, (_, i) => [pad(i + 1), String(i + 1)])),
+      m: [['', 'Month']].concat(MONTHS.map((name, i) => [pad(i + 1), name.slice(0, 3)])),
+      y: [['', 'Year']].concat(Array.from({ length: 83 }, (_, i) => [String(year - 18 - i), String(year - 18 - i)]))
+    };
+  }
+  function fillSelect(sel, options, value) {
+    sel.replaceChildren();
+    options.forEach(([v, label]) => { const o = document.createElement('option'); o.value = v; o.textContent = label; sel.appendChild(o); });
+    sel.value = value || '';
+  }
+  // The three selects' values as a date: { ymd } when it's a real date, { bad: true } when it isn't, null when incomplete.
+  function dobFrom(d, m, y) {
+    if (!d || !m || !y) return null;
+    const dt = new Date(Date.UTC(Number(y), Number(m) - 1, Number(d)));
+    if (dt.getUTCDate() !== Number(d) || dt.getUTCMonth() !== Number(m) - 1) return { bad: true };
+    return { ymd: y + '-' + m + '-' + d };
+  }
+  // Light checks before sending. The server has the final say (NAME_INVALID, UNDER_18, INSTAGRAM_INVALID).
+  const tidyName = (v) => String(v || '').replace(/\s+/g, ' ').trim();
+  const tidyIg = (v) => String(v || '').trim().replace(/^@+/, '');
+  function nameProblem(n) { return n.length >= 2 ? '' : 'Add your full name as it shows on your ID.'; }
+  function dobProblem(d) {
+    if (!d) return 'Add your date of birth.';
+    if (d.bad) return "That date doesn't exist. Check the day and month.";
+    return ageOf(d.ymd) < 18 ? "On D' Road is 18+ only." : '';
+  }
+  // Which profile field a 400 answer is about: the server names it, or the code does.
+  function profileField(d, empty) {
+    if (d && ['full_name', 'birth_date', 'instagram'].includes(d.field)) return d.field;
+    const code = d && d.code;
+    if (code === 'NAME_INVALID') return 'full_name';
+    if (code === 'UNDER_18') return 'birth_date';
+    if (code === 'INSTAGRAM_INVALID') return 'instagram';
+    if (code === 'PROFILE_REQUIRED') return empty || null;
+    return null;
+  }
 
   // Sends a request with the login token attached.
   // If the server says the session is invalid or expired, log the user out.
@@ -1105,12 +1612,18 @@
 
   async function loadUserData() {
     if (!currentUser || !token) return logout();
-    await Promise.all([loadPackages(), loadOrder(), loadEvent()]);
     $('user-email').innerText = currentUser;
+    await Promise.all([loadPackages(), loadOrder(), loadEvent(), loadStatus()]);
+  }
+
+  // The guest's row: approval, profile, invites left and RSVP.
+  async function loadStatus() {
     try {
       const res = await authFetch('/api/user-status');
       const data = await res.json();
       if (!res.ok) return logout();
+      me = data && typeof data === 'object' ? data : {};
+      renderHead();
       $('invites-count').innerText = data.invites_left;
       const badge = $('rsvp-badge');
       const rsvpBtn = $('rsvp-btn');
@@ -1123,7 +1636,12 @@
         badge.className = 'badge pending';
         rsvpBtn.innerText = 'CONFIRM ATTENDANCE';
       }
-    } catch (err) { console.error(err); }
+    } catch (err) {
+      if (err.message === 'SESSION_EXPIRED') return;
+      console.error(err);
+      // Couldn't tell: show the account as before (the server still checks everything).
+      if (!me) { me = {}; renderHead(); }
+    }
   }
 
   function showPortal() {
@@ -1139,7 +1657,9 @@
     localStorage.removeItem('control_token');
     currentUser = null;
     token = null;
-    myOrder = null; orderLoaded = false; eventData = null;
+    myOrder = null; orderLoaded = false; eventData = null; me = null; profileApi = true;
+    closeMenu();
+    ['dlg', 'contact-dlg', 'qr-dlg'].forEach((id) => { if ($(id).open) $(id).close(); });
     renderHead(); resetPromo();
     $('login-view').classList.remove('hidden');
     $('portal-view').classList.add('hidden');
@@ -1181,6 +1701,8 @@
         loadUserData();
       } else {
         toast(data.error, true);
+        // Invites open once paid: the account may be out of date (a refund went through elsewhere).
+        if (data.code === 'PAY_FIRST') loadUserData();
       }
     } catch (err) {
       if (err.message !== 'SESSION_EXPIRED') toast('Network error. Try again.', true);
@@ -1203,20 +1725,60 @@
     } catch (err) { loginErr.innerText = 'Network error. Try again.'; }
   }
 
+  // The accept form's fields, by profile field name: the inputs and where their message goes.
+  const ACCEPT = {
+    email: { els: ['accept-email'], err: 'accept-email-err' },
+    full_name: { els: ['accept-name'], err: 'accept-name-err' },
+    birth_date: { els: ['accept-dob-d', 'accept-dob-m', 'accept-dob-y'], err: 'accept-dob-err' },
+    instagram: { els: ['accept-ig'], err: 'accept-ig-err' }
+  };
+  (function () {
+    const o = dobOptions();
+    fillSelect($('accept-dob-d'), o.d); fillSelect($('accept-dob-m'), o.m); fillSelect($('accept-dob-y'), o.y);
+    $('accept-form').addEventListener('submit', (e) => { e.preventDefault(); acceptInvite(); });
+  })();
+
+  // Shows each message at its field and focuses the first one. Clears the rest.
+  function acceptErrors(errs) {
+    let firstBad = null;
+    Object.entries(ACCEPT).forEach(([k, f]) => {
+      $(f.err).textContent = errs[k] || '';
+      f.els.forEach((id) => { if (errs[k]) $(id).setAttribute('aria-invalid', 'true'); else $(id).removeAttribute('aria-invalid'); });
+      if (errs[k] && !firstBad) firstBad = f.els.map($).find((el) => !el.value) || $(f.els[0]);
+    });
+    if (firstBad) firstBad.focus();
+    return !!firstBad;
+  }
+
+  let accepting = false;
   async function acceptInvite() {
     const err = $('accept-error');
     err.innerText = '';
-    const email = $('accept-email').value;
-    if (!email) return err.innerText = 'Enter the email this invitation was sent to.';
-    if (!$('accept-adult').checked) return err.innerText = "On D' Road is 18+ only. Tick the box to confirm you're 18 or older.";
+    if (accepting) return;
+    const email = $('accept-email').value.trim();
+    const full_name = tidyName($('accept-name').value);
+    const dob = dobFrom($('accept-dob-d').value, $('accept-dob-m').value, $('accept-dob-y').value);
+    const instagram = tidyIg($('accept-ig').value);
+    const errs = {};
+    if (!email) errs.email = 'Enter the email this invitation was sent to.';
+    if (nameProblem(full_name)) errs.full_name = nameProblem(full_name);
+    if (dobProblem(dob)) errs.birth_date = dobProblem(dob);
+    if (!instagram) errs.instagram = 'Add your Instagram handle.';
+    if (acceptErrors(errs)) return;
+    accepting = true;
     try {
+      // adult: true keeps the older backend (no profile yet) accepting during the deploy window.
       const res = await fetch(`${BACKEND_URL}/api/invite/accept`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token: inviteToken, email, adult: true })
+        body: JSON.stringify({ token: inviteToken, email, full_name, birth_date: dob.ymd, instagram, adult: true })
       });
       const data = await res.json();
-      if (!res.ok) return err.innerText = data.error;
+      if (!res.ok) {
+        const field = profileField(data);
+        if (field) return acceptErrors({ [field]: data.error });
+        return err.innerText = data.error;
+      }
       currentUser = data.user.email;
       token = data.token;
       localStorage.setItem('control_user_email', currentUser);
@@ -1224,7 +1786,7 @@
       history.replaceState(null, '', location.pathname);
       $('accept-view').classList.add('hidden');
       showPortal();
-    } catch (e) { err.innerText = 'Network error. Try again.'; }
+    } catch (e) { err.innerText = 'Network error. Try again.'; } finally { accepting = false; }
   }
 
   // ---- packages / orders ----
@@ -1256,50 +1818,95 @@
   // Codes and price tiers need the newer backend. An older one doesn't send sales_closed, so the code box stays hidden.
   const codesOn = () => packages.some((p) => p.sales_closed !== undefined);
 
+  // "Sat, Oct 24 · 3:00 PM" in Antigua time.
+  function saleDate(iso) {
+    const d = new Date(iso), tz = { timeZone: 'America/Antigua' };
+    return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', ...tz })
+      + ' · ' + d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', ...tz });
+  }
+
+  // One package card: name and price, then tags (price tier, costume rules), what's included, how long it's on sale,
+  // the package's own cash note, and spots left.
+  function pkgCard(p) {
+    const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text !== undefined) e.textContent = text; return e; };
+    const open = canPick(p);
+    const div = el('div', 'pkg' + (chosenPkg === p.id ? ' chosen' : ''));
+    const top = el('div', 'pkg-top');
+    if (open) { const mark = el('span', 'pkg-pick'); mark.setAttribute('aria-hidden', 'true'); top.appendChild(mark); }
+    top.append(el('h3', '', p.name), el('div', 'price', money(p.price_cents, p.currency)));
+    div.appendChild(top);
+    // The price tier on sale now (Early bird, Standard...), and the costume rules.
+    const tags = [];
+    if (p.tier) tags.push(el('span', 'tier', p.tier.name));
+    if (p.requires_compliance) tags.push(el('span', 'tag', 'Costume rules'));
+    if (tags.length) { const row = el('div', 'pkg-tags'); row.append(...tags); div.appendChild(row); }
+    if (p.includes) {
+      const ul = el('ul');
+      p.includes.split('\n').map((s) => s.trim()).filter(Boolean).forEach((line) => ul.appendChild(el('li', '', line)));
+      div.appendChild(ul);
+    }
+    const info = [];
+    if (open && p.tier && p.tier.ends_at) {
+      const until = el('span', 'until');
+      const live = el('i', 'live'); live.setAttribute('aria-hidden', 'true');
+      const when = el('time', '', saleDate(p.tier.ends_at)); when.dateTime = p.tier.ends_at;
+      until.append(live, document.createTextNode('On sale until '), when, document.createTextNode(' '), el('small', '', '(Antigua time)'));
+      info.push(until);
+    }
+    if (p.tier && p.tier.left !== null && p.tier.left !== undefined) info.push(el('span', 'left', p.tier.left + ' left at this price'));
+    if (p.next_tier) info.push(el('span', 'next', 'Then ' + money(p.next_tier.price_cents, p.currency)));
+    if (info.length) { const row = el('div', 'tier-info'); row.append(...info); div.appendChild(row); }
+    // The package's own cash payment details (newer backends send pay_note with the package).
+    if (open && typeof p.pay_note === 'string' && p.pay_note.trim()) {
+      const cash = el('p', 'cash'); cash.append(el('b', '', 'Paying cash?'), document.createTextNode(p.pay_note.trim()));
+      div.appendChild(cash);
+    }
+    const limited = p.capacity !== null && p.capacity !== undefined;
+    div.appendChild(el('div', 'spots', p.sales_closed ? 'Sales closed'
+      : !limited ? '' : (p.spots_left <= 0 ? 'Sold out' : p.spots_left + (p.spots_left === 1 ? ' spot left' : ' spots left'))));
+    if (open) {
+      const pick = () => { chosenPkg = p.id; renderPackages(); updatePkgControls(); $('pkg-confirm').focus({ preventScroll: true }); };
+      div.tabIndex = 0;
+      div.setAttribute('role', 'radio');
+      div.setAttribute('aria-checked', chosenPkg === p.id ? 'true' : 'false');
+      div.addEventListener('click', pick);
+      div.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pick(); } });
+    } else {
+      div.style.opacity = '.5'; div.style.cursor = 'default';
+    }
+    return div;
+  }
+
+  // Packages on sale come first, as one single-choice group. With the newer backend (it sends sales_closed), the ones
+  // that can't be picked (sales closed, sold out) fold away under them; when nothing is on sale, the fold starts open.
+  let foldOpen = false;
   function renderPackages() {
     const list = $('pkg-list');
-    list.innerHTML = '';
-    list.setAttribute('role', 'radiogroup');
-    packages.forEach((p) => {
-      const div = document.createElement('div');
-      div.className = 'pkg' + (chosenPkg === p.id ? ' chosen' : '');
-      const h3 = document.createElement('h3'); h3.textContent = p.name; div.appendChild(h3);
-      // The price tier on sale now (Early bird, Standard...), when the package has tiers.
-      if (p.tier) { const tier = document.createElement('div'); tier.className = 'tier'; tier.textContent = p.tier.name; div.appendChild(tier); }
-      const price = document.createElement('div'); price.className = 'price'; price.textContent = money(p.price_cents, p.currency); div.appendChild(price);
-      const info = [];
-      if (p.tier && p.tier.ends_at) info.push(['', 'Until ' + shortDate(p.tier.ends_at)]);
-      if (p.tier && p.tier.left !== null && p.tier.left !== undefined) info.push(['left', p.tier.left + ' left at this price']);
-      if (p.next_tier) info.push(['next', 'Then ' + money(p.next_tier.price_cents, p.currency)]);
-      if (info.length) {
-        const row = document.createElement('div'); row.className = 'tier-info';
-        info.forEach(([cls, text]) => { const s = document.createElement('span'); s.className = cls; s.textContent = text; row.appendChild(s); });
-        div.appendChild(row);
-      }
-      if (p.includes) {
-        const ul = document.createElement('ul');
-        p.includes.split('\n').map((s) => s.trim()).filter(Boolean).forEach((line) => {
-          const li = document.createElement('li'); li.textContent = line; ul.appendChild(li);
-        });
-        div.appendChild(ul);
-      }
-      const spots = document.createElement('div'); spots.className = 'spots';
-      const limited = p.capacity !== null && p.capacity !== undefined;
-      spots.textContent = p.sales_closed ? 'Sales closed'
-        : !limited ? '' : (p.spots_left <= 0 ? 'Sold out' : p.spots_left + (p.spots_left === 1 ? ' spot left' : ' spots left'));
-      div.appendChild(spots);
-      if (canPick(p)) {
-        const pick = () => { chosenPkg = p.id; renderPackages(); updatePkgControls(); $('pkg-confirm').focus({ preventScroll: true }); };
-        div.tabIndex = 0;
-        div.setAttribute('role', 'radio');
-        div.setAttribute('aria-checked', chosenPkg === p.id ? 'true' : 'false');
-        div.addEventListener('click', pick);
-        div.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pick(); } });
-      } else {
-        div.style.opacity = '.5'; div.style.cursor = 'default';
-      }
-      list.appendChild(div);
-    });
+    list.replaceChildren();
+    list.removeAttribute('role');
+    const fold = codesOn();
+    const onSale = fold ? packages.filter(canPick) : packages;
+    const closed = fold ? packages.filter((p) => !canPick(p)) : [];
+    if (onSale.length) {
+      const group = document.createElement('div');
+      group.className = 'pkg-group'; group.setAttribute('role', 'radiogroup'); group.setAttribute('aria-label', 'Packages');
+      onSale.forEach((p) => group.appendChild(pkgCard(p)));
+      list.appendChild(group);
+    }
+    if (!closed.length) return;
+    if (!onSale.length) {
+      const none = document.createElement('p'); none.className = 'pkg-none';
+      none.textContent = "Nothing's on sale right now. Check back soon.";
+      list.appendChild(none);
+    }
+    const det = document.createElement('details'); det.className = 'pkg-fold';
+    det.open = foldOpen || !onSale.length;
+    const sum = document.createElement('summary'); sum.textContent = closed.length + ' not available right now';
+    const box = document.createElement('div'); box.className = 'pkg-fold-list';
+    closed.forEach((p) => box.appendChild(pkgCard(p)));
+    det.append(sum, box);
+    det.addEventListener('toggle', () => { if (onSale.length) foldOpen = det.open; });
+    list.appendChild(det);
   }
 
   // "S, M, L" -> ['S', 'M', 'L']
@@ -1368,7 +1975,9 @@
       if (lastCheck !== mine || typedCode() !== code || pkgKey(packages.find((x) => x.id === chosenPkg)) !== key) return;
       if (!res.ok) return promoMsg(d.error || 'Something went wrong.', true);
       promo = { code, key, amount_cents: d.amount_cents, currency: d.currency };
-      promoMsg(d.label + '. You pay ' + (d.amount_cents ? money(d.amount_cents, d.currency) : 'nothing') + '.', false);
+      // A free pass is paid the moment it's claimed, which locks the name and date of birth.
+      const lockNote = !d.amount_cents && profileOn() ? " Once you claim it, your name and date of birth can't change." : '';
+      promoMsg(d.label + '. You pay ' + (d.amount_cents ? money(d.amount_cents, d.currency) : 'nothing') + '.' + lockNote, false);
       setConfirmLabel();
     } catch (err) {
       if (lastCheck === mine) lastCheck = '';
@@ -1425,16 +2034,38 @@
         if (!promo) return;
       }
       if (promo && promo.key === pkgKey(p)) body.promo_code = promo.code;
-      let res = await authFetch('/api/orders', body);
-      let data = await res.json();
-      // Guests who joined before the 18+ check confirm it once, here.
-      if (data.code === 'AGE_REQUIRED') {
-        const ok = await ask({ title: 'Are you 18 or older?', text: "On D' Road is 18+ only. You may be asked for ID at the entrance.", ok: "Yes, I'm 18+", cancel: 'No' });
-        if (!ok) return fail("On D' Road is 18+ only.");
-        body.adult = true;
+      // Guests from before the sign-up form add their name, date of birth and Instagram once, before reserving.
+      const DETAILS_FIRST = { title: 'Your details first', ok: 'Save and continue',
+        text: 'Add your name and date of birth exactly as they show on your photo ID, plus your Instagram. Staff check your ID at pickup.' };
+      if (profileOn() && profileMissing()) {
+        const saved = await askProfile(DETAILS_FIRST);
+        if (!saved) return fail('Add your details to secure your package.');
+      }
+      let res, data;
+      // At most 3 tries: the server can still ask for the profile (or, on an older backend, the 18+ check) first.
+      for (let tries = 1; ; tries++) {
         res = await authFetch('/api/orders', body);
         data = await res.json();
+        if (tries >= 3) break;
+        // Guests who joined before the 18+ check confirm it once, here (older backend only).
+        if (data.code === 'AGE_REQUIRED' && !body.adult) {
+          const ok = await ask({ title: 'Are you 18 or older?', text: "On D' Road is 18+ only. You may be asked for ID at the entrance.", ok: "Yes, I'm 18+", cancel: 'No' });
+          if (!ok) return fail("On D' Road is 18+ only.");
+          body.adult = true;
+          continue;
+        }
+        if (data.code === 'PROFILE_REQUIRED') {
+          if (!profileOn()) await loadStatus();
+          if (!profileOn()) break;
+          const saved = await askProfile(DETAILS_FIRST);
+          if (!saved) return fail('Add your details to secure your package.');
+          if (saved.off) break;
+          continue;
+        }
+        break;
       }
+      // Not approved (yet, or any more): show where the account stands.
+      if (data.code === 'NOT_APPROVED') { fail(data.error); loadUserData(); return; }
       // The organizers added sizes since this page loaded: show them.
       if (data.code === 'SIZE_REQUIRED') await loadPackages();
       if (data.code === 'PROMO_INVALID') {
@@ -1454,11 +2085,15 @@
     } finally { reserving = false; }
   });
 
-  // The line at the top of the account: where the guest stands, from their order and the event date.
+  // The account header: where the guest stands. Waiting for approval or declined comes first; otherwise it follows
+  // their order and the event date. Also redraws the event page, the details row and what each state shows.
   function renderHead() {
-    const o = myOrder;
+    const o = myOrder, st = acctState();
     let title = "You're in.", parts = [];
-    if (orderLoaded && !o) parts = ['Pick your package to secure your spot.'];
+    if (st === 'loading') { title = 'Hold tight.'; parts = []; }
+    else if (st === 'pending') { title = 'Request sent.'; parts = ["The crew is checking it now. We'll email you as soon as you're approved."]; }
+    else if (st === 'declined') { title = 'Not this time.'; parts = ["Your request to join wasn't approved. Thank you for wanting to play mas with us."]; }
+    else if (orderLoaded && !o) parts = ['Pick your package to secure your spot.'];
     else if (o && o.status === 'RESERVED') {
       title = 'Spot held.';
       parts = [o.package_name, o.pay_by ? 'Pay by ' + shortDate(o.pay_by) : 'Pay to confirm your spot'];
@@ -1470,7 +2105,276 @@
     const sub = parts.filter(Boolean).join(' · ');
     $('portal-sub').textContent = sub;
     $('portal-sub').classList.toggle('hidden', !sub);
+    renderAccount(st);
   }
+
+  // What each account state shows. Approved: the event page, attendance and (once paid) invites.
+  // Waiting: the request and the guest's details. Declined: only the header.
+  function renderAccount(st) {
+    const approved = st === 'approved';
+    $('portal-view').dataset.acct = st;
+    document.body.classList.toggle('evp-on', approved && !!currentUser);
+    $('ev-page').classList.toggle('hidden', !approved);
+    $('acct-grid').classList.toggle('hidden', !approved);
+    $('acct-loading').classList.toggle('hidden', st !== 'loading');
+    // No pass to show while waiting or declined.
+    if (currentUser) $('nav-cta').textContent = st === 'pending' || st === 'declined' ? 'My account' : 'My pass';
+    // Invites open once the order is paid (a free pass counts).
+    $('invite-card').classList.toggle('hidden', !(approved && (orderPaid() || !!(me && me.has_paid))));
+    if (!approved) closeMenu();
+    renderDetails(st);
+    renderRequest(st);
+    renderEvp();
+  }
+
+  // "Jada O'Neil · Age 27 · @jada", with Edit. Only with the newer backend, and only for approved guests.
+  function detailsLine(g) {
+    const age = ageOf(ymdOf(g.birth_date));
+    return [g.full_name, age !== null && 'Age ' + age, g.instagram && '@' + g.instagram].filter(Boolean).join(' · ');
+  }
+  function renderDetails(st) {
+    const on = profileOn() && st === 'approved';
+    $('my-details').classList.toggle('hidden', !on);
+    $('profile-nudge').classList.toggle('hidden', !(on && orderPaid() && profileMissing()));
+    if (!on) return;
+    const line = detailsLine(me), missing = profileMissing();
+    $('my-details-v').textContent = line ? line + (missing ? ' · some details missing' : '') : 'Not added yet';
+    $('my-details-v').classList.toggle('missing', !line);
+    $('my-details-edit').textContent = line ? 'Edit' : 'Add';
+    $('my-details-edit').setAttribute('aria-label', (line ? 'Edit' : 'Add') + ' your details');
+    $('my-details-lock').classList.toggle('hidden', !profileLocked());
+  }
+
+  // Waiting for approval: who invited them and the details they sent.
+  function renderRequest(st) {
+    $('acct-state').classList.toggle('hidden', st !== 'pending');
+    if (st !== 'pending') return;
+    const by = me.invited_by === 'CONTROL' ? "On D' Road" : (me.invited_by_name || me.invited_by || '');
+    $('req-by').textContent = by ? 'Invited by ' + by : '';
+    $('req-by').classList.toggle('hidden', !by);
+    const dob = ymdOf(me.birth_date);
+    const rows = [['Name', me.full_name], ['Born', dob && longDob(dob) + ' (' + ageOf(dob) + ')'], ['Instagram', me.instagram && '@' + me.instagram], ['Email', me.email || currentUser]];
+    const dl = $('req-meta');
+    dl.replaceChildren();
+    rows.forEach(([k, v]) => {
+      const dt = document.createElement('dt'); dt.textContent = k;
+      const dd = document.createElement('dd'); dd.textContent = v || 'Not added yet';
+      dl.append(dt, dd);
+    });
+    $('req-edit').classList.toggle('hidden', !profileOn());
+  }
+
+  // ---- the event page ----
+  // An https:// image, or a file next to this page like "art/poster.jpg" (the same rule as the sponsor logos).
+  function imageSrc(v) {
+    if (typeof v !== 'string' || !v.trim()) return '';
+    v = v.trim();
+    if (/^[A-Za-z0-9_-]+(\/[A-Za-z0-9_-]+)*\.(png|jpe?g|svg|webp|gif)$/.test(v)) return v;
+    try { return new URL(v).protocol === 'https:' ? v : ''; } catch (err) { return ''; }
+  }
+
+  function renderEvp() {
+    const o = myOrder, ev = eventData || {};
+    const paid = orderPaid(), reserved = !!o && o.status === 'RESERVED';
+    const when = String(ev.when || '').trim();
+    $('evp-when').textContent = when || 'Date coming soon';
+    $('evp-when').classList.toggle('soon', !when);
+    // Status line
+    let tone = 'pick', text = 'Pick your package';
+    if (paid) { tone = 'going'; text = ["You're going", o.package_name, isFree(o) && 'Free pass'].filter(Boolean).join(' · '); }
+    else if (reserved) { tone = 'held'; text = ['Spot held', o.package_name, o.pay_by ? 'pay by ' + shortDate(o.pay_by) : 'pay to confirm'].filter(Boolean).join(' · '); }
+    const status = $('evp-status');
+    status.dataset.tone = tone;
+    status.textContent = orderLoaded ? text : '';
+    $('evp-pass-label').textContent = paid ? 'My pass' : 'Get your pass';
+    // Location: a secret until paid. Older backends don't send it.
+    const seen = paid || ev.paid === true;
+    $('evp-where').textContent = !seen ? "Secret location, revealed once you've paid" : (String(ev.location || '').trim() || 'Details coming soon');
+    $('evp-where-row').classList.toggle('locked', !seen);
+    // About
+    const info = String(ev.info || '').trim();
+    $('evp-about').textContent = info;
+    $('evp-about-row').classList.toggle('hidden', !info);
+    // Cover: the organizers' poster, or the paint art.
+    const src = imageSrc(ev.poster), img = $('evp-poster');
+    if (src && img.dataset.src !== src) {
+      img.dataset.src = src;
+      img.onload = () => { img.classList.remove('hidden'); $('evp-art').classList.add('hidden'); };
+      img.onerror = () => { img.classList.add('hidden'); $('evp-art').classList.remove('hidden'); };
+      img.src = src;
+    } else if (!src && img.dataset.src) {
+      delete img.dataset.src; img.removeAttribute('src'); img.classList.add('hidden'); $('evp-art').classList.remove('hidden');
+    }
+    renderMenu();
+  }
+
+  // The More menu follows the order: the pass QR once paid, and the same cancel / refund / withdraw as the order panel.
+  function renderMenu() {
+    const o = myOrder, paid = orderPaid(), reserved = !!o && o.status === 'RESERVED';
+    const requested = paid && !!o.cancel_requested_at, free = paid && isFree(o);
+    $('mi-qr').classList.toggle('hidden', !paid);
+    $('mi-cancel').classList.toggle('hidden', !reserved);
+    $('mi-refund').classList.toggle('hidden', !paid || requested);
+    $('mi-refund-label').textContent = free ? 'Cancel my free pass' : 'Request a refund';
+    $('mi-withdraw').classList.toggle('hidden', !requested);
+    $('mi-withdraw-label').textContent = free ? 'Keep my free pass' : 'Withdraw refund request';
+    $('mi-sep').classList.toggle('hidden', !(paid || reserved));
+    $('mi-faq').classList.toggle('hidden', $('faq').classList.contains('hidden'));
+  }
+
+  const smooth = () => (matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth');
+  // Scrolls to a part of the page and moves focus there, so keyboard and screen reader users land in the same place.
+  function goTo(el, focusEl) {
+    const f = focusEl || el;
+    if (!f.hasAttribute('tabindex') && !/^(A|BUTTON|INPUT|SELECT|TEXTAREA)$/.test(f.tagName)) f.tabIndex = -1;
+    el.scrollIntoView({ behavior: smooth(), block: 'start' });
+    f.focus({ preventScroll: true });
+  }
+
+  // My pass: the pass once paid; otherwise the packages (the first one on sale), or the order to pay for it.
+  $('evp-pass').addEventListener('click', () => {
+    if (orderPaid()) return goTo($('pass-card'));
+    if (myOrder) return goTo($('order-status'));
+    goTo($('pkg-card'), $('pkg-card').querySelector('.pkg[tabindex]') || undefined);
+  });
+
+  // Sheets (Contact, the pass QR): focus goes back to whatever opened them.
+  function openSheet(dlg, opener) {
+    dlg.onclose = () => { if (!dlg.open && opener && document.contains(opener)) opener.focus(); };
+    dlg.showModal();
+  }
+  document.querySelectorAll('dialog.sheet').forEach((dlg) => {
+    dlg.querySelectorAll('[data-close]').forEach((b) => b.addEventListener('click', () => dlg.close()));
+    // A tap on the backdrop closes it too.
+    dlg.addEventListener('click', (e) => { if (e.target === dlg) dlg.close(); });
+  });
+  $('evp-contact').addEventListener('click', (e) => openSheet($('contact-dlg'), e.currentTarget));
+
+  function openQr(opener) {
+    if (!orderPaid()) return;
+    const box = $('qr-big');
+    box.replaceChildren();
+    if (window.QRCode) {
+      new QRCode(box, { text: 'ONDROAD:' + myOrder.reference_code + ':' + currentUser, width: 240, height: 240, colorDark: '#0b0a09', colorLight: '#ffffff' });
+    }
+    $('qr-ref').textContent = myOrder.reference_code + ' · ' + myOrder.package_name;
+    openSheet($('qr-dlg'), opener);
+  }
+
+  // The More menu: a button that shows a short list of actions. Escape or a tap outside closes it.
+  function closeMenu(refocus) {
+    const menu = $('evp-menu'), moreBtn = $('evp-more');
+    if (menu.classList.contains('hidden')) return;
+    menu.classList.add('hidden');
+    moreBtn.setAttribute('aria-expanded', 'false');
+    if (refocus) moreBtn.focus();
+  }
+  const moreBtn = $('evp-more'), menu = $('evp-menu');
+  const menuItems = () => Array.from(menu.querySelectorAll('.mi')).filter((b) => !b.classList.contains('hidden'));
+  moreBtn.addEventListener('click', () => {
+    if (!menu.classList.contains('hidden')) return closeMenu(true);
+    renderMenu();
+    menu.classList.remove('hidden');
+    moreBtn.setAttribute('aria-expanded', 'true');
+    const items = menuItems();
+    if (items[0]) items[0].focus();
+  });
+  menu.addEventListener('keydown', (e) => {
+    const items = menuItems(), n = items.indexOf(document.activeElement);
+    if (e.key === 'Escape') { e.preventDefault(); closeMenu(true); }
+    else if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+      e.preventDefault();
+      items[(n + (e.key === 'ArrowDown' ? 1 : -1) + items.length) % items.length].focus();
+    } else if (e.key === 'Home' || e.key === 'End') { e.preventDefault(); items[e.key === 'Home' ? 0 : items.length - 1].focus(); }
+  });
+  // Escape on the More button itself, a tap elsewhere, or tabbing out of the menu closes it.
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !menu.classList.contains('hidden')) closeMenu(true); });
+  document.addEventListener('click', (e) => { if (!$('evp-more-wrap').contains(e.target)) closeMenu(); });
+  $('evp-more-wrap').addEventListener('focusout', (e) => { if (e.relatedTarget && !$('evp-more-wrap').contains(e.relatedTarget)) closeMenu(); });
+  menu.addEventListener('click', (e) => {
+    const item = e.target.closest('.mi');
+    if (!item) return;
+    // Focus goes back to More first, so a dialog the action opens returns there when it closes.
+    closeMenu(true);
+    const act = item.dataset.act;
+    if (act === 'qr') openQr(moreBtn);
+    else if (act === 'cancel') $('order-cancel').click();
+    else if (act === 'refund') $('order-refund').click();
+    else if (act === 'withdraw') $('order-withdraw').click();
+    else if (act === 'faq') goTo($('faq'), $('faq-title'));
+    else if (act === 'terms') showTerms();
+    else if (act === 'logout') logout();
+  });
+
+  // ---- the guest's details (/api/profile) ----
+  // One form for name, date of birth and Instagram. Once paid, the name and date of birth are locked (unless still
+  // empty), so only Instagram can change. Resolves to { saved: true }, { off: true } when the backend has no profile
+  // yet, or null when dismissed.
+  function askProfile(opts = {}) {
+    const g = me || {}, locked = profileLocked();
+    const nameOpen = !locked || !g.full_name, dobOpen = !locked || !ymdOf(g.birth_date);
+    const fields = [];
+    if (nameOpen) {
+      fields.push({ name: 'full_name', label: 'Full name (as on your ID)', value: g.full_name || '', autocomplete: 'name', maxlength: 80,
+        placeholder: 'First and last name', attrs: { autocapitalize: 'words', spellcheck: 'false' } });
+    }
+    if (dobOpen) {
+      const o = dobOptions(), [y, m, d] = (ymdOf(g.birth_date) || '--').split('-');
+      fields.push({ name: 'birth_date', label: 'Date of birth', group: [
+        { name: 'birth_d', label: 'Day', type: 'select', options: o.d, value: d || '', autocomplete: 'bday-day' },
+        { name: 'birth_m', label: 'Month', type: 'select', options: o.m, value: m || '', autocomplete: 'bday-month' },
+        { name: 'birth_y', label: 'Year', type: 'select', options: o.y, value: y || '', autocomplete: 'bday-year' }] });
+    }
+    fields.push({ name: 'instagram', label: 'Instagram', prefix: '@', value: g.instagram || '', autocomplete: 'off', maxlength: 60,
+      placeholder: 'yourhandle', attrs: { autocapitalize: 'none', spellcheck: 'false' } });
+    const text = opts.text || (locked
+      ? "Your name and date of birth are locked now that you've paid. Message us if they need to change."
+      : 'Use your name and date of birth exactly as they show on your photo ID. Staff check it at pickup.');
+    return ask({
+      title: opts.title || 'Your details', text, fields, ok: opts.ok || 'Save', cancel: 'Never mind', focus: 'first',
+      onSubmit: async (v, ui) => {
+        const body = {}, errs = {};
+        let empty = null;
+        if (nameOpen) {
+          const n = tidyName(v.full_name);
+          if (nameProblem(n)) errs.full_name = nameProblem(n); else body.full_name = n;
+          if (!n) empty = empty || 'full_name';
+        }
+        if (dobOpen) {
+          const dob = dobFrom(v.birth_d, v.birth_m, v.birth_y);
+          if (dobProblem(dob)) errs.birth_date = dobProblem(dob); else body.birth_date = dob.ymd;
+          if (!dob) empty = empty || 'birth_date';
+        }
+        const ig = tidyIg(v.instagram);
+        if (ig) body.instagram = ig; else { errs.instagram = 'Add your Instagram handle.'; empty = empty || 'instagram'; }
+        if (Object.keys(errs).length) { Object.entries(errs).forEach(([k, t]) => ui.error(k, t)); return false; }
+        try {
+          const res = await authFetch('/api/profile', body);
+          if (res.status === 404) { profileApi = false; renderHead(); return { off: true }; }
+          const d = await res.json().catch(() => ({}));
+          if (!res.ok) {
+            // Paid in the meantime (another tab, a free code): reload, so the form shows what can still change.
+            if (d.code === 'PROFILE_LOCKED') loadStatus();
+            ui.error(profileField(d, empty), d.error || 'Something went wrong. Try again.');
+            return false;
+          }
+          me = Object.assign({}, me, d.guest && typeof d.guest === 'object' ? d.guest : body);
+          renderHead();
+          toast('Details saved.');
+          return { saved: true };
+        } catch (err) {
+          if (err.message === 'SESSION_EXPIRED') return null;
+          ui.error(null, 'Network error. Try again.');
+          return false;
+        }
+      }
+    });
+  }
+  const editDetails = () => askProfile();
+  $('my-details-edit').addEventListener('click', editDetails);
+  $('req-edit').addEventListener('click', editDetails);
+  $('nudge-btn').addEventListener('click', () => askProfile({ title: 'Finish your profile', ok: 'Save',
+    text: 'Add your name and date of birth exactly as they show on your photo ID. Staff check it when you collect your package.' }));
 
   // Event details set by the organizers. Paid-only details come back only once the order is paid.
   async function loadEvent() {
@@ -1479,14 +2383,13 @@
       const ev = res.ok ? await res.json() : null;
       eventData = ev;
       renderHead();
-      const show = ev && (ev.when || ev.info || ev.has_paid_info);
-      $('event-card').classList.toggle('hidden', !show);
-      if (!show) return;
-      $('event-when').textContent = ev.when;
-      $('event-info').textContent = ev.info;
-      $('event-paid-text').textContent = ev.paid_info;
-      $('event-paid').classList.toggle('hidden', !ev.paid_info);
-      $('event-locked').classList.toggle('hidden', ev.paid || !ev.has_paid_info);
+      // "When" and the info show on the event page now. The old card stays hidden, still filled for older code.
+      $('event-card').classList.add('hidden');
+      $('event-when').textContent = (ev && ev.when) || '';
+      $('event-info').textContent = (ev && ev.info) || '';
+      $('event-paid-text').textContent = (ev && ev.paid_info) || '';
+      $('event-paid').classList.toggle('hidden', !(ev && ev.paid_info));
+      $('event-locked').classList.toggle('hidden', !ev || !!ev.paid || !ev.has_paid_info);
     } catch (err) { if (err.message !== 'SESSION_EXPIRED') console.error(err); }
   }
 
@@ -1750,7 +2653,8 @@
   async function addOrderCode() {
     const v = await ask({
       title: 'Have a code?',
-      text: 'Add it before you pay and it comes off what you owe.',
+      text: 'Add it before you pay and it comes off what you owe.'
+        + (profileOn() ? " A code that covers everything confirms your spot right away, and your name and date of birth can't change after." : ''),
       fields: [{ name: 'code', label: 'Your code', maxlength: 24, placeholder: 'Enter code' }],
       ok: 'Apply', cancel: 'Never mind'
     });
@@ -1794,6 +2698,54 @@
     });
     $('contact-line').classList.toggle('hidden', !links.length);
     $('login-help-contact').classList.toggle('hidden', !links.length);
+    renderContactSheet(c);
+  }
+
+  // Small line icons (fixed markup, never user data).
+  const ICONS = {
+    wa: '<path d="M5.5 4h3l1.8 4.6-2.2 1.4a10.5 10.5 0 0 0 5.9 5.9l1.4-2.2 4.6 1.8v3a2 2 0 0 1-2.2 2A16 16 0 0 1 3.5 6.2 2 2 0 0 1 5.5 4z"/>',
+    ig: '<rect x="3.5" y="3.5" width="17" height="17" rx="5"/><circle cx="12" cy="12" r="4"/><path d="M17.2 6.8h.01" stroke-width="3" stroke-linecap="round"/>',
+    mail: '<rect x="3" y="5.5" width="18" height="13" rx="2"/><path d="M3.5 7l8.5 6.5L20.5 7"/>'
+  };
+  function icon(name) {
+    const t = document.createElement('template');
+    t.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true">' + ICONS[name] + '</svg>';
+    return t.content.firstChild;
+  }
+  // "12685551234" -> "+1 (268) 555-1234"; other numbers just get their "+".
+  const phoneLabel = (d) => (/^1\d{10}$/.test(d) ? '+1 (' + d.slice(1, 4) + ') ' + d.slice(4, 7) + '-' + d.slice(7) : '+' + d);
+
+  // The Contact sheet and the Host row's icons: only the ways in that the organizers have set.
+  function renderContactSheet(c) {
+    const ways = [];
+    if (c.whatsapp) ways.push({ key: 'wa', name: 'WhatsApp', detail: phoneLabel(String(c.whatsapp)), url: 'https://wa.me/' + c.whatsapp });
+    if (c.instagram) ways.push({ key: 'ig', name: 'Instagram', detail: '@' + c.instagram, url: 'https://instagram.com/' + c.instagram });
+    if (c.email) ways.push({ key: 'mail', name: 'Email', detail: c.email, url: 'mailto:' + c.email });
+    const list = $('contact-list');
+    list.replaceChildren();
+    ways.forEach((w) => {
+      const a = document.createElement('a');
+      a.className = 'sheet-item'; a.href = w.url;
+      if (w.key !== 'mail') { a.target = '_blank'; a.rel = 'noopener'; }
+      const ic = document.createElement('span'); ic.className = 'ic'; ic.appendChild(icon(w.key));
+      const txt = document.createElement('span');
+      const b = document.createElement('b'); b.textContent = w.name;
+      const small = document.createElement('small'); small.textContent = w.detail;
+      txt.append(b, small);
+      const go = document.createElement('span'); go.className = 'go'; go.setAttribute('aria-hidden', 'true'); go.textContent = '→';
+      a.append(ic, txt, go);
+      list.appendChild(a);
+    });
+    $('evp-contact').classList.toggle('hidden', !ways.length);
+    const host = $('host-links');
+    host.replaceChildren();
+    ways.filter((w) => w.key !== 'mail').forEach((w) => {
+      const a = document.createElement('a');
+      a.href = w.url; a.target = '_blank'; a.rel = 'noopener';
+      a.setAttribute('aria-label', "On D' Road on " + w.name);
+      a.appendChild(icon(w.key));
+      host.appendChild(a);
+    });
   }
 
   function renderTerms(text) { renderRich($('terms-body'), text); }
@@ -1845,6 +2797,7 @@
     $('faq').classList.toggle('hidden', !on);
     $('foot-faq').classList.toggle('hidden', !on);
     $('login-help-faq').classList.toggle('hidden', !on);
+    renderMenu();
     if (on && location.hash === '#faq') $('faq').scrollIntoView();
   }
 
