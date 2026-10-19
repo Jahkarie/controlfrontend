@@ -19,6 +19,30 @@
   <link rel="icon" href="favicon-32.png" sizes="32x32" type="image/png">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <script>
+    // Site lock, before the first paint: html.locked shows only the trailer (#lock) unless the last answer from /api/site
+    // was "open" (localStorage odr_site_open = '1') or the owner's preview link was opened (odr_preview). /api/site has the
+    // final say once the main script asks. A ?preview=<token> link is stored and taken out of the address bar here.
+    // Any storage error means locked. The main script reads the token from window.odrPreview.
+    (function () {
+      var t = null, open = false;
+      try {
+        var q = new URLSearchParams(location.search);
+        if (q.has('preview')) {
+          t = q.get('preview'); q.delete('preview');
+          var rest = q.toString();
+          history.replaceState(history.state, '', location.pathname + (rest ? '?' + rest : '') + location.hash);
+        }
+      } catch (e) {}
+      try {
+        var ls = window.localStorage;
+        if (t) ls.setItem('odr_preview', t); else t = ls.getItem('odr_preview');
+        open = ls.getItem('odr_site_open') === '1' || !!t;
+      } catch (e) { open = false; }
+      window.odrPreview = t || '';
+      if (!open) document.documentElement.classList.add('locked');
+    })();
+  </script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -325,7 +349,7 @@
       /* An invite link: a short brand band under the bar, then the form. */
       body:has(#accept-view:not(.hidden)) .hero-art { top: var(--top); }
       body:has(#accept-view:not(.hidden)) .hero-in { padding-top: calc(var(--top) + 26px); padding-bottom: 26px; }
-      body:has(#accept-view:not(.hidden)) .hero-k, body:has(#accept-view:not(.hidden)) .hero-foot { display: none; }
+      body:has(#accept-view:not(.hidden)) .hero-k, body:has(#accept-view:not(.hidden)) .hero-foot, body:has(#accept-view:not(.hidden)) .watch { display: none; }
       body:has(#accept-view:not(.hidden)) .hero-wm { margin-top: 4px; }
       body:has(#accept-view:not(.hidden)) .xh { width: 24px; height: 24px; }
       /* With the layout script, the sign-in form is a sheet that slides up over the wall. */
@@ -894,6 +918,44 @@
       .evp-side { position: absolute; bottom: auto; }
     }
 
+    /* ---------- the site lock (#lock): the trailer alone, full screen, until the site opens ----------
+       html.locked (the head script sets it before the first paint; /api/site confirms or lifts it) shows only #lock:
+       everything else is display: none (and inert, set by the main script). #lock.leaving keeps it on top while it
+       fades out once the site opens. The video has no controls; under reduced motion or Data Saver the still shows. */
+    #lock { display: none; }
+    html.locked, html.locked body { overflow: hidden; background: var(--black); }
+    html.locked body > :not(#lock) { display: none !important; }
+    html.locked #lock, #lock.leaving { display: block; position: fixed; inset: 0; z-index: 1000; background: var(--black); }
+    #lock.leaving { pointer-events: none; transition: opacity .4s var(--ease); }
+    #lock.gone { opacity: 0; }
+    #lock video, #lock img { position: absolute; inset: 0; display: block; width: 100%; height: 100%; object-fit: cover; background: var(--black); }
+    #lock img[hidden], #lock video[hidden] { display: none; }
+    #lock video::-webkit-media-controls, #lock video::-webkit-media-controls-start-playback-button { display: none !important; -webkit-appearance: none; }
+
+    /* The owner's preview of the locked site */
+    .preview-tag { position: fixed; z-index: 950; top: calc(var(--top) + 10px); left: 50%; transform: translateX(-50%); display: flex; align-items: center;
+      max-width: calc(100vw - 2 * var(--gut)); min-height: 44px; padding-left: 12px; background: var(--black); color: var(--text); border: 1px solid var(--orange);
+      font: 700 11px/1 var(--mono); letter-spacing: .1em; text-transform: uppercase; white-space: nowrap; }
+    .preview-tag a { display: inline-flex; align-items: center; align-self: stretch; padding: 0 12px; margin-left: 4px; color: var(--orange); text-underline-offset: 3px; }
+    .preview-tag a:hover { color: var(--text); }
+
+    /* "Watch the trailer" on the open front: the trailer in a full-screen dialog, with controls */
+    .watch { display: inline-flex; align-self: flex-start; align-items: center; gap: 10px; min-height: 44px; margin-top: 14px; padding: 0; border: 0; background: none; color: var(--muted);
+      font: 700 12px/1 var(--mono); letter-spacing: .12em; text-transform: uppercase; cursor: pointer; }
+    .watch:hover { color: var(--text); }
+    .watch svg { width: 22px; height: 22px; flex: none; }
+    .watch i { font-style: normal; opacity: .55; }
+    @media (min-width: 1024px) { .watch { align-self: center; margin-top: 30px; } }
+    dialog.trailer-dlg { width: 100vw; height: 100dvh; max-width: none; max-height: none; margin: 0; background: var(--black); color: var(--text); overflow: hidden; }
+    dialog.trailer-dlg[open] { animation: none; }
+    dialog.trailer-dlg::backdrop { background: var(--black); }
+    .trailer-dlg video { display: block; width: 100%; height: 100%; object-fit: contain; background: var(--black); }
+    .trailer-x { position: absolute; z-index: 2; top: max(14px, calc(env(safe-area-inset-top) + 10px)); right: max(14px, calc(env(safe-area-inset-right) + 10px));
+      display: inline-flex; align-items: center; gap: .55em; min-width: 44px; min-height: 44px; padding: 0 14px; border: 1px solid var(--line-2); border-radius: 0;
+      background: rgba(10, 10, 11, .55); color: var(--text); font: 700 13px/1 var(--mono); letter-spacing: .12em; text-transform: uppercase; cursor: pointer; }
+    .trailer-x:hover { border-color: var(--text); background: rgba(10, 10, 11, .8); }
+    .trailer-x i { font-style: normal; opacity: .55; }
+
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { animation-duration: .001ms !important; animation-delay: 0s !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
       .st.loop { animation: none !important; }
@@ -902,6 +964,13 @@
   </style>
 </head>
 <body>
+  <!-- The site lock: while html.locked is set, this is all there is. The trailer loops, silent, with nothing on top
+       (the main script picks 9x16 or 16x9 and plays it). Screen readers get the one line. -->
+  <div id="lock">
+    <p class="sr">On D' Road. Invite only. 18+. Opening soon.</p>
+    <video id="lock-video" muted playsinline autoplay loop preload="auto" disablepictureinpicture disableremoteplayback aria-hidden="true"></video>
+    <img id="lock-still" alt="" aria-hidden="true" hidden>
+  </div>
   <svg class="sprite" aria-hidden="true" focusable="false">
     <!-- The old Paint & Powder art (splats and seal paths) is retired. Its ids stay, empty, so every id from before still exists. -->
     <symbol id="sp-a" viewBox="0 0 200 200"></symbol><symbol id="sp-b" viewBox="0 0 200 200"></symbol><symbol id="sp-c" viewBox="0 0 200 200"></symbol>
@@ -948,6 +1017,7 @@
               <a class="linkish" href="#how">How it works</a>
             </div>
           </div>
+          <button type="button" class="watch reveal" id="watch-trailer" aria-haspopup="dialog"><svg viewBox="0 0 22 22" aria-hidden="true"><rect x=".75" y=".75" width="20.5" height="20.5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8.5 6.5v9l7-4.5z" fill="currentColor"/></svg><span><i aria-hidden="true">[ </i>Watch the trailer<i aria-hidden="true"> ]</i></span></button>
         </div>
       </header>
 
@@ -1332,11 +1402,101 @@
       </div>
     </form>
   </dialog>
+  <dialog id="trailer-dlg" class="trailer-dlg" aria-label="Trailer">
+    <video id="trailer-video" controls playsinline loop preload="none"></video>
+    <button type="button" class="trailer-x" id="trailer-x"><i aria-hidden="true">[</i>Close<i aria-hidden="true">]</i></button>
+  </dialog>
+  <div id="preview-tag" class="preview-tag hidden"><span><span aria-hidden="true">[ </span>Preview · site locked<span aria-hidden="true"> ]</span></span><a href="./" id="preview-exit">Exit</a></div>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
 <script>
   const BACKEND_URL = 'https://control-1-0baa.onrender.com';
   const $ = (id) => document.getElementById(id);
+
+  // ---- site lock: while html.locked is set (see the head script) only the trailer shows and nothing else loads ----
+  // Every backend call goes through backend(): it sends the owner's preview token as x-preview when there is one, and a
+  // 423 (the site was locked after this page loaded) brings the lock screen back and leaves the caller waiting.
+  let preview = window.odrPreview || '';
+  const store = (k, v) => { try { if (v === null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) {} };
+  const isLocked = () => document.documentElement.classList.contains('locked');
+  async function backend(path, init = {}) {
+    const headers = Object.assign({}, init.headers);
+    if (preview) headers['x-preview'] = preview;
+    const res = await fetch(`${BACKEND_URL}${path}`, Object.assign({}, init, { headers }));
+    if (res.status === 423) { lockSite(); return new Promise(() => {}); }
+    return res;
+  }
+  // A token the backend no longer takes (the link was reset), or the owner leaving the preview.
+  function forgetPreview() { preview = ''; store('odr_preview', null); }
+
+  // The trailer: 9x16 on a portrait screen, 16x9 on a landscape one, WebM first, then MP4.
+  const portrait = matchMedia('(orientation: portrait)');
+  const stillOnly = () => matchMedia('(prefers-reduced-motion: reduce)').matches || !!(navigator.connection && navigator.connection.saveData);
+  const shape = () => (portrait.matches ? '9x16' : '16x9');
+  function setTrailer(video) {
+    const k = shape();
+    if (video.dataset.k === k) return;
+    video.dataset.k = k;
+    video.poster = 'trailer/intro-' + k + '.jpg';
+    video.replaceChildren(...['webm', 'mp4'].map((ext) => {
+      const src = document.createElement('source'); src.src = 'trailer/intro-' + k + '.' + ext; src.type = 'video/' + ext; return src;
+    }));
+    video.load();
+  }
+  function stopTrailer(video) { video.pause(); video.replaceChildren(); video.removeAttribute('poster'); delete video.dataset.k; video.load(); }
+
+  // The lock screen: the trailer on loop, muted, no controls; under reduced motion or Data Saver, its still instead.
+  // Everything else on the page is inert as well as hidden.
+  // started: the guest UI has started (see start() at the end). relocked: the lock came back after that, so calls were
+  // left waiting and the page reloads once it opens again. siteTimer: the next /api/site check while locked.
+  let lockInert = [], fadeTimer = null, started = false, relocked = false, siteTimer = null;
+  function showLock() {
+    const video = $('lock-video'), still = $('lock-still');
+    Array.from(document.body.children).forEach((el) => {
+      if (el.id !== 'lock' && el.tagName !== 'SCRIPT' && !el.inert) { el.inert = true; lockInert.push(el); }
+    });
+    const showStill = () => { still.src = 'trailer/intro-' + shape() + '.jpg'; still.hidden = false; video.hidden = true; stopTrailer(video); };
+    if (stillOnly()) return showStill();
+    still.hidden = true; video.hidden = false; video.muted = true;
+    setTrailer(video);
+    const playing = video.play();
+    // A phone that won't autoplay (Low Power Mode) gets the still rather than a play button.
+    if (playing) playing.catch((err) => { if (err && err.name === 'NotAllowedError' && isLocked()) showStill(); });
+  }
+  function lockSite() {
+    store('odr_site_open', '0');
+    if (preview) forgetPreview();
+    if (started) relocked = true;
+    if (!siteTimer) siteTimer = setTimeout(checkSite, 60000);
+    if (isLocked() && !fadeTimer) return;
+    clearTimeout(fadeTimer); fadeTimer = null;
+    document.querySelectorAll('dialog[open]').forEach((d) => d.close());
+    $('preview-tag').classList.add('hidden');
+    $('lock').classList.remove('leaving', 'gone');
+    document.documentElement.classList.add('locked');
+    showLock();
+  }
+  // The site is open (or this is the owner's preview): the lock fades out (at once under reduced motion).
+  function openSite(viaPreview) {
+    store('odr_site_open', viaPreview ? '0' : '1');
+    $('preview-tag').classList.toggle('hidden', !viaPreview);
+    if (!isLocked()) return;
+    const lock = $('lock'), fade = !matchMedia('(prefers-reduced-motion: reduce)').matches;
+    lockInert.forEach((el) => { el.inert = false; }); lockInert = [];
+    const done = () => {
+      fadeTimer = null;
+      lock.classList.remove('leaving', 'gone');
+      stopTrailer($('lock-video')); $('lock-still').hidden = true; $('lock-still').removeAttribute('src');
+    };
+    if (fade) lock.classList.add('leaving');
+    document.documentElement.classList.remove('locked');
+    if (!fade) return done();
+    requestAnimationFrame(() => requestAnimationFrame(() => lock.classList.add('gone')));
+    fadeTimer = setTimeout(done, 450);
+  }
+  portrait.addEventListener('change', () => { if (isLocked()) showLock(); });
+  $('preview-exit').addEventListener('click', (e) => { e.preventDefault(); forgetPreview(); store('odr_site_open', '0'); location.reload(); });
+  if (isLocked()) showLock();
 
   // Small on-page notice instead of browser alert boxes.
   let toastTimer;
@@ -1551,7 +1711,7 @@
   // Sends a request with the login token attached.
   // If the server says the session is invalid or expired, log the user out.
   async function authFetch(path, body) {
-    const res = await fetch(`${BACKEND_URL}${path}`, {
+    const res = await backend(path, {
       method: body ? 'POST' : 'GET',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
       body: body ? JSON.stringify(body) : undefined
@@ -1571,7 +1731,7 @@
     errorDiv.style.color = 'var(--red)';
     if (!emailInput) return errorDiv.innerText = 'Enter your email first.';
     try {
-      const res = await fetch(`${BACKEND_URL}/api/login`, {
+      const res = await backend('/api/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: emailInput })
@@ -1592,7 +1752,7 @@
   async function handleLoginCode(code) {
     const errorDiv = $('login-error');
     try {
-      const res = await fetch(`${BACKEND_URL}/api/login/verify`, {
+      const res = await backend('/api/login/verify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ code })
@@ -1706,7 +1866,7 @@
   async function loadInvite() {
     const loginErr = $('login-error');
     try {
-      const res = await fetch(`${BACKEND_URL}/api/invite/${encodeURIComponent(inviteToken)}`);
+      const res = await backend(`/api/invite/${encodeURIComponent(inviteToken)}`);
       const data = await res.json();
       if (!res.ok) { loginErr.innerText = data.error; return; }
       $('login-view').classList.add('hidden');
@@ -1759,7 +1919,7 @@
     accepting = true;
     try {
       // adult: true keeps the older backend (no profile yet) accepting during the deploy window.
-      const res = await fetch(`${BACKEND_URL}/api/invite/accept`, {
+      const res = await backend('/api/invite/accept', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ token: inviteToken, email, full_name, birth_date: dob.ymd, instagram, adult: true })
@@ -2404,7 +2564,7 @@
 
   async function loadPackages() {
     try {
-      const res = await fetch(`${BACKEND_URL}/api/packages`);
+      const res = await backend('/api/packages');
       const data = await res.json();
       if (!res.ok || !Array.isArray(data)) throw new Error((data && data.error) || 'Packages did not load');
       packages = data;
@@ -2682,13 +2842,19 @@
   // ---- contact details, terms, FAQ and sponsors (public; set by the organizers at /admin/site) ----
   let site = null;
 
+  // Also the site lock's answer: { locked: true } and nothing else while locked. Returns the answer, or null when there
+  // was none (network trouble, a server error). A backend without /api/site at all (404) has no lock either: open.
   async function loadSite() {
     try {
-      const res = await fetch(`${BACKEND_URL}/api/site`);
-      if (!res.ok) return;
-      site = await res.json();
+      const res = await backend('/api/site');
+      if (res.status === 404) return {};
+      if (!res.ok) return null;
+      const d = await res.json();
+      if (d && d.locked === true) { lockSite(); return d; }
+      site = d;
       renderContact(); renderFaq(); renderSponsors();
-    } catch (err) { console.error(err); }
+      return d;
+    } catch (err) { if (!isLocked()) console.error(err); return null; }
   }
 
   function renderContact() {
@@ -2848,13 +3014,55 @@
     $('terms-body').scrollTop = 0;
   }
 
-  loadSite();
+  // ---- "Watch the trailer" on the open front: the trailer in a full-screen dialog, with controls ----
+  (function () {
+    const dlg = $('trailer-dlg'), video = $('trailer-video');
+    let opener = null;
+    $('watch-trailer').addEventListener('click', (e) => {
+      if (!dlg.showModal) return;
+      opener = e.currentTarget;
+      dlg.showModal();
+      setTrailer(video);
+      if (!stillOnly()) video.play().catch(() => {});
+      $('trailer-x').focus();
+    });
+    $('trailer-x').addEventListener('click', () => dlg.close());
+    dlg.addEventListener('close', () => { stopTrailer(video); if (opener) opener.focus(); opener = null; });
+    portrait.addEventListener('change', () => {
+      if (!dlg.open) return;
+      const playing = !video.paused;
+      setTrailer(video);
+      if (playing) video.play().catch(() => {});
+    });
+  })();
 
   // An invite link opens the accept screen, a login link exchanges itself for a session,
   // otherwise a saved session resumes automatically. This runs last, after everything above exists.
-  if (inviteToken) loadInvite();
-  else if (loginCode) handleLoginCode(loginCode);
-  else if (currentUser && token) showPortal();
+  function start() {
+    if (started) return;
+    started = true;
+    if (inviteToken) loadInvite();
+    else if (loginCode) handleLoginCode(loginCode);
+    else if (currentUser && token) showPortal();
+  }
+  // /api/site decides whether the site is open. Open: the lock (if any) fades out and the guest UI starts. Locked: the
+  // trailer stays, nothing else loads, and it asks again every minute (so it opens by itself at the unlock time).
+  // No answer: keep what the head script chose and, while locked, try again; Render's free plan can take a minute to
+  // wake, and the trailer is the loading screen meanwhile.
+  let siteTries = 0;
+  async function checkSite() {
+    siteTimer = null;
+    const s = await loadSite();
+    if (s && s.locked !== true) {
+      if (relocked) return location.reload();
+      openSite(!!s.preview); start();
+    } else if (!s && !isLocked()) start();
+    if (isLocked() && !siteTimer) siteTimer = setTimeout(checkSite, s ? 60000 : Math.min(30000, 3000 * 2 ** siteTries++));
+  }
+  // The head script guessed open (it was last time, or this is the owner's preview): start now, as before. A 423 from
+  // any call still brings the lock back. Guessed locked: wait for /api/site.
+  if (!isLocked()) start();
+  checkSite();
 </script>
 <script>
   // Layout only: the phone sign-in sheet, the top bar, the nav links and the pass's full-screen button.
