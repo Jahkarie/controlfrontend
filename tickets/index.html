@@ -1,0 +1,1780 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#0a0a0b">
+  <title>On D' Road Tickets</title>
+  <meta name="description" content="Tickets and VIP tables for On D' Road events in Antigua. 18+. Pay by card, get a live ticket on your phone.">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="On D' Road Tickets">
+  <meta property="og:title" content="On D' Road Tickets">
+  <meta property="og:description" content="Tickets and VIP tables for On D' Road events in Antigua. 18+.">
+  <meta property="og:url" content="https://tickets.ondroad.xyz/">
+  <meta property="og:image" content="https://tickets.ondroad.xyz/og.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="On D' Road Tickets. Antigua. 18+.">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="icon" href="favicon-32.png" sizes="32x32" type="image/png">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <script>
+    // Ticket site lock, before the first paint: html.locked shows only the trailer (#lock) unless the last answer from
+    // /api/tickets/site was "open" (localStorage tickets_site_open = '1') or the owner's preview link was opened
+    // (tickets_preview). A ?preview=<token> link is stored and taken out of the address bar here. Bought tickets keep
+    // working while locked, so an order or ticket link (?order= / ?ticket=) never starts locked. Any storage error
+    // means locked. The main script reads the token from window.tixPreview.
+    (function () {
+      var t = null, open = false, q = null;
+      try {
+        q = new URLSearchParams(location.search);
+        if (q.has('preview')) {
+          t = q.get('preview'); q.delete('preview');
+          var rest = q.toString();
+          history.replaceState(history.state, '', location.pathname + (rest ? '?' + rest : '') + location.hash);
+        }
+      } catch (e) {}
+      try {
+        var ls = window.localStorage;
+        if (t) ls.setItem('tickets_preview', t); else t = ls.getItem('tickets_preview');
+        open = ls.getItem('tickets_site_open') === '1' || !!t;
+      } catch (e) { open = false; }
+      if (q && (q.has('order') || q.has('ticket'))) open = true;
+      window.tixPreview = t || '';
+      if (!open) document.documentElement.classList.add('locked');
+    })();
+  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    /* ============ Night Kinetic, the open ticket side ============
+       The same brand as ondroad.xyz, turned outward: one black bar with the wordmark and a [ TICKETS ] tag, matte
+       charcoal pages, concrete slabs for the order, the tables and the tickets, one sharp accent (safety orange) for
+       primary actions. Prices in Space Mono with tabular figures. Square corners, hairlines, no card soup.
+       The CASHCXDE ENT. watermark (--wm on dark, --wm-ink on concrete) sits faintly in the bar, the footer, the posters
+       and the trailer, and drifts over live tickets with the holder's name and a running clock. */
+    @font-face { font-family: 'Display Narrow'; font-weight: 100 900; src: local('Arial Narrow Bold'), local('ArialNarrow-Bold'), local('Roboto Condensed Bold'), local('RobotoCondensed-Bold'); }
+    @font-face { font-family: 'Display Wide'; font-weight: 100 900; size-adjust: 80%; src: local('Arial Bold'), local('Arial-BoldMT'), local('Helvetica Neue Bold'), local('HelveticaNeue-Bold'), local('Roboto Bold'), local('Roboto-Bold'), local('Liberation Sans Bold'), local('LiberationSans-Bold'), local('DejaVu Sans Bold'), local('DejaVuSans-Bold'); }
+    :root {
+      --black: #0a0a0b; --char: #141416; --char-2: #1a1a1d; --char-3: #232327;
+      --line: rgba(236, 235, 230, .12); --line-2: rgba(236, 235, 230, .26);
+      --text: #ecebe6; --muted: #a6a59f; --dim: #86857f;
+      --concrete: #c9c8c3; --concrete-2: #e4e3df; --ink: #141416; --ink-2: #47463f; --ink-line: rgba(20, 20, 22, .2);
+      --orange: #ff5a1f; --cyan: #22e1ff; --acid: #b6ff3b; --purple: #8b3dff;
+      --red: #ff7a6b; --green: #b6ff3b; --accent: var(--orange); --amber: #ffb020;
+      --wide: 'Archivo', 'Display Narrow', 'Display Wide', 'Arial Narrow', sans-serif;
+      --body: 'Archivo', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      --mono: 'Space Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      --gut: 16px; --top: 56px; --ease: cubic-bezier(.2, .8, .2, 1);
+      --matte: url(art/grain.png); --matte-k: url(art/grain-k.png); --concrete-tex: url(art/concrete.webp);
+      --wm: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='150' viewBox='0 0 260 150'%3E%3Cg fill='%23ecebe6' fill-opacity='.05'%3E%3Cg transform='translate(14 62) rotate(-20)'%3E%3Cg transform='translate(0 -15) scale(.38)'%3E%3Cpath fill-rule='evenodd' d='M8 28L8 16L26.4 16L28.26 16.02L30.01 16.09L31.66 16.21L33.21 16.37L34.66 16.58L36.02 16.84L37.29 17.14L38.48 17.49L39.57 17.88L40.59 18.33L41.52 18.81L42.38 19.34L43.17 19.92L43.88 20.54L44.53 21.21L45.11 21.93L45.63 22.69L46.09 23.49L46.49 24.34L46.83 25.24L47.13 26.18L47.38 27.16L47.54 28ZM20 28L20 24L26.72 24L27.31 24.02L27.88 24.06L28.44 24.14L28.99 24.24L29.51 24.37L30.03 24.53L30.52 24.72L30.99 24.93L31.45 25.17L31.89 25.44L32.31 25.73L32.71 26.05L33.09 26.39L33.45 26.75L33.79 27.14L34.1 27.55L34.39 27.98L34.41 28ZM12 32L12 28L51.54 28L51.58 28.19L51.74 29.26L51.86 30.38L51.94 31.54L51.96 32ZM24 32L24 28L38.41 28L38.66 28.43L38.91 28.9L39.13 29.39L39.33 29.91L39.51 30.44L39.66 30.99L39.78 31.56L39.85 32ZM8 40L8 32L47.96 32L47.99 32.75L48 34L47.99 35.25L47.94 36.46L47.86 37.62L47.74 38.74L47.58 39.81L47.54 40ZM20 40L20 32L35.85 32L35.87 32.14L35.94 32.75L35.99 33.36L36 34L35.99 34.64L35.94 35.25L35.87 35.86L35.78 36.44L35.66 37.01L35.51 37.56L35.33 38.09L35.13 38.61L34.91 39.1L34.66 39.57L34.41 40ZM4 44L4 40L43.54 40L43.38 40.84L43.13 41.82L42.83 42.76L42.49 43.66L42.33 44ZM16 40L30.41 40L30.39 40.02L30.1 40.45L29.79 40.86L29.45 41.25L29.09 41.61L28.71 41.95L28.31 42.27L27.89 42.56L27.45 42.83L26.99 43.07L26.52 43.28L26.03 43.47L25.51 43.63L24.99 43.76L24.44 43.86L23.88 43.94L23.31 43.98L22.72 44L16 44ZM8 44L46.33 44L46.09 44.51L45.63 45.31L45.11 46.07L44.53 46.79L43.88 47.45L43.17 48.08L42.38 48.66L41.52 49.19L40.59 49.67L39.57 50.12L38.48 50.51L37.29 50.86L36.02 51.16L34.66 51.42L33.21 51.63L31.66 51.79L30.01 51.91L28.26 51.98L26.4 52L8 52ZM20 44L26.72 44L26.72 44L20 44Z'/%3E%3Cpath d='M48.5 27L55.5 27L59.5 8L52.5 8Z'/%3E%3C/g%3E%3Cpath transform='translate(27 -3)' d='M2.8 0.1Q1.7 0.1 1.1 -0.5Q0.4 -1.2 0.4 -2.4V-3.9Q0.4 -5.1 1.1 -5.7Q1.7 -6.4 2.8 -6.4Q3.9 -6.4 4.5 -5.8Q5.1 -5.2 5.1 -4.1V-3.9H3.9V-4.1Q3.9 -4.4 3.8 -4.7Q3.7 -5 3.4 -5.2Q3.2 -5.3 2.8 -5.3Q2.4 -5.3 2.1 -5.2Q1.9 -5 1.7 -4.6Q1.6 -4.3 1.6 -3.9V-2.4Q1.6 -1.7 1.9 -1.3Q2.1 -1 2.8 -1Q3.2 -1 3.5 -1.1Q3.7 -1.3 3.8 -1.6Q3.9 -1.9 3.9 -2.2V-2.4H5.1V-2.2Q5.1 -1.1 4.5 -0.5Q3.9 0.1 2.8 0.1ZM5.6 0 7.1 -6.3H9.4L10.9 0H9.6L9.3 -1.3H7.2L6.9 0ZM7.4 -2.5H9.1L8.3 -5.7H8.2ZM13.9 0.1Q13 0.1 12.5 -0.2Q11.9 -0.5 11.6 -1Q11.3 -1.5 11.3 -2.2V-2.4H12.5V-2.2Q12.5 -1.7 12.9 -1.3Q13.2 -1 13.9 -1Q14.4 -1 14.7 -1.2Q14.9 -1.5 14.9 -1.8Q14.9 -2 14.8 -2.2Q14.7 -2.3 14.5 -2.5Q14.2 -2.6 13.7 -2.7Q13.1 -2.8 12.6 -3Q12.1 -3.2 11.8 -3.6Q11.6 -4 11.6 -4.6V-4.6Q11.6 -5.1 11.8 -5.5Q12.1 -6 12.6 -6.2Q13.1 -6.4 13.7 -6.4Q14.5 -6.4 15 -6.2Q15.5 -5.9 15.8 -5.4Q16 -5 16 -4.5V-4.2H14.8V-4.4Q14.8 -4.8 14.6 -5Q14.3 -5.3 13.7 -5.3Q13.3 -5.3 13 -5.1Q12.8 -4.9 12.8 -4.6Q12.8 -4.3 13 -4.1Q13.3 -3.9 14.1 -3.8Q15.1 -3.6 15.6 -3.2Q16.1 -2.7 16.1 -1.9V-1.8Q16.1 -0.9 15.5 -0.4Q14.9 0.1 13.9 0.1ZM17.1 0V-6.3H18.3V-3.7H20.3V-6.3H21.5V0H20.3V-2.6H18.3V0ZM24.8 0.1Q23.7 0.1 23.1 -0.5Q22.5 -1.2 22.5 -2.4V-3.9Q22.5 -5.1 23.1 -5.7Q23.7 -6.4 24.8 -6.4Q25.9 -6.4 26.5 -5.8Q27.1 -5.2 27.1 -4.1V-3.9H25.9V-4.1Q25.9 -4.4 25.8 -4.7Q25.7 -5 25.5 -5.2Q25.2 -5.3 24.8 -5.3Q24.4 -5.3 24.2 -5.2Q23.9 -5 23.8 -4.6Q23.7 -4.3 23.7 -3.9V-2.4Q23.7 -1.7 23.9 -1.3Q24.2 -1 24.8 -1Q25.3 -1 25.5 -1.1Q25.7 -1.3 25.8 -1.6Q25.9 -1.9 25.9 -2.2V-2.4H27.1V-2.2Q27.1 -1.1 26.5 -0.5Q25.9 0.1 24.8 0.1ZM27.8 0 29.1 -3.1V-3.2L27.8 -6.3H29.1L30.2 -3.7H30.4L31.5 -6.3H32.8L31.5 -3.2V-3.1L32.8 0H31.5L30.4 -2.6H30.2L29.1 0ZM33.5 0V-1.1H34.1V-5.2H33.5V-6.3H35.7Q36.9 -6.3 37.5 -5.8Q38.1 -5.2 38.1 -4.1V-2.2Q38.1 -1.1 37.5 -0.5Q36.9 0 35.7 0ZM35.2 -1.1H35.7Q36.4 -1.1 36.6 -1.4Q36.9 -1.7 36.9 -2.3V-4.1Q36.9 -4.6 36.6 -4.9Q36.4 -5.2 35.7 -5.2H35.2ZM39.3 0V-6.3H43.3V-5.2H40.5V-3.7H43.2V-2.6H40.5V-1.1H43.4V0ZM50.3 0V-6.3H54.3V-5.2H51.5V-3.7H54.2V-2.6H51.5V-1.1H54.4V0ZM55.6 0V-6.3H58L58.7 -0.6H58.9V-6.3H60V0H57.7L57 -5.7H56.8V0ZM62.7 0V-5.2H61.1V-6.3H65.6V-5.2H63.9V0ZM68.9 0.1Q68.5 0.1 68.2 -0.1Q68 -0.4 68 -0.7Q68 -1.1 68.2 -1.3Q68.5 -1.6 68.9 -1.6Q69.2 -1.6 69.5 -1.3Q69.7 -1.1 69.7 -0.7Q69.7 -0.4 69.5 -0.1Q69.2 0.1 68.9 0.1Z'/%3E%3C/g%3E%3Cg transform='translate(144 137) rotate(-20)'%3E%3Cg transform='translate(0 -15) scale(.38)'%3E%3Cpath fill-rule='evenodd' d='M8 28L8 16L26.4 16L28.26 16.02L30.01 16.09L31.66 16.21L33.21 16.37L34.66 16.58L36.02 16.84L37.29 17.14L38.48 17.49L39.57 17.88L40.59 18.33L41.52 18.81L42.38 19.34L43.17 19.92L43.88 20.54L44.53 21.21L45.11 21.93L45.63 22.69L46.09 23.49L46.49 24.34L46.83 25.24L47.13 26.18L47.38 27.16L47.54 28ZM20 28L20 24L26.72 24L27.31 24.02L27.88 24.06L28.44 24.14L28.99 24.24L29.51 24.37L30.03 24.53L30.52 24.72L30.99 24.93L31.45 25.17L31.89 25.44L32.31 25.73L32.71 26.05L33.09 26.39L33.45 26.75L33.79 27.14L34.1 27.55L34.39 27.98L34.41 28ZM12 32L12 28L51.54 28L51.58 28.19L51.74 29.26L51.86 30.38L51.94 31.54L51.96 32ZM24 32L24 28L38.41 28L38.66 28.43L38.91 28.9L39.13 29.39L39.33 29.91L39.51 30.44L39.66 30.99L39.78 31.56L39.85 32ZM8 40L8 32L47.96 32L47.99 32.75L48 34L47.99 35.25L47.94 36.46L47.86 37.62L47.74 38.74L47.58 39.81L47.54 40ZM20 40L20 32L35.85 32L35.87 32.14L35.94 32.75L35.99 33.36L36 34L35.99 34.64L35.94 35.25L35.87 35.86L35.78 36.44L35.66 37.01L35.51 37.56L35.33 38.09L35.13 38.61L34.91 39.1L34.66 39.57L34.41 40ZM4 44L4 40L43.54 40L43.38 40.84L43.13 41.82L42.83 42.76L42.49 43.66L42.33 44ZM16 40L30.41 40L30.39 40.02L30.1 40.45L29.79 40.86L29.45 41.25L29.09 41.61L28.71 41.95L28.31 42.27L27.89 42.56L27.45 42.83L26.99 43.07L26.52 43.28L26.03 43.47L25.51 43.63L24.99 43.76L24.44 43.86L23.88 43.94L23.31 43.98L22.72 44L16 44ZM8 44L46.33 44L46.09 44.51L45.63 45.31L45.11 46.07L44.53 46.79L43.88 47.45L43.17 48.08L42.38 48.66L41.52 49.19L40.59 49.67L39.57 50.12L38.48 50.51L37.29 50.86L36.02 51.16L34.66 51.42L33.21 51.63L31.66 51.79L30.01 51.91L28.26 51.98L26.4 52L8 52ZM20 44L26.72 44L26.72 44L20 44Z'/%3E%3Cpath d='M48.5 27L55.5 27L59.5 8L52.5 8Z'/%3E%3C/g%3E%3Cpath transform='translate(27 -3)' d='M2.8 0.1Q1.7 0.1 1.1 -0.5Q0.4 -1.2 0.4 -2.4V-3.9Q0.4 -5.1 1.1 -5.7Q1.7 -6.4 2.8 -6.4Q3.9 -6.4 4.5 -5.8Q5.1 -5.2 5.1 -4.1V-3.9H3.9V-4.1Q3.9 -4.4 3.8 -4.7Q3.7 -5 3.4 -5.2Q3.2 -5.3 2.8 -5.3Q2.4 -5.3 2.1 -5.2Q1.9 -5 1.7 -4.6Q1.6 -4.3 1.6 -3.9V-2.4Q1.6 -1.7 1.9 -1.3Q2.1 -1 2.8 -1Q3.2 -1 3.5 -1.1Q3.7 -1.3 3.8 -1.6Q3.9 -1.9 3.9 -2.2V-2.4H5.1V-2.2Q5.1 -1.1 4.5 -0.5Q3.9 0.1 2.8 0.1ZM5.6 0 7.1 -6.3H9.4L10.9 0H9.6L9.3 -1.3H7.2L6.9 0ZM7.4 -2.5H9.1L8.3 -5.7H8.2ZM13.9 0.1Q13 0.1 12.5 -0.2Q11.9 -0.5 11.6 -1Q11.3 -1.5 11.3 -2.2V-2.4H12.5V-2.2Q12.5 -1.7 12.9 -1.3Q13.2 -1 13.9 -1Q14.4 -1 14.7 -1.2Q14.9 -1.5 14.9 -1.8Q14.9 -2 14.8 -2.2Q14.7 -2.3 14.5 -2.5Q14.2 -2.6 13.7 -2.7Q13.1 -2.8 12.6 -3Q12.1 -3.2 11.8 -3.6Q11.6 -4 11.6 -4.6V-4.6Q11.6 -5.1 11.8 -5.5Q12.1 -6 12.6 -6.2Q13.1 -6.4 13.7 -6.4Q14.5 -6.4 15 -6.2Q15.5 -5.9 15.8 -5.4Q16 -5 16 -4.5V-4.2H14.8V-4.4Q14.8 -4.8 14.6 -5Q14.3 -5.3 13.7 -5.3Q13.3 -5.3 13 -5.1Q12.8 -4.9 12.8 -4.6Q12.8 -4.3 13 -4.1Q13.3 -3.9 14.1 -3.8Q15.1 -3.6 15.6 -3.2Q16.1 -2.7 16.1 -1.9V-1.8Q16.1 -0.9 15.5 -0.4Q14.9 0.1 13.9 0.1ZM17.1 0V-6.3H18.3V-3.7H20.3V-6.3H21.5V0H20.3V-2.6H18.3V0ZM24.8 0.1Q23.7 0.1 23.1 -0.5Q22.5 -1.2 22.5 -2.4V-3.9Q22.5 -5.1 23.1 -5.7Q23.7 -6.4 24.8 -6.4Q25.9 -6.4 26.5 -5.8Q27.1 -5.2 27.1 -4.1V-3.9H25.9V-4.1Q25.9 -4.4 25.8 -4.7Q25.7 -5 25.5 -5.2Q25.2 -5.3 24.8 -5.3Q24.4 -5.3 24.2 -5.2Q23.9 -5 23.8 -4.6Q23.7 -4.3 23.7 -3.9V-2.4Q23.7 -1.7 23.9 -1.3Q24.2 -1 24.8 -1Q25.3 -1 25.5 -1.1Q25.7 -1.3 25.8 -1.6Q25.9 -1.9 25.9 -2.2V-2.4H27.1V-2.2Q27.1 -1.1 26.5 -0.5Q25.9 0.1 24.8 0.1ZM27.8 0 29.1 -3.1V-3.2L27.8 -6.3H29.1L30.2 -3.7H30.4L31.5 -6.3H32.8L31.5 -3.2V-3.1L32.8 0H31.5L30.4 -2.6H30.2L29.1 0ZM33.5 0V-1.1H34.1V-5.2H33.5V-6.3H35.7Q36.9 -6.3 37.5 -5.8Q38.1 -5.2 38.1 -4.1V-2.2Q38.1 -1.1 37.5 -0.5Q36.9 0 35.7 0ZM35.2 -1.1H35.7Q36.4 -1.1 36.6 -1.4Q36.9 -1.7 36.9 -2.3V-4.1Q36.9 -4.6 36.6 -4.9Q36.4 -5.2 35.7 -5.2H35.2ZM39.3 0V-6.3H43.3V-5.2H40.5V-3.7H43.2V-2.6H40.5V-1.1H43.4V0ZM50.3 0V-6.3H54.3V-5.2H51.5V-3.7H54.2V-2.6H51.5V-1.1H54.4V0ZM55.6 0V-6.3H58L58.7 -0.6H58.9V-6.3H60V0H57.7L57 -5.7H56.8V0ZM62.7 0V-5.2H61.1V-6.3H65.6V-5.2H63.9V0ZM68.9 0.1Q68.5 0.1 68.2 -0.1Q68 -0.4 68 -0.7Q68 -1.1 68.2 -1.3Q68.5 -1.6 68.9 -1.6Q69.2 -1.6 69.5 -1.3Q69.7 -1.1 69.7 -0.7Q69.7 -0.4 69.5 -0.1Q69.2 0.1 68.9 0.1Z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+      --wm-ink: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='150' viewBox='0 0 260 150'%3E%3Cg fill='%23141416' fill-opacity='.065'%3E%3Cg transform='translate(14 62) rotate(-20)'%3E%3Cg transform='translate(0 -15) scale(.38)'%3E%3Cpath fill-rule='evenodd' d='M8 28L8 16L26.4 16L28.26 16.02L30.01 16.09L31.66 16.21L33.21 16.37L34.66 16.58L36.02 16.84L37.29 17.14L38.48 17.49L39.57 17.88L40.59 18.33L41.52 18.81L42.38 19.34L43.17 19.92L43.88 20.54L44.53 21.21L45.11 21.93L45.63 22.69L46.09 23.49L46.49 24.34L46.83 25.24L47.13 26.18L47.38 27.16L47.54 28ZM20 28L20 24L26.72 24L27.31 24.02L27.88 24.06L28.44 24.14L28.99 24.24L29.51 24.37L30.03 24.53L30.52 24.72L30.99 24.93L31.45 25.17L31.89 25.44L32.31 25.73L32.71 26.05L33.09 26.39L33.45 26.75L33.79 27.14L34.1 27.55L34.39 27.98L34.41 28ZM12 32L12 28L51.54 28L51.58 28.19L51.74 29.26L51.86 30.38L51.94 31.54L51.96 32ZM24 32L24 28L38.41 28L38.66 28.43L38.91 28.9L39.13 29.39L39.33 29.91L39.51 30.44L39.66 30.99L39.78 31.56L39.85 32ZM8 40L8 32L47.96 32L47.99 32.75L48 34L47.99 35.25L47.94 36.46L47.86 37.62L47.74 38.74L47.58 39.81L47.54 40ZM20 40L20 32L35.85 32L35.87 32.14L35.94 32.75L35.99 33.36L36 34L35.99 34.64L35.94 35.25L35.87 35.86L35.78 36.44L35.66 37.01L35.51 37.56L35.33 38.09L35.13 38.61L34.91 39.1L34.66 39.57L34.41 40ZM4 44L4 40L43.54 40L43.38 40.84L43.13 41.82L42.83 42.76L42.49 43.66L42.33 44ZM16 40L30.41 40L30.39 40.02L30.1 40.45L29.79 40.86L29.45 41.25L29.09 41.61L28.71 41.95L28.31 42.27L27.89 42.56L27.45 42.83L26.99 43.07L26.52 43.28L26.03 43.47L25.51 43.63L24.99 43.76L24.44 43.86L23.88 43.94L23.31 43.98L22.72 44L16 44ZM8 44L46.33 44L46.09 44.51L45.63 45.31L45.11 46.07L44.53 46.79L43.88 47.45L43.17 48.08L42.38 48.66L41.52 49.19L40.59 49.67L39.57 50.12L38.48 50.51L37.29 50.86L36.02 51.16L34.66 51.42L33.21 51.63L31.66 51.79L30.01 51.91L28.26 51.98L26.4 52L8 52ZM20 44L26.72 44L26.72 44L20 44Z'/%3E%3Cpath d='M48.5 27L55.5 27L59.5 8L52.5 8Z'/%3E%3C/g%3E%3Cpath transform='translate(27 -3)' d='M2.8 0.1Q1.7 0.1 1.1 -0.5Q0.4 -1.2 0.4 -2.4V-3.9Q0.4 -5.1 1.1 -5.7Q1.7 -6.4 2.8 -6.4Q3.9 -6.4 4.5 -5.8Q5.1 -5.2 5.1 -4.1V-3.9H3.9V-4.1Q3.9 -4.4 3.8 -4.7Q3.7 -5 3.4 -5.2Q3.2 -5.3 2.8 -5.3Q2.4 -5.3 2.1 -5.2Q1.9 -5 1.7 -4.6Q1.6 -4.3 1.6 -3.9V-2.4Q1.6 -1.7 1.9 -1.3Q2.1 -1 2.8 -1Q3.2 -1 3.5 -1.1Q3.7 -1.3 3.8 -1.6Q3.9 -1.9 3.9 -2.2V-2.4H5.1V-2.2Q5.1 -1.1 4.5 -0.5Q3.9 0.1 2.8 0.1ZM5.6 0 7.1 -6.3H9.4L10.9 0H9.6L9.3 -1.3H7.2L6.9 0ZM7.4 -2.5H9.1L8.3 -5.7H8.2ZM13.9 0.1Q13 0.1 12.5 -0.2Q11.9 -0.5 11.6 -1Q11.3 -1.5 11.3 -2.2V-2.4H12.5V-2.2Q12.5 -1.7 12.9 -1.3Q13.2 -1 13.9 -1Q14.4 -1 14.7 -1.2Q14.9 -1.5 14.9 -1.8Q14.9 -2 14.8 -2.2Q14.7 -2.3 14.5 -2.5Q14.2 -2.6 13.7 -2.7Q13.1 -2.8 12.6 -3Q12.1 -3.2 11.8 -3.6Q11.6 -4 11.6 -4.6V-4.6Q11.6 -5.1 11.8 -5.5Q12.1 -6 12.6 -6.2Q13.1 -6.4 13.7 -6.4Q14.5 -6.4 15 -6.2Q15.5 -5.9 15.8 -5.4Q16 -5 16 -4.5V-4.2H14.8V-4.4Q14.8 -4.8 14.6 -5Q14.3 -5.3 13.7 -5.3Q13.3 -5.3 13 -5.1Q12.8 -4.9 12.8 -4.6Q12.8 -4.3 13 -4.1Q13.3 -3.9 14.1 -3.8Q15.1 -3.6 15.6 -3.2Q16.1 -2.7 16.1 -1.9V-1.8Q16.1 -0.9 15.5 -0.4Q14.9 0.1 13.9 0.1ZM17.1 0V-6.3H18.3V-3.7H20.3V-6.3H21.5V0H20.3V-2.6H18.3V0ZM24.8 0.1Q23.7 0.1 23.1 -0.5Q22.5 -1.2 22.5 -2.4V-3.9Q22.5 -5.1 23.1 -5.7Q23.7 -6.4 24.8 -6.4Q25.9 -6.4 26.5 -5.8Q27.1 -5.2 27.1 -4.1V-3.9H25.9V-4.1Q25.9 -4.4 25.8 -4.7Q25.7 -5 25.5 -5.2Q25.2 -5.3 24.8 -5.3Q24.4 -5.3 24.2 -5.2Q23.9 -5 23.8 -4.6Q23.7 -4.3 23.7 -3.9V-2.4Q23.7 -1.7 23.9 -1.3Q24.2 -1 24.8 -1Q25.3 -1 25.5 -1.1Q25.7 -1.3 25.8 -1.6Q25.9 -1.9 25.9 -2.2V-2.4H27.1V-2.2Q27.1 -1.1 26.5 -0.5Q25.9 0.1 24.8 0.1ZM27.8 0 29.1 -3.1V-3.2L27.8 -6.3H29.1L30.2 -3.7H30.4L31.5 -6.3H32.8L31.5 -3.2V-3.1L32.8 0H31.5L30.4 -2.6H30.2L29.1 0ZM33.5 0V-1.1H34.1V-5.2H33.5V-6.3H35.7Q36.9 -6.3 37.5 -5.8Q38.1 -5.2 38.1 -4.1V-2.2Q38.1 -1.1 37.5 -0.5Q36.9 0 35.7 0ZM35.2 -1.1H35.7Q36.4 -1.1 36.6 -1.4Q36.9 -1.7 36.9 -2.3V-4.1Q36.9 -4.6 36.6 -4.9Q36.4 -5.2 35.7 -5.2H35.2ZM39.3 0V-6.3H43.3V-5.2H40.5V-3.7H43.2V-2.6H40.5V-1.1H43.4V0ZM50.3 0V-6.3H54.3V-5.2H51.5V-3.7H54.2V-2.6H51.5V-1.1H54.4V0ZM55.6 0V-6.3H58L58.7 -0.6H58.9V-6.3H60V0H57.7L57 -5.7H56.8V0ZM62.7 0V-5.2H61.1V-6.3H65.6V-5.2H63.9V0ZM68.9 0.1Q68.5 0.1 68.2 -0.1Q68 -0.4 68 -0.7Q68 -1.1 68.2 -1.3Q68.5 -1.6 68.9 -1.6Q69.2 -1.6 69.5 -1.3Q69.7 -1.1 69.7 -0.7Q69.7 -0.4 69.5 -0.1Q69.2 0.1 68.9 0.1Z'/%3E%3C/g%3E%3Cg transform='translate(144 137) rotate(-20)'%3E%3Cg transform='translate(0 -15) scale(.38)'%3E%3Cpath fill-rule='evenodd' d='M8 28L8 16L26.4 16L28.26 16.02L30.01 16.09L31.66 16.21L33.21 16.37L34.66 16.58L36.02 16.84L37.29 17.14L38.48 17.49L39.57 17.88L40.59 18.33L41.52 18.81L42.38 19.34L43.17 19.92L43.88 20.54L44.53 21.21L45.11 21.93L45.63 22.69L46.09 23.49L46.49 24.34L46.83 25.24L47.13 26.18L47.38 27.16L47.54 28ZM20 28L20 24L26.72 24L27.31 24.02L27.88 24.06L28.44 24.14L28.99 24.24L29.51 24.37L30.03 24.53L30.52 24.72L30.99 24.93L31.45 25.17L31.89 25.44L32.31 25.73L32.71 26.05L33.09 26.39L33.45 26.75L33.79 27.14L34.1 27.55L34.39 27.98L34.41 28ZM12 32L12 28L51.54 28L51.58 28.19L51.74 29.26L51.86 30.38L51.94 31.54L51.96 32ZM24 32L24 28L38.41 28L38.66 28.43L38.91 28.9L39.13 29.39L39.33 29.91L39.51 30.44L39.66 30.99L39.78 31.56L39.85 32ZM8 40L8 32L47.96 32L47.99 32.75L48 34L47.99 35.25L47.94 36.46L47.86 37.62L47.74 38.74L47.58 39.81L47.54 40ZM20 40L20 32L35.85 32L35.87 32.14L35.94 32.75L35.99 33.36L36 34L35.99 34.64L35.94 35.25L35.87 35.86L35.78 36.44L35.66 37.01L35.51 37.56L35.33 38.09L35.13 38.61L34.91 39.1L34.66 39.57L34.41 40ZM4 44L4 40L43.54 40L43.38 40.84L43.13 41.82L42.83 42.76L42.49 43.66L42.33 44ZM16 40L30.41 40L30.39 40.02L30.1 40.45L29.79 40.86L29.45 41.25L29.09 41.61L28.71 41.95L28.31 42.27L27.89 42.56L27.45 42.83L26.99 43.07L26.52 43.28L26.03 43.47L25.51 43.63L24.99 43.76L24.44 43.86L23.88 43.94L23.31 43.98L22.72 44L16 44ZM8 44L46.33 44L46.09 44.51L45.63 45.31L45.11 46.07L44.53 46.79L43.88 47.45L43.17 48.08L42.38 48.66L41.52 49.19L40.59 49.67L39.57 50.12L38.48 50.51L37.29 50.86L36.02 51.16L34.66 51.42L33.21 51.63L31.66 51.79L30.01 51.91L28.26 51.98L26.4 52L8 52ZM20 44L26.72 44L26.72 44L20 44Z'/%3E%3Cpath d='M48.5 27L55.5 27L59.5 8L52.5 8Z'/%3E%3C/g%3E%3Cpath transform='translate(27 -3)' d='M2.8 0.1Q1.7 0.1 1.1 -0.5Q0.4 -1.2 0.4 -2.4V-3.9Q0.4 -5.1 1.1 -5.7Q1.7 -6.4 2.8 -6.4Q3.9 -6.4 4.5 -5.8Q5.1 -5.2 5.1 -4.1V-3.9H3.9V-4.1Q3.9 -4.4 3.8 -4.7Q3.7 -5 3.4 -5.2Q3.2 -5.3 2.8 -5.3Q2.4 -5.3 2.1 -5.2Q1.9 -5 1.7 -4.6Q1.6 -4.3 1.6 -3.9V-2.4Q1.6 -1.7 1.9 -1.3Q2.1 -1 2.8 -1Q3.2 -1 3.5 -1.1Q3.7 -1.3 3.8 -1.6Q3.9 -1.9 3.9 -2.2V-2.4H5.1V-2.2Q5.1 -1.1 4.5 -0.5Q3.9 0.1 2.8 0.1ZM5.6 0 7.1 -6.3H9.4L10.9 0H9.6L9.3 -1.3H7.2L6.9 0ZM7.4 -2.5H9.1L8.3 -5.7H8.2ZM13.9 0.1Q13 0.1 12.5 -0.2Q11.9 -0.5 11.6 -1Q11.3 -1.5 11.3 -2.2V-2.4H12.5V-2.2Q12.5 -1.7 12.9 -1.3Q13.2 -1 13.9 -1Q14.4 -1 14.7 -1.2Q14.9 -1.5 14.9 -1.8Q14.9 -2 14.8 -2.2Q14.7 -2.3 14.5 -2.5Q14.2 -2.6 13.7 -2.7Q13.1 -2.8 12.6 -3Q12.1 -3.2 11.8 -3.6Q11.6 -4 11.6 -4.6V-4.6Q11.6 -5.1 11.8 -5.5Q12.1 -6 12.6 -6.2Q13.1 -6.4 13.7 -6.4Q14.5 -6.4 15 -6.2Q15.5 -5.9 15.8 -5.4Q16 -5 16 -4.5V-4.2H14.8V-4.4Q14.8 -4.8 14.6 -5Q14.3 -5.3 13.7 -5.3Q13.3 -5.3 13 -5.1Q12.8 -4.9 12.8 -4.6Q12.8 -4.3 13 -4.1Q13.3 -3.9 14.1 -3.8Q15.1 -3.6 15.6 -3.2Q16.1 -2.7 16.1 -1.9V-1.8Q16.1 -0.9 15.5 -0.4Q14.9 0.1 13.9 0.1ZM17.1 0V-6.3H18.3V-3.7H20.3V-6.3H21.5V0H20.3V-2.6H18.3V0ZM24.8 0.1Q23.7 0.1 23.1 -0.5Q22.5 -1.2 22.5 -2.4V-3.9Q22.5 -5.1 23.1 -5.7Q23.7 -6.4 24.8 -6.4Q25.9 -6.4 26.5 -5.8Q27.1 -5.2 27.1 -4.1V-3.9H25.9V-4.1Q25.9 -4.4 25.8 -4.7Q25.7 -5 25.5 -5.2Q25.2 -5.3 24.8 -5.3Q24.4 -5.3 24.2 -5.2Q23.9 -5 23.8 -4.6Q23.7 -4.3 23.7 -3.9V-2.4Q23.7 -1.7 23.9 -1.3Q24.2 -1 24.8 -1Q25.3 -1 25.5 -1.1Q25.7 -1.3 25.8 -1.6Q25.9 -1.9 25.9 -2.2V-2.4H27.1V-2.2Q27.1 -1.1 26.5 -0.5Q25.9 0.1 24.8 0.1ZM27.8 0 29.1 -3.1V-3.2L27.8 -6.3H29.1L30.2 -3.7H30.4L31.5 -6.3H32.8L31.5 -3.2V-3.1L32.8 0H31.5L30.4 -2.6H30.2L29.1 0ZM33.5 0V-1.1H34.1V-5.2H33.5V-6.3H35.7Q36.9 -6.3 37.5 -5.8Q38.1 -5.2 38.1 -4.1V-2.2Q38.1 -1.1 37.5 -0.5Q36.9 0 35.7 0ZM35.2 -1.1H35.7Q36.4 -1.1 36.6 -1.4Q36.9 -1.7 36.9 -2.3V-4.1Q36.9 -4.6 36.6 -4.9Q36.4 -5.2 35.7 -5.2H35.2ZM39.3 0V-6.3H43.3V-5.2H40.5V-3.7H43.2V-2.6H40.5V-1.1H43.4V0ZM50.3 0V-6.3H54.3V-5.2H51.5V-3.7H54.2V-2.6H51.5V-1.1H54.4V0ZM55.6 0V-6.3H58L58.7 -0.6H58.9V-6.3H60V0H57.7L57 -5.7H56.8V0ZM62.7 0V-5.2H61.1V-6.3H65.6V-5.2H63.9V0ZM68.9 0.1Q68.5 0.1 68.2 -0.1Q68 -0.4 68 -0.7Q68 -1.1 68.2 -1.3Q68.5 -1.6 68.9 -1.6Q69.2 -1.6 69.5 -1.3Q69.7 -1.1 69.7 -0.7Q69.7 -0.4 69.5 -0.1Q69.2 0.1 68.9 0.1Z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+      --xh-ink: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 28 28' fill='none' stroke='%23141416' stroke-opacity='0.6' stroke-width='1'%3E%3Ccircle cx='14' cy='14' r='6.5'/%3E%3Cpath d='M14 0v28M0 14h28'/%3E%3C/svg%3E");
+      --xh-lite: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 28 28' fill='none' stroke='%23ecebe6' stroke-opacity='0.32' stroke-width='1'%3E%3Ccircle cx='14' cy='14' r='6.5'/%3E%3Cpath d='M14 0v28M0 14h28'/%3E%3C/svg%3E");
+      --chev-lite: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8' fill='none' stroke='%23ecebe6' stroke-width='1.6'%3E%3Cpath d='M1 1.5l5 5 5-5'/%3E%3C/svg%3E");
+      --chev-ink: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8' fill='none' stroke='%23141416' stroke-width='1.6'%3E%3Cpath d='M1 1.5l5 5 5-5'/%3E%3C/svg%3E");
+      color-scheme: dark;
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    html { -webkit-text-size-adjust: 100%; scroll-padding-top: calc(var(--top) + 12px); }
+    @media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+    body { margin: 0; min-height: 100vh; background: var(--char) var(--matte); color: var(--text); font: 400 16px/1.55 var(--body); -webkit-font-smoothing: antialiased; font-variant-numeric: tabular-nums; overflow-x: hidden; }
+    .hidden { display: none !important; }
+    .sprite { position: absolute; width: 0; height: 0; overflow: hidden; }
+    .sr { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+    a { color: inherit; }
+    img { max-width: 100%; }
+    h1, h2, h3, p { margin: 0; }
+    button, input, select, textarea { font: inherit; color: inherit; }
+    :focus-visible { outline: 2px solid var(--orange); outline-offset: 3px; }
+    .cp :focus-visible { outline-color: var(--ink); }
+    ::selection { background: var(--orange); color: var(--ink); }
+    .mono { font-family: var(--mono); }
+    .apos { color: var(--orange); }
+    .xw { font-family: var(--wide); font-stretch: 125%; }
+    .tagb { font: 400 12px/1 var(--mono); letter-spacing: .12em; text-transform: uppercase; white-space: nowrap; }
+    .tagb::before { content: '[ '; opacity: .55; } .tagb::after { content: ' ]'; opacity: .55; }
+    .eb { display: flex; align-items: center; gap: 12px; font: 400 12px/1.2 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--muted); margin: 0 0 14px; }
+    .eb::after { content: ''; flex: 1; height: 1px; background: var(--line); }
+    /* Concrete scope: the same components, ink on concrete */
+    .cp { --text: var(--ink); --muted: var(--ink-2); --dim: #57564f; --line: var(--ink-line); --line-2: rgba(20, 20, 22, .42); color: var(--ink);
+      background: var(--wm-ink) 0 0 / 260px 150px, var(--concrete) var(--concrete-tex); }
+
+    /* ---------- buttons ---------- */
+    .btn { --b: var(--orange); display: inline-flex; align-items: center; justify-content: space-between; gap: 16px; width: 100%; min-height: 52px; padding: 0 18px; border: 1px solid var(--b); border-radius: 0; background: var(--b); color: var(--ink);
+      font: 700 15px/1 var(--wide); font-stretch: 112%; letter-spacing: .04em; text-transform: uppercase; text-decoration: none; text-align: left; cursor: pointer; transition: background .2s, border-color .2s, transform .2s var(--ease); }
+    .btn::after { content: '→'; font: 400 18px/1 var(--mono); transition: transform .25s var(--ease); }
+    .btn:hover { background: #ff7440; border-color: #ff7440; }
+    .btn:hover::after { transform: translateX(4px); }
+    .btn:active { transform: translateY(1px); }
+    .btn:disabled { opacity: .5; cursor: not-allowed; }
+    .btn:disabled:hover { background: var(--b); border-color: var(--b); }
+    .btn:disabled:hover::after { transform: none; }
+    .btn-line { background: transparent; color: var(--text); border-color: var(--line-2); justify-content: center; }
+    .btn-line::after { content: none; }
+    .btn-line:hover { background: rgba(236, 235, 230, .06); border-color: var(--text); }
+    .cp .btn-line { color: var(--ink); border-color: rgba(20, 20, 22, .45); }
+    .cp .btn-line:hover { background: rgba(20, 20, 22, .06); border-color: var(--ink); }
+    .cp .btn:not(.btn-line) { box-shadow: 0 0 0 1px var(--ink); }
+    .btn.sm { width: auto; min-height: 44px; padding: 0 14px; font-size: 12.5px; gap: 10px; }
+    .btn.sm::after { font-size: 15px; }
+    .linkish { display: inline-flex; align-items: center; min-height: 44px; background: none; border: 0; padding: 0; color: inherit; font: 700 12px/1 var(--mono); letter-spacing: .12em; text-transform: uppercase; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 4px; cursor: pointer; }
+    .linkish:hover { text-decoration-color: var(--orange); }
+
+    /* ---------- fields ---------- */
+    .field { display: grid; gap: 7px; margin-top: 16px; }
+    .field > label, .field > .lbl { font: 400 11.5px/1.2 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+    .in { width: 100%; min-height: 50px; padding: 12px 14px; border: 1px solid var(--line-2); border-radius: 0; background: rgba(10, 10, 11, .55); color: var(--text); font-size: 16px; -webkit-appearance: none; appearance: none; }
+    .in:hover { border-color: rgba(236, 235, 230, .45); }
+    .in:focus { outline: 2px solid var(--orange); outline-offset: 0; border-color: transparent; }
+    .cp .in { background: rgba(244, 243, 239, .94); border-color: rgba(20, 20, 22, .42); color: var(--ink); }
+    .cp .in:hover { border-color: var(--ink); }
+    .cp .in:focus { outline-color: var(--ink); }
+    select.in { padding-right: 38px; background: rgba(10, 10, 11, .55) var(--chev-lite) no-repeat right 14px center / 12px 8px; cursor: pointer; }
+    .cp select.in { background: rgba(244, 243, 239, .94) var(--chev-ink) no-repeat right 14px center / 12px 8px; }
+    .dob { display: grid; grid-template-columns: 1fr 1.5fr 1.2fr; gap: 8px; }
+    .err { min-height: 0; font-size: 14px; font-weight: 600; color: var(--red); }
+    .cp .err { color: #a3140c; }
+    .err:empty { display: none; }
+    .checkline { display: flex; gap: 12px; align-items: flex-start; margin-top: 18px; cursor: pointer; font-size: 15px; line-height: 1.45; }
+    .checkline input { flex: none; width: 22px; height: 22px; margin: 0; accent-color: var(--orange); }
+    .cp .checkline input { accent-color: var(--ink); }
+
+    /* ---------- the bar ---------- */
+    .nav { position: sticky; top: 0; z-index: 40; height: var(--top); display: flex; align-items: center; gap: 14px; padding: 0 var(--gut); background: var(--wm) 0 0 / 260px 150px, var(--black); border-bottom: 1px solid rgba(236, 235, 230, .08); }
+    .nav-home { display: flex; align-items: center; gap: 12px; min-height: 44px; text-decoration: none; color: var(--text); }
+    .nav .nav-bw { display: block; flex: none; width: 124px; height: auto; overflow: hidden; }
+    .nav-tag { color: var(--orange); font-weight: 700; }
+    .nav-tag::before, .nav-tag::after { color: var(--muted); opacity: 1; }
+    .nav-sp { flex: 1; }
+    .nav-find { display: inline-flex; align-items: center; min-height: 44px; padding: 0 2px; background: none; border: 0; color: var(--muted); font: 400 12px/1 var(--mono); letter-spacing: .12em; text-transform: uppercase; cursor: pointer; white-space: nowrap; }
+    .nav-find:hover { color: var(--text); }
+    .nav-find .long { display: none; }
+    @media (min-width: 560px) { .nav-find .long { display: inline; } .nav-find .short { display: none; } }
+    @media (max-width: 380px) { .nav .nav-bw { width: 104px; } .nav { gap: 10px; } .nav-find { font-size: 11px; letter-spacing: .08em; } }
+    .bar-wm { display: block; width: 100%; height: auto; overflow: visible; }
+    .bw-t { font-family: var(--wide); font-stretch: 125%; font-size: 96px; fill: var(--bw-ink, #f4f3ef); }
+    .bw-a { font-weight: 900; } .bw-ap { font-weight: 900; fill: var(--bw-slash, #ff5a1f); } .bw-b { font-weight: 200; }
+    .bw-inv { --bw-bar: #f4f3ef; --bw-ink: #0a0a0b; --bw-line: #f4f3ef; }
+
+    /* ---------- page frame ---------- */
+    main { min-height: calc(100vh - var(--top)); }
+    .wrap { max-width: 1240px; margin: 0 auto; padding: 0 var(--gut); }
+    .view-head { padding: 34px 0 22px; }
+    .h1 { font: 800 clamp(36px, 10vw, 64px)/.94 var(--wide); font-stretch: 125%; letter-spacing: -.015em; text-transform: uppercase; overflow-wrap: break-word; text-wrap: balance; }
+    .h1 .thin { font-weight: 200; }
+    .h2 { font: 800 clamp(22px, 6vw, 30px)/1 var(--wide); font-stretch: 125%; letter-spacing: -.01em; text-transform: uppercase; }
+    .lead { color: var(--muted); font-size: 17px; line-height: 1.5; max-width: 36em; margin-top: 14px; }
+    .soon { display: grid; place-items: center; min-height: calc(100vh - var(--top)); padding: 40px var(--gut); text-align: center; background: var(--xh-lite) no-repeat 16px 16px / 24px, var(--xh-lite) no-repeat right 16px bottom 16px / 24px; }
+    .soon .bw { width: min(420px, 82vw); margin: 0 auto 26px; }
+    .soon p { color: var(--muted); max-width: 26em; margin: 16px auto 0; }
+
+    /* ---------- events list: poster rows split by hairlines ---------- */
+    .evlist { display: grid; border-top: 1px solid var(--line); }
+    .evrow { position: relative; display: grid; grid-template-columns: 112px minmax(0, 1fr); gap: 16px; align-items: center; padding: 16px 0; border-bottom: 1px solid var(--line); color: var(--text); text-decoration: none; }
+    .evrow:hover .ev-name { text-decoration: underline; text-decoration-color: var(--orange); text-underline-offset: 5px; text-decoration-thickness: 2px; }
+    .evrow:focus-visible { outline-offset: 4px; }
+    .ev-poster { position: relative; aspect-ratio: 4 / 5; overflow: hidden; background: var(--black); }
+    .ev-name { font: 800 22px/1.02 var(--wide); font-stretch: 125%; text-transform: uppercase; letter-spacing: -.005em; overflow-wrap: anywhere; }
+    .ev-when { margin-top: 8px; font: 400 12.5px/1.4 var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+    .ev-from { margin-top: 10px; font: 700 14px/1.3 var(--mono); }
+    .ev-from small { display: block; font-weight: 400; font-size: 11.5px; color: var(--dim); margin-top: 2px; }
+    @media (min-width: 720px) { .evrow { grid-template-columns: 180px minmax(0, 1fr) auto; gap: 28px; padding: 22px 0; } .ev-name { font-size: 32px; } .ev-go { display: inline-flex; } }
+    .ev-go { display: none; width: auto; }
+
+    /* The poster: the event's own image, or the D' monogram with speed streaks; the watermark over it, faintly. */
+    .poster-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+    .poster-art { position: absolute; inset: 0; display: grid; place-items: center; background: radial-gradient(120% 80% at 70% 20%, #1d1d21, var(--black) 70%); overflow: hidden; }
+    .poster-art svg { width: min(62%, 300px); height: auto; }
+    .poster-art .streak { position: absolute; left: -10%; height: 2px; width: 70%; transform: rotate(-13deg); }
+    .poster-art .s1 { top: 30%; background: linear-gradient(90deg, transparent, var(--cyan)); box-shadow: 0 0 12px rgba(34, 225, 255, .5); }
+    .poster-art .s2 { top: 58%; left: 30%; height: 4px; width: 60%; background: linear-gradient(90deg, transparent, var(--acid) 60%, var(--cyan)); opacity: .8; }
+    .poster-art .s3 { top: 72%; left: 8%; height: 6px; width: 14%; background: var(--purple); box-shadow: 0 0 12px rgba(139, 61, 255, .5); }
+    .wm-over { position: absolute; inset: 0; pointer-events: none; background: var(--wm) 0 0 / 260px 150px; }
+    .tape { position: absolute; left: 0; bottom: 14px; padding: 7px 10px; background: var(--black); color: var(--text); font: 700 10.5px/1 var(--mono); letter-spacing: .12em; text-transform: uppercase; }
+    .tape::before { content: '[ '; color: var(--muted); } .tape::after { content: ' ]'; color: var(--muted); }
+
+    /* ---------- the event page ---------- */
+    .evp { display: grid; gap: 0 48px; padding-bottom: 120px; }
+    .evp-cover { position: relative; margin: 0 calc(-1 * var(--gut)); aspect-ratio: 4 / 3; overflow: hidden; background: var(--black); }
+    @media (min-width: 720px) { .evp-cover { aspect-ratio: 16 / 9; } }
+    .evp-title { margin-top: 26px; }
+    .evp-facts { display: grid; gap: 0; margin-top: 18px; border-top: 1px solid var(--line); }
+    .fact { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 12px; padding: 13px 0; border-bottom: 1px solid var(--line); }
+    .fact dt { font: 400 11.5px/1.5 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+    .fact dd { margin: 0; font-weight: 600; overflow-wrap: anywhere; }
+    .fact dd .s { display: block; font-weight: 400; color: var(--muted); font-size: 14px; }
+    .fact dd .linkish { display: flex; width: fit-content; min-height: 36px; margin-top: 2px; }
+    .evp-share { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; }
+    .evp-info { margin-top: 22px; color: var(--muted); white-space: pre-line; max-width: 40em; }
+    .sec { margin-top: 40px; }
+    .price { font: 700 16px/1.25 var(--mono); white-space: nowrap; text-align: right; }
+    .price .usd { display: block; font-weight: 400; font-size: 12px; color: var(--muted); }
+    .cardnote { margin-top: 14px; font: 400 12px/1.5 var(--mono); color: var(--dim); }
+
+    /* Ticket rows: name and price on one line, a stepper under; hairlines between */
+    .prod { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px 16px; padding: 18px 0; border-bottom: 1px solid var(--line); }
+    .prod:first-child { border-top: 1px solid var(--line); }
+    .prod-name { font: 800 19px/1.1 var(--wide); font-stretch: 118%; text-transform: uppercase; overflow-wrap: anywhere; }
+    .prod-inc { grid-column: 1; color: var(--text); font-size: 14.5px; }
+    .prod-desc { grid-column: 1 / -1; color: var(--muted); font-size: 14.5px; white-space: pre-line; }
+    .prod-sale { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 4px 14px; font: 400 12px/1.45 var(--mono); color: var(--muted); }
+    .prod-sale .live::before { content: ''; display: inline-block; width: 7px; height: 7px; margin-right: 7px; background: var(--acid); vertical-align: 1px; }
+    .prod-sale .warn { color: var(--amber); }
+    .prod-act { grid-column: 1 / -1; display: flex; justify-content: flex-end; align-items: center; gap: 12px; margin-top: 6px; }
+    .prod.off .prod-name, .prod.off .price { opacity: .5; }
+    .state { font: 700 12px/1 var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); padding: 10px 12px; border: 1px solid var(--line-2); }
+    .tier-tag { display: inline-block; margin-left: 8px; padding: 3px 6px; font: 700 10.5px/1 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--ink); background: var(--acid); vertical-align: 3px; }
+
+    /* The stepper: − count +, 44px targets, the count in mono */
+    .step { display: inline-flex; align-items: stretch; border: 1px solid var(--line-2); }
+    .step button { width: 46px; min-height: 44px; border: 0; background: transparent; color: var(--text); font: 400 22px/1 var(--mono); cursor: pointer; }
+    .step button:hover:not(:disabled) { background: rgba(236, 235, 230, .08); }
+    .step button:disabled { opacity: .3; cursor: not-allowed; }
+    .step output { min-width: 44px; display: grid; place-items: center; font: 700 17px/1 var(--mono); border-left: 1px solid var(--line); border-right: 1px solid var(--line); }
+    .cp .step button { color: var(--ink); }
+    .cp .step button:hover:not(:disabled) { background: rgba(20, 20, 22, .07); }
+
+    /* Tables: concrete slabs, what's included in mono, perks as bullets */
+    .tables { display: grid; gap: 14px; }
+    .tbl { position: relative; padding: 22px 18px 18px; }
+    .tbl::before { content: ''; position: absolute; top: 10px; right: 10px; width: 18px; height: 18px; background: var(--xh-ink) no-repeat center / 18px; }
+    .tbl-top { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px 16px; align-items: start; }
+    .tbl-name { font: 800 24px/1 var(--wide); font-stretch: 125%; text-transform: uppercase; overflow-wrap: anywhere; }
+    .tbl-inc { margin-top: 12px; font: 700 12.5px/1.5 var(--mono); letter-spacing: .04em; text-transform: uppercase; }
+    .tbl-perks { margin: 12px 0 0; padding: 0; list-style: none; display: grid; gap: 4px; font-size: 15px; }
+    .tbl-perks li { display: flex; gap: 10px; }
+    .tbl-perks li::before { content: ''; flex: none; width: 6px; height: 6px; margin-top: 9px; background: var(--ink); }
+    .tbl-dep { margin-top: 12px; font-size: 14px; color: var(--ink-2); }
+    .tbl-dep b { color: var(--ink); }
+    .tbl .prod-sale { margin-top: 10px; color: var(--ink-2); }
+    .tbl .prod-sale .live::before { background: #2f7d12; }
+    .tbl .prod-sale .warn { color: #7a4d00; font-weight: 700; }
+    .tbl-foot { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px; margin-top: 16px; }
+    .tbl-foot .btn { width: auto; }
+    .builds { display: grid; gap: 8px; margin-top: 14px; }
+    .build { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 12px; padding: 12px 14px; background: rgba(244, 243, 239, .6); box-shadow: inset 0 0 0 1px var(--ink-line); }
+    .build b { font: 800 14px/1.2 var(--wide); font-stretch: 112%; text-transform: uppercase; }
+    .build .s { grid-column: 1; font-size: 13.5px; color: var(--ink-2); }
+    .build .acts { grid-column: 2; grid-row: 1 / span 2; display: flex; gap: 6px; align-items: center; }
+    .build .acts button { min-height: 44px; padding: 0 12px; border: 1px solid rgba(20, 20, 22, .45); background: transparent; color: var(--ink); font: 700 11px/1 var(--mono); letter-spacing: .1em; text-transform: uppercase; cursor: pointer; }
+    .build .acts button:hover { border-color: var(--ink); }
+    .tbl.off { opacity: .6; }
+
+    /* ---------- the order summary: a sticky bar on phones, a rail on laptops ---------- */
+    .sumbar { position: fixed; z-index: 30; left: 0; right: 0; bottom: 0; display: flex; align-items: center; gap: 12px; padding: 10px var(--gut) calc(10px + env(safe-area-inset-bottom)); background: var(--black); border-top: 1px solid var(--line-2); }
+    .sumbar .what { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; min-height: 44px; justify-content: center; padding: 0; background: none; border: 0; color: var(--text); text-align: left; cursor: pointer; }
+    .sumbar .what span { font: 400 11.5px/1.3 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+    .sumbar .what b { font: 700 17px/1.3 var(--mono); }
+    .sumbar .what b small { font-weight: 400; font-size: 12px; color: var(--muted); }
+    .sumbar .btn { width: auto; flex: none; }
+    .rail { display: none; }
+    .summary { padding: 22px 20px 20px; }
+    .summary h2 { font: 800 18px/1 var(--wide); font-stretch: 118%; text-transform: uppercase; }
+    .sum-lines { margin: 16px 0 0; padding: 0; list-style: none; border-top: 1px solid var(--ink-line); }
+    .sum-lines li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 12px; padding: 11px 0; border-bottom: 1px solid var(--ink-line); font-size: 15px; }
+    .sum-lines li b { font-weight: 700; overflow-wrap: anywhere; }
+    .sum-lines li .m { font: 700 14px/1.4 var(--mono); text-align: right; white-space: nowrap; }
+    .sum-lines li .sub { grid-column: 1 / -1; font-size: 13px; color: var(--ink-2); }
+    .sum-lines li .sub div { display: flex; justify-content: space-between; gap: 10px; }
+    .sum-empty { margin-top: 14px; color: var(--ink-2); font-size: 15px; }
+    .sum-total { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 12px; margin-top: 14px; align-items: baseline; }
+    .sum-total .k { font: 400 11.5px/1.3 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--ink-2); }
+    .sum-total .v { font: 700 22px/1.2 var(--mono); text-align: right; }
+    .sum-total .v small, .sum-total .u { display: block; font-weight: 400; font-size: 12.5px; color: var(--ink-2); text-align: right; }
+    .sum-due { margin-top: 10px; padding: 10px 12px; background: var(--ink); color: var(--concrete-2); display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 10px; font-size: 14px; }
+    .sum-due b { font: 700 15px var(--mono); text-align: right; } .sum-due span.s { grid-column: 1 / -1; color: #b9b8b2; font-size: 12.5px; }
+    .summary .btn { margin-top: 18px; }
+    .summary .cardnote { color: var(--ink-2); }
+    dialog.sumsheet .summary { padding-top: 8px; }
+    @media (min-width: 1024px) {
+      :root { --gut: 32px; --top: 64px; }
+      .nav .nav-bw { width: 150px; }
+      .evp { grid-template-columns: minmax(0, 1fr) 380px; align-items: start; }
+      .evp-cover { margin: 28px 0 0; }
+      .rail { display: block; position: sticky; top: calc(var(--top) + 24px); margin-top: 28px; }
+      .sumbar { display: none; }
+      .evp { padding-bottom: 80px; }
+      .co { grid-template-columns: minmax(0, 1fr) 400px; }
+    }
+
+    /* ---------- checkout ---------- */
+    .co { display: grid; gap: 28px 48px; padding: 28px 0 80px; align-items: start; }
+    .co-form { padding: 24px 18px 22px; }
+    .co-form h2 { margin-bottom: 4px; }
+    .co-back { margin-bottom: 10px; }
+    .hold { display: flex; align-items: center; gap: 12px; margin-top: 18px; padding: 12px 14px; background: var(--ink); color: var(--concrete-2); font: 700 13px/1.3 var(--mono); letter-spacing: .04em; }
+    .hold::before { content: ''; flex: none; width: 9px; height: 9px; background: var(--orange); }
+    .hold.over::before { background: var(--red); }
+    .pp-box { margin-top: 18px; }
+    .pp-note { margin-top: 12px; font-size: 14px; color: var(--ink-2); }
+    .notice { margin-top: 18px; padding: 12px 14px; border-left: 3px solid var(--amber); background: rgba(20, 20, 22, .08); font-size: 15px; }
+    .notice.bad { border-left-color: #b3261e; }
+
+    /* ---------- tickets: concrete stubs with the black wordmark bar and the live QR ---------- */
+    .tk-grid { display: grid; gap: 18px; margin-top: 18px; }
+    @media (min-width: 720px) { .tk-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    @media (min-width: 1100px) { .tk-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+    .tk { position: relative; overflow: hidden; color: var(--ink); background: var(--concrete) var(--concrete-tex); box-shadow: 0 30px 60px -30px rgba(0, 0, 0, .8); isolation: isolate; }
+    .tk-head { position: relative; z-index: 2; display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 52px; padding: 0 16px; background: var(--ink); color: var(--concrete-2); overflow: clip; }
+    .tk-mark { font: 900 17px/1 var(--wide); font-stretch: 125%; text-transform: uppercase; white-space: nowrap; }
+    .tk-mark i { font-style: normal; font-weight: 200; }
+    .tk-kind { font: 700 10.5px/1 var(--mono); letter-spacing: .12em; text-transform: uppercase; color: #b9b8b2; position: relative; z-index: 1; }
+    .tk-slash { position: absolute; right: 108px; top: -10px; width: 3px; height: 76px; background: var(--orange); transform: rotate(24deg); box-shadow: 0 0 12px rgba(255, 90, 31, .7); }
+    .tk-slash::after { content: ''; position: absolute; left: 3px; top: 44px; width: 10px; height: 20px; background: var(--cyan); clip-path: polygon(0 0, 100% 0, 0 100%); }
+    .tk-body { position: relative; z-index: 1; display: grid; justify-items: center; gap: 12px; padding: 22px 16px 16px; }
+    .tk-label { width: 100%; text-align: center; font: 800 18px/1.15 var(--wide); font-stretch: 118%; text-transform: uppercase; overflow-wrap: anywhere; }
+    .tk-car .tk-label { font-size: 22px; }
+    .tk-meta { width: 100%; display: grid; grid-template-columns: 1fr 1fr; border-top: 1px solid var(--ink-line); }
+    .tk-meta > div { padding: 9px 0; min-width: 0; }
+    .tk-meta > div + div { padding-left: 12px; border-left: 1px solid var(--ink-line); }
+    .tk-meta dt { font: 400 10.5px/1.3 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--ink-2); }
+    .tk-meta dd { margin: 3px 0 0; font-weight: 700; font-size: 14px; overflow-wrap: anywhere; }
+    .tk-meta dd.ref { font-family: var(--mono); font-size: 12.5px; }
+    .tk-acts { width: 100%; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+    .tk-acts button { min-height: 44px; padding: 0 6px; border: 1px solid rgba(20, 20, 22, .45); background: rgba(244, 243, 239, .35); color: var(--ink); font: 700 11px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; cursor: pointer; }
+    .tk-acts button:hover { border-color: var(--ink); background: rgba(244, 243, 239, .7); }
+    .tk-acts button.main { background: var(--ink); color: var(--concrete-2); border-color: var(--ink); }
+    .tk-foot { position: relative; z-index: 1; display: flex; justify-content: space-between; gap: 10px; padding: 10px 16px; border-top: 1px dashed rgba(20, 20, 22, .5); font: 400 10.5px/1 var(--mono); letter-spacing: .1em; color: var(--ink-2); }
+    .tk.dead { background: var(--char-2); color: var(--text); box-shadow: inset 0 0 0 1px var(--line-2); }
+    .tk.dead .tk-head { background: transparent; border-bottom: 1px solid var(--line); color: var(--muted); }
+    .tk.dead .tk-slash, .tk.dead .live-wm { display: none; }
+    .tk.dead .tk-meta { border-top-color: var(--line); } .tk.dead .tk-meta dt { color: var(--muted); } .tk.dead .tk-meta > div + div { border-left-color: var(--line); }
+    .tk.dead .tk-foot { border-top-color: var(--line); color: var(--dim); }
+    .tk-gone { padding: 18px 0 4px; text-align: center; color: var(--muted); font: 700 12px/1.5 var(--mono); letter-spacing: .1em; text-transform: uppercase; }
+
+    /* The live QR: white box, a hairline ring around it that drains over the 30 seconds, the seconds left in mono */
+    .qr-live { position: relative; z-index: 2; display: grid; justify-items: center; gap: 8px; }
+    .qr-box { position: relative; padding: 12px; background: #fff; line-height: 0; }
+    .qr-box img, .qr-box canvas { display: block; width: min(196px, 56vw); height: auto; image-rendering: pixelated; }
+    .qr-ring { position: absolute; inset: -6px; width: calc(100% + 12px); height: calc(100% + 12px); overflow: visible; pointer-events: none; }
+    .qr-ring rect { fill: none; stroke-width: 3; }
+    .qr-ring .track { stroke: rgba(20, 20, 22, .18); }
+    .qr-ring .run { stroke: var(--orange); stroke-linecap: butt; transition: stroke-dashoffset 1s linear; }
+    .qr-left { font: 700 11px/1 var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--ink-2); }
+    .qr-left b { color: var(--ink); }
+    .qr-off { padding: 22px 16px; max-width: 240px; text-align: center; font-size: 14px; color: var(--ink-2); border: 1px dashed rgba(20, 20, 22, .45); }
+
+    /* The live watermark over a ticket: the tile drifting, the holder's name and a running clock repeated diagonally, and a
+       sheen sweeping across. It sits under the QR (the QR stays clean to scan) and never takes clicks. */
+    .live-wm { position: absolute; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
+    .live-wm .tile { position: absolute; inset: -150px -260px; background: var(--wm-ink) 0 0 / 260px 150px; animation: drift 32s linear infinite; }
+    .live-wm .names { position: absolute; left: -40%; right: -40%; top: -30%; bottom: -30%; display: grid; align-content: space-around; transform: rotate(-20deg); color: rgba(20, 20, 22, .13); font: 700 11px/1 var(--mono); letter-spacing: .16em; text-transform: uppercase; white-space: nowrap; }
+    .live-wm .names span:nth-child(even) { padding-left: 90px; }
+    .live-wm .sheen { position: absolute; top: -20%; bottom: -20%; width: 34%; left: -40%; background: linear-gradient(100deg, transparent, rgba(255, 255, 255, .28) 45%, rgba(255, 255, 255, .05) 60%, transparent); animation: sheen 5.5s var(--ease) infinite; }
+    @keyframes drift { to { transform: translate(260px, 150px); } }
+    @keyframes sheen { 0% { left: -40%; } 60%, 100% { left: 120%; } }
+    .tk .live-wm { top: 52px; }
+    @media (prefers-reduced-motion: reduce) { .live-wm .tile, .live-wm .sheen { animation: none !important; } .live-wm .sheen { display: none; } }
+
+    /* ---------- the order / ticket page ---------- */
+    .op { padding-top: 30px; padding-bottom: 80px; }
+    .op-ref { margin-top: 12px; font: 700 13px/1.4 var(--mono); letter-spacing: .06em; color: var(--muted); }
+    .op-grid { display: grid; gap: 28px 48px; margin-top: 26px; align-items: start; }
+    @media (min-width: 1024px) { .op-grid { grid-template-columns: minmax(0, 1fr) 380px; } }
+    @media (max-width: 1023px) { .op-grid.pay-first > :last-child { order: -1; } }
+    .op-event { border-top: 1px solid var(--line); }
+    .op-sect { margin-top: 36px; }
+    .op-sect h2 { margin-bottom: 4px; }
+    .op-count { color: var(--muted); font-size: 15px; }
+    .op-pay { padding: 22px 18px 20px; }
+    .op-pay .big { margin-top: 10px; font: 700 26px/1.2 var(--mono); }
+    .op-pay .big small { display: block; font-weight: 400; font-size: 13px; color: var(--ink-2); }
+    .op-pay .row2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 1px; margin-top: 14px; background: var(--ink-line); border: 1px solid var(--ink-line); }
+    .op-pay .row2 div { padding: 10px 12px; background: rgba(244, 243, 239, .55); }
+    .op-pay .row2 span { display: block; font: 400 10.5px/1.3 var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--ink-2); }
+    .op-pay .row2 b { font: 700 15px/1.4 var(--mono); }
+    .table-sel { margin-top: 14px; display: grid; gap: 12px; }
+    .table-sel .one { padding: 16px; }
+    .table-sel h3 { font: 800 15px/1.1 var(--wide); font-stretch: 112%; text-transform: uppercase; }
+    .table-sel ul { margin: 8px 0 0; padding: 0; list-style: none; display: grid; gap: 4px; font-size: 14.5px; }
+    .table-sel li { display: flex; justify-content: space-between; gap: 12px; }
+    .table-sel li span:last-child { font-family: var(--mono); font-size: 13px; color: var(--ink-2); white-space: nowrap; }
+    .table-sel .grp { margin-top: 10px; font: 400 11px/1 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--ink-2); }
+    .offline-note { margin-top: 16px; padding: 10px 14px; border-left: 3px solid var(--amber); background: rgba(255, 176, 32, .08); font-size: 14.5px; }
+    .rich h4 { margin: 18px 0 6px; font: 800 15px/1.2 var(--wide); font-stretch: 112%; text-transform: uppercase; }
+    .rich h4:first-child { margin-top: 0; }
+    .rich p { margin: 0 0 8px; } .rich ul { margin: 0 0 8px; padding-left: 20px; }
+
+    /* ---------- find my tickets ---------- */
+    .find { padding: 22px 18px 20px; margin-top: 36px; }
+    .find form { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; margin-top: 14px; align-items: start; }
+    .find .btn { width: auto; }
+    .find .ok { margin-top: 12px; font-weight: 600; }
+
+    /* ---------- footer ---------- */
+    .foot { margin-top: 0; padding: 36px var(--gut) calc(110px + env(safe-area-inset-bottom)); background: var(--wm) 0 0 / 260px 150px, var(--black); border-top: 1px solid var(--line); }
+    @media (min-width: 1024px) { .foot { padding-bottom: 36px; } }
+    .foot-in { max-width: calc(1240px - 2 * var(--gut)); margin: 0 auto; display: grid; gap: 22px; }
+    .foot-bw { width: min(300px, 70vw); }
+    .foot-links { display: flex; flex-wrap: wrap; gap: 0 22px; }
+    .foot-links a, .foot-links button { display: inline-flex; align-items: center; min-height: 44px; padding: 0; background: none; border: 0; color: var(--muted); font: 400 12px/1 var(--mono); letter-spacing: .1em; text-transform: uppercase; text-decoration: none; cursor: pointer; }
+    .foot-links a:hover, .foot-links button:hover { color: var(--text); }
+    .foot-small { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 20px; font: 400 11px/1.5 var(--mono); letter-spacing: .08em; color: var(--dim); text-transform: uppercase; }
+
+    /* ---------- dialogs and sheets ---------- */
+    dialog { padding: 0; border: 0; border-radius: 0; max-width: 560px; width: calc(100% - 32px); color: var(--text); background: var(--char-3); }
+    dialog::backdrop { background: rgba(5, 5, 6, .8); }
+    .sheet-head { position: sticky; top: 0; z-index: 3; display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 60px; padding: 0 8px 0 18px; background: var(--ink); color: var(--concrete-2); }
+    .sheet-head h3 { font: 800 19px/1.05 var(--wide); font-stretch: 122%; text-transform: uppercase; overflow-wrap: anywhere; }
+    .x { flex: none; width: 44px; height: 44px; border: 0; background: transparent; color: inherit; font-size: 18px; cursor: pointer; }
+    .x:hover { background: rgba(236, 235, 230, .08); }
+    .sheet-in { padding: 0 0 22px; }
+    .sheet-body { padding: 18px; }
+    dialog.cp { background: var(--xh-ink) no-repeat right 10px bottom 10px / 18px, var(--wm-ink) 0 0 / 260px 150px, var(--concrete) var(--concrete-tex); color: var(--ink); }
+    #dlg form { padding: 30px 22px 22px; }
+    #dlg h3 { font: 800 23px/1.05 var(--wide); font-stretch: 122%; text-transform: uppercase; }
+    #dlg p.t { margin-top: 10px; color: var(--ink-2); font-size: 15px; }
+    .dlg-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 22px; flex-wrap: wrap; }
+    .dlg-actions .btn { width: auto; }
+    @media (max-width: 1023px) {
+      dialog.sheet, #dlg { max-width: 100%; width: 100%; margin: auto 0 0; max-height: calc(100svh - 20px); overflow-y: auto; }
+      dialog.full { height: 100%; max-height: 100%; margin: 0; }
+      .sheet-in, #dlg form { padding-bottom: calc(22px + env(safe-area-inset-bottom)); }
+    }
+    @media (prefers-reduced-motion: no-preference) and (max-width: 1023px) { dialog.sheet[open], #dlg[open] { animation: sheetUp .4s var(--ease) both; } @keyframes sheetUp { from { transform: translateY(40px); opacity: 0; } } }
+
+    /* The table builder: full screen on phones, a big sheet on laptops */
+    #builder { max-width: 760px; background: var(--char-2); }
+    @media (min-width: 1024px) { #builder { max-height: calc(100vh - 48px); overflow-y: auto; } }
+    .bd-step { padding: 18px 18px 6px; }
+    .bd-step + .bd-step { border-top: 1px solid var(--line); }
+    .bd-k { font: 400 11.5px/1.2 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+    .bd-h { margin-top: 6px; font: 800 18px/1.1 var(--wide); font-stretch: 118%; text-transform: uppercase; }
+    .slot { margin-top: 16px; padding-bottom: 14px; border-bottom: 1px solid var(--line); }
+    .slot:last-child { border-bottom: 0; }
+    .slot-h { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+    .slot-h b { font: 700 15px/1.3 var(--body); }
+    .slot-h span { font: 400 12px/1.3 var(--mono); color: var(--muted); }
+    .slot-tabs { display: flex; margin-top: 10px; border-bottom: 1px solid var(--line); }
+    .slot-tab { position: relative; min-height: 44px; padding: 0 14px; border: 0; background: transparent; color: var(--muted); font: 700 12px/1 var(--mono); letter-spacing: .1em; text-transform: uppercase; cursor: pointer; }
+    .slot-tab[aria-selected=true] { color: var(--text); }
+    .slot-tab[aria-selected=true]::after { content: ''; position: absolute; left: 0; right: 0; bottom: -1px; height: 2px; background: var(--orange); }
+    .bottles { display: grid; margin-top: 6px; }
+    .bot { position: relative; display: grid; grid-template-columns: 22px minmax(0, 1fr) auto; gap: 12px; align-items: center; min-height: 52px; padding: 8px 4px; border-bottom: 1px solid var(--line); cursor: pointer; }
+    .bot:last-child { border-bottom: 0; }
+    .bot input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+    .bot .mk { width: 20px; height: 20px; border: 1px solid var(--line-2); display: grid; place-items: center; }
+    .bot input:checked + .mk { background: var(--orange); border-color: var(--orange); }
+    .bot input:checked + .mk::after { content: ''; width: 8px; height: 8px; background: var(--ink); }
+    .bot input:focus-visible + .mk { outline: 2px solid var(--orange); outline-offset: 3px; }
+    .bot .nm { font-weight: 600; overflow-wrap: anywhere; }
+    .bot .nm small { display: block; font: 400 11.5px/1.3 var(--mono); color: var(--muted); letter-spacing: .06em; text-transform: uppercase; margin-top: 2px; }
+    .bot .pr { font: 700 13px/1.2 var(--mono); text-align: right; white-space: nowrap; }
+    .bot .pr.inc { color: var(--acid); font-weight: 400; }
+    .meter { margin-top: 14px; }
+    .meter-top { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+    .meter-top b { font: 700 20px/1 var(--mono); }
+    .meter-top span { font: 400 12px var(--mono); color: var(--muted); }
+    .meter-bar { position: relative; height: 10px; margin-top: 10px; background: var(--char); box-shadow: inset 0 0 0 1px var(--line-2); }
+    .meter-bar i { position: absolute; left: 0; top: 0; bottom: 0; background: var(--orange); transition: width .2s var(--ease); }
+    .meter-bar.full i { background: var(--acid); }
+    .chg { margin-top: 16px; }
+    .chg-h { display: flex; justify-content: space-between; font: 400 11.5px/1.2 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--muted); padding-bottom: 8px; border-bottom: 1px solid var(--line); }
+    .ch { display: flex; justify-content: space-between; align-items: center; gap: 12px; min-height: 56px; border-bottom: 1px solid var(--line); }
+    .ch b { font-weight: 600; }
+    .nochasers { margin-top: 14px; display: flex; align-items: center; gap: 12px; }
+    .nochasers button[aria-pressed=true] { background: var(--text); color: var(--ink); border-color: var(--text); }
+    .bd-foot { position: sticky; bottom: 0; z-index: 3; display: flex; align-items: center; gap: 14px; padding: 12px 18px calc(12px + env(safe-area-inset-bottom)); background: var(--black); border-top: 1px solid var(--line-2); }
+    .bd-foot .t { flex: 1; min-width: 0; }
+    .bd-foot .t span { display: block; font: 400 11.5px/1.3 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+    .bd-foot .t b { font: 700 17px/1.3 var(--mono); }
+    .bd-foot .t b small { display: block; font-weight: 400; font-size: 12px; color: var(--muted); }
+    .bd-foot .btn { width: auto; }
+    .bd-left { font: 400 12px/1.4 var(--mono); color: var(--amber); margin-top: 4px; }
+    .bd-left:empty { display: none; }
+
+    /* The full-screen QR */
+    #qr-dlg { max-width: 460px; background: var(--concrete) var(--concrete-tex); color: var(--ink); overflow: hidden; }
+    #qr-dlg .sheet-in { position: relative; isolation: isolate; display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 26px 18px 24px; min-height: 420px; }
+    #qr-dlg .live-wm { top: 60px; }
+    #qr-dlg .qr-box img, #qr-dlg .qr-box canvas { width: min(290px, 74vw); }
+    #qr-dlg .big-label { position: relative; z-index: 2; text-align: center; font: 800 20px/1.15 var(--wide); font-stretch: 118%; text-transform: uppercase; }
+    #qr-dlg .hint { position: relative; z-index: 2; text-align: center; font-size: 14.5px; color: var(--ink-2); max-width: 26em; }
+    @media (max-width: 1023px) { #qr-dlg .sheet-in { min-height: calc(100% - 60px); justify-content: center; } }
+
+    /* The site lock: the trailer alone, full screen, with the watermark faintly over it */
+    #lock { display: none; }
+    html.locked, html.locked body { overflow: hidden; background: var(--black); }
+    html.locked body > :not(#lock) { display: none !important; }
+    html.locked #lock, #lock.leaving { display: block; position: fixed; inset: 0; z-index: 1000; background: var(--black); }
+    #lock.leaving { pointer-events: none; transition: opacity .4s var(--ease); }
+    #lock.gone { opacity: 0; }
+    #lock video, #lock img { position: absolute; inset: 0; display: block; width: 100%; height: 100%; object-fit: cover; background: var(--black); }
+    #lock img[hidden], #lock video[hidden] { display: none; }
+    #lock .wm-over { z-index: 1; }
+    #lock video::-webkit-media-controls, #lock video::-webkit-media-controls-start-playback-button { display: none !important; -webkit-appearance: none; }
+    .preview-tag { position: fixed; z-index: 950; top: calc(var(--top) + 10px); left: 50%; transform: translateX(-50%); display: flex; align-items: center; max-width: calc(100vw - 2 * var(--gut)); min-height: 44px; padding-left: 12px; background: var(--black); color: var(--text); border: 1px solid var(--orange); font: 700 11px/1 var(--mono); letter-spacing: .1em; text-transform: uppercase; white-space: nowrap; }
+    .preview-tag a { display: inline-flex; align-items: center; align-self: stretch; padding: 0 12px; margin-left: 4px; color: var(--orange); }
+
+    .toast { position: fixed; left: 50%; bottom: 92px; z-index: 1100; width: max-content; max-width: calc(100vw - 32px); padding: 14px 18px 14px 16px; border-left: 3px solid var(--orange); background: var(--text); color: var(--ink); font-size: 15px; font-weight: 600; line-height: 1.4; box-shadow: 0 20px 50px -10px rgba(0, 0, 0, .7); opacity: 0; transform: translate(-50%, 16px); pointer-events: none; transition: opacity .3s, transform .3s var(--ease); }
+    .toast.show { opacity: 1; transform: translate(-50%, 0); }
+    .toast.bad { border-left-color: #c8261b; background: #ffd9d4; color: #3a0d09; }
+    @media (min-width: 1024px) { .toast { bottom: 28px; } }
+
+    .reveal { opacity: 0; transform: translateY(10px); animation: rv .6s var(--ease) forwards; }
+    @keyframes rv { to { opacity: 1; transform: none; } }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: .001ms !important; animation-delay: 0s !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
+      .reveal { opacity: 1; transform: none; }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- The ticket site's lock: while html.locked is set, this is all there is. The trailer loops, silent, with only the
+       faint watermark over it. Screen readers get the one line. -->
+  <div id="lock">
+    <p class="sr">On D' Road Tickets. 18+. Opening soon.</p>
+    <video id="lock-video" muted playsinline autoplay loop preload="auto" disablepictureinpicture disableremoteplayback aria-hidden="true"></video>
+    <img id="lock-still" alt="" aria-hidden="true" hidden>
+    <div class="wm-over" aria-hidden="true"></div>
+  </div>
+  <svg class="sprite" aria-hidden="true" focusable="false">
+    <symbol id="barmark" viewBox="0 0 1000 440"><defs><mask id="bw-holes" maskUnits="userSpaceOnUse" x="0" y="0" width="1000" height="440"><rect width="1000" height="440" fill="#fff"/><rect x="838" y="178" width="11" height="9" fill="#000"/><rect x="851" y="178" width="24" height="9" fill="#000"/><rect x="864" y="178" width="11" height="9" fill="#000"/><rect x="864" y="191" width="11" height="9" fill="#000"/><rect x="877" y="178" width="11" height="9" fill="#000"/><rect x="877" y="191" width="24" height="9" fill="#000"/><rect x="903" y="178" width="24" height="9" fill="#000"/></mask><clipPath id="bw-slice1"><rect x="0" y="236" width="1000" height="9"/></clipPath><clipPath id="bw-slice2"><rect x="0" y="257" width="1000" height="6"/></clipPath><filter id="bw-glow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="7" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><path style="fill:none;stroke:var(--bw-line,#0a0a0b);stroke-width:3" d="M72 246V158H318M72 272V314H170M792 158H928V206M928 232V314H612M196 314H250"/><path style="fill:var(--bw-line,#0a0a0b)" d="M60 152h8v8h-8zM932 310h8v8h-8z"/><g style="fill:var(--bw-bar,#0a0a0b)"><rect x="92" y="176" width="816" height="120" mask="url(#bw-holes)"/><path d="M268 177V156L272.5 142L277 156V177ZM281 177V129L284.5 118L288 129V177ZM292 177V146H304V177ZM308 177V90L311.0 80L314 90V177ZM316 177V112H326V177ZM328 177V52L330.5 44L333 52V177ZM329.5 46V22h2V46ZM337 177V116L342.5 98L348 116V177ZM350 177V75L353.5 64L357 75V177ZM352.5 66V42h2V66ZM358 177V128H371V177ZM375 177V34L377.5 26L380 34V177ZM376.5 28V4h2V28ZM383 177V98L387.5 84L392 98V177ZM394 177V116H406V177ZM407 177V82L410.0 72L413 82V177ZM409.0 74V50h2V74ZM414 177V150L419.0 134L424 150V177ZM428 177V119L432.0 106L436 119V177ZM440 177V150H452V177ZM454 177V137L457.5 126L461 137V177Z"/><path d="M300 295V312L304.0 326L308 312V295ZM310 295V347L313.0 358L316 347V295ZM318 295V298L323.5 318L329 298V295ZM331 295V379L333.5 388L336 379V295ZM339 295V328L343.5 344L348 328V295ZM351 295V403L354.0 414L357 403V295ZM359 295V314L365.0 336L371 314V295ZM378 295V363L380.5 372L383 363V295ZM388 295V386L392.0 400L396 386V295ZM403 295V308L408.0 326L413 308V295ZM416 295V343L419.0 354L422 343V295ZM425 295V300L429.5 316L434 300V295Z"/><path d="M773 137h24v13h-24ZM773 163h13v13h-13ZM786 163h10v10h-10ZM799 150h24v13h-24ZM812 124h13v13h-13ZM812 150h38v13h-38ZM825 163h24v13h-24ZM838 124h13v13h-13ZM838 163h26v13h-26ZM851 137h38v13h-38ZM851 163h13v13h-13ZM864 150h13v13h-13ZM877 124h48v13h-48ZM890 150h19v13h-19ZM930 118h18v9h-18ZM952 96h10v10h-10ZM912 84h26v9h-26ZM968 132h8v8h-8ZM884 62h12v7h-12ZM940 54h7v7h-7Z"/><path d="M500 177L800 177L560 100L548 100Z"/></g><path style="fill:none;stroke:var(--bw-ink,#f4f3ef);stroke-width:2.2" d="M524 175L551 104M772 175L559 104"/><path style="fill:none;stroke:var(--bw-ink,#f4f3ef);stroke-width:3;stroke-dasharray:12 9" d="M652 174L556 106"/><text x="500" y="271" text-anchor="middle" textLength="744" lengthAdjust="spacingAndGlyphs" class="bw-t" ><tspan class="bw-a">ON D</tspan><tspan class="bw-ap">’</tspan><tspan class="bw-b"> ROAD</tspan></text><g clip-path="url(#bw-slice1)"><rect x="92" y="236" width="816" height="9" style="fill:var(--bw-bar,#0a0a0b)"/><g transform="translate(9 0)"><text x="500" y="271" text-anchor="middle" textLength="744" lengthAdjust="spacingAndGlyphs" class="bw-t" ><tspan class="bw-a">ON D</tspan><tspan class="bw-ap">’</tspan><tspan class="bw-b"> ROAD</tspan></text></g></g><g clip-path="url(#bw-slice2)"><rect x="92" y="257" width="816" height="6" style="fill:var(--bw-bar,#0a0a0b)"/><g transform="translate(-6 0)"><text x="500" y="271" text-anchor="middle" textLength="744" lengthAdjust="spacingAndGlyphs" class="bw-t" ><tspan class="bw-a">ON D</tspan><tspan class="bw-ap">’</tspan><tspan class="bw-b"> ROAD</tspan></text></g></g><path style="fill:var(--bw-blade,#22e1ff)" d="M196 247h18v5h-18zM402 247h12v5h-12zM826 258h16v4h-16z"/><g filter="url(#bw-glow)"><path style="fill:var(--bw-blade,#22e1ff)" d="M707 296H748C734 330 700 356 650 384C683 348 700 326 707 296Z"/><path style="fill:var(--bw-slash,#ff5a1f)" d="M752 86L766 86L679 400L665 400Z"/></g></symbol>
+    <symbol id="dmono" viewBox="0 0 64 64"><path fill="#f2f1ec" fill-rule="evenodd" d="M8 28L8 16L26.4 16L28.26 16.02L30.01 16.09L31.66 16.21L33.21 16.37L34.66 16.58L36.02 16.84L37.29 17.14L38.48 17.49L39.57 17.88L40.59 18.33L41.52 18.81L42.38 19.34L43.17 19.92L43.88 20.54L44.53 21.21L45.11 21.93L45.63 22.69L46.09 23.49L46.49 24.34L46.83 25.24L47.13 26.18L47.38 27.16L47.54 28ZM20 28L20 24L26.72 24L27.31 24.02L27.88 24.06L28.44 24.14L28.99 24.24L29.51 24.37L30.03 24.53L30.52 24.72L30.99 24.93L31.45 25.17L31.89 25.44L32.31 25.73L32.71 26.05L33.09 26.39L33.45 26.75L33.79 27.14L34.1 27.55L34.39 27.98L34.41 28ZM12 32L12 28L51.54 28L51.58 28.19L51.74 29.26L51.86 30.38L51.94 31.54L51.96 32ZM24 32L24 28L38.41 28L38.66 28.43L38.91 28.9L39.13 29.39L39.33 29.91L39.51 30.44L39.66 30.99L39.78 31.56L39.85 32ZM8 40L8 32L47.96 32L47.99 32.75L48 34L47.99 35.25L47.94 36.46L47.86 37.62L47.74 38.74L47.58 39.81L47.54 40ZM20 40L20 32L35.85 32L35.87 32.14L35.94 32.75L35.99 33.36L36 34L35.99 34.64L35.94 35.25L35.87 35.86L35.78 36.44L35.66 37.01L35.51 37.56L35.33 38.09L35.13 38.61L34.91 39.1L34.66 39.57L34.41 40ZM4 44L4 40L43.54 40L43.38 40.84L43.13 41.82L42.83 42.76L42.49 43.66L42.33 44ZM16 40L30.41 40L30.39 40.02L30.1 40.45L29.79 40.86L29.45 41.25L29.09 41.61L28.71 41.95L28.31 42.27L27.89 42.56L27.45 42.83L26.99 43.07L26.52 43.28L26.03 43.47L25.51 43.63L24.99 43.76L24.44 43.86L23.88 43.94L23.31 43.98L22.72 44L16 44ZM8 44L46.33 44L46.09 44.51L45.63 45.31L45.11 46.07L44.53 46.79L43.88 47.45L43.17 48.08L42.38 48.66L41.52 49.19L40.59 49.67L39.57 50.12L38.48 50.51L37.29 50.86L36.02 51.16L34.66 51.42L33.21 51.63L31.66 51.79L30.01 51.91L28.26 51.98L26.4 52L8 52ZM20 44L26.72 44L26.72 44L20 44Z"/><path fill="#ff5a1f" d="M48.5 27L55.5 27L59.5 8L52.5 8Z"/></symbol>
+  </svg>
+
+  <header class="nav" id="nav">
+    <a class="nav-home" href="./" id="nav-home"><span class="sr">On D' Road Tickets: all events</span><svg class="bar-wm bw-inv nav-bw" viewBox="70 96 860 262" aria-hidden="true" focusable="false"><use href="#barmark"/></svg><span class="tagb nav-tag" aria-hidden="true">Tickets</span></a>
+    <span class="nav-sp"></span>
+    <button type="button" class="nav-find" id="nav-find"><span class="long">Find my tickets</span><span class="short">My tickets</span></button>
+  </header>
+  <div id="preview-tag" class="preview-tag hidden" role="status">[ Preview · site locked ]<a href="#" id="preview-exit">Exit</a></div>
+
+  <main id="main">
+    <div id="v-loading" class="wrap view-head" aria-live="polite"><p class="eb">Loading</p></div>
+
+    <!-- An older backend without the ticket site -->
+    <section id="v-soon" class="soon hidden" aria-labelledby="soon-h">
+      <div>
+        <svg class="bar-wm bw" viewBox="0 0 1000 440" aria-hidden="true" focusable="false"><use href="#barmark"/></svg>
+        <h1 class="h1" id="soon-h">Tickets <span class="thin">coming soon</span></h1>
+        <p>Tickets and tables for our events go on sale here. Check back soon.</p>
+      </div>
+    </section>
+
+    <!-- Events on sale -->
+    <section id="v-list" class="wrap hidden" aria-labelledby="list-h">
+      <div class="view-head">
+        <p class="eb">On sale now</p>
+        <h1 class="h1" id="list-h">Get your <span class="thin">tickets</span></h1>
+        <p class="lead">Fetes, boat rides and parties in Antigua. Pick your night, pay by card, and your live ticket lands on your phone.</p>
+      </div>
+      <div id="evlist" class="evlist"></div>
+      <p id="list-empty" class="lead hidden">Nothing on sale right now. Check back soon.</p>
+    </section>
+
+    <!-- One event: info, tickets and tables, and the order summary -->
+    <section id="v-event" class="wrap hidden">
+      <div class="evp">
+        <div class="evp-main">
+          <div class="evp-cover" id="evp-cover"></div>
+          <div class="evp-title">
+            <p class="eb" id="evp-eb">Tickets</p>
+            <h1 class="h1" id="evp-name"></h1>
+          </div>
+          <dl class="evp-facts" id="evp-facts"></dl>
+          <div class="evp-share"><button type="button" class="btn btn-line sm" id="evp-share">Share this event</button></div>
+          <p class="evp-info" id="evp-info"></p>
+          <div class="sec" id="sec-tickets">
+            <h2 class="eb">Tickets</h2>
+            <div id="prods"></div>
+          </div>
+          <div class="sec" id="sec-tables">
+            <h2 class="eb">VIP tables · bottle service</h2>
+            <div id="tables" class="tables"></div>
+          </div>
+          <p class="cardnote" id="evp-cardnote"></p>
+        </div>
+        <aside class="rail" aria-label="Your order"><div class="summary cp" id="rail-sum"></div></aside>
+      </div>
+      <div class="sumbar" id="sumbar">
+        <button type="button" class="what" id="sumbar-what" aria-haspopup="dialog"><span id="sumbar-k">Your order</span><b id="sumbar-v"></b></button>
+        <button type="button" class="btn sm" id="sumbar-go">Checkout</button>
+      </div>
+    </section>
+
+    <!-- Checkout: who's buying, the terms, then PayPal -->
+    <section id="v-checkout" class="wrap hidden" aria-labelledby="co-h">
+      <div class="co">
+        <div>
+          <button type="button" class="linkish co-back" id="co-back">← Back to the event</button>
+          <div class="co-form cp">
+            <h1 class="h2" id="co-h">Checkout</h1>
+            <p class="pp-note" id="co-sub">Your tickets go to this email. Bring photo ID that matches the name.</p>
+            <form id="co-form" novalidate autocomplete="on">
+              <div class="field"><label for="co-name">Full name (as on your ID)</label><input class="in" id="co-name" autocomplete="name" maxlength="80" required><p class="err" id="co-name-err"></p></div>
+              <div class="field"><label for="co-email">Email</label><input class="in" id="co-email" type="email" autocomplete="email" inputmode="email" maxlength="254" required><p class="err" id="co-email-err"></p></div>
+              <div class="field"><span class="lbl" id="co-dob-l">Date of birth</span>
+                <div class="dob" role="group" aria-labelledby="co-dob-l">
+                  <label class="sr" for="co-dob-d">Day</label><select class="in" id="co-dob-d" autocomplete="bday-day"></select>
+                  <label class="sr" for="co-dob-m">Month</label><select class="in" id="co-dob-m" autocomplete="bday-month"></select>
+                  <label class="sr" for="co-dob-y">Year</label><select class="in" id="co-dob-y" autocomplete="bday-year"></select>
+                </div>
+                <p class="err" id="co-dob-err"></p></div>
+              <label class="checkline"><input type="checkbox" id="co-terms"><span>I agree to the <button type="button" class="linkish" id="co-terms-open" style="min-height:0;font:inherit;text-transform:none;letter-spacing:0">ticket terms</button>, including that tickets are for adults 18+ with photo ID<span id="co-dep-term"></span>.</span></label>
+              <p class="err" id="co-terms-err"></p>
+              <p class="err" id="co-err" role="alert"></p>
+              <button class="btn" type="submit" id="co-go" style="margin-top:20px">Continue to payment</button>
+            </form>
+            <div id="co-pay" class="hidden">
+              <div class="hold" id="co-hold" role="status"></div>
+              <div id="pp-box" class="pp-box"></div>
+              <p class="pp-note" id="co-usd"></p>
+            </div>
+          </div>
+        </div>
+        <aside aria-label="Your order"><div class="summary cp" id="co-sum"></div></aside>
+      </div>
+    </section>
+
+    <!-- An order (?order=&s=) and a single ticket (?ticket=&s=) -->
+    <section id="v-order" class="wrap op hidden" aria-labelledby="op-h"></section>
+    <section id="v-error" class="wrap op hidden" aria-labelledby="er-h">
+      <p class="eb">Ticket link</p>
+      <h1 class="h1" id="er-h">That link <span class="thin">isn't right</span></h1>
+      <p class="lead" id="er-text">Check you opened the whole link from your email, or get your links sent again.</p>
+    </section>
+    <div class="wrap"><section class="find cp hidden" id="find" aria-labelledby="find-h">
+      <h2 class="h2" id="find-h">Find my tickets</h2>
+      <p class="pp-note">Enter the email you bought with (or the one a ticket was sent to). We'll email you the links.</p>
+      <form id="find-form" novalidate><label class="sr" for="find-email">Email</label><input class="in" id="find-email" type="email" autocomplete="email" placeholder="you@example.com" required><button class="btn" type="submit">Send</button></form>
+      <p class="err" id="find-err"></p><p class="ok hidden" id="find-ok" role="status"></p>
+    </section></div>
+  </main>
+
+  <footer class="foot" id="foot">
+    <div class="foot-in">
+      <svg class="bar-wm bw-inv foot-bw" viewBox="0 0 1000 440" aria-hidden="true" focusable="false"><use href="#barmark"/></svg>
+      <nav class="foot-links" aria-label="More">
+        <span id="foot-contact" class="foot-links"></span>
+        <button type="button" id="foot-terms">Ticket terms</button>
+        <button type="button" id="foot-find">Find my tickets</button>
+        <a id="foot-main" href="https://ondroad.xyz/">On D' Road · invite only ↗</a>
+      </nav>
+      <div class="foot-small"><span>[ 18+ | Antigua ] · Bring photo ID</span><span>© CASHCXDE ENT.</span></div>
+    </div>
+  </footer>
+
+  <!-- The table builder -->
+  <dialog id="builder" class="sheet full" aria-labelledby="bd-title">
+    <div class="sheet-head"><h3 id="bd-title">Build your table</h3><button type="button" class="x" id="bd-x" aria-label="Close">&#10005;</button></div>
+    <div id="bd-body"></div>
+    <div class="bd-foot"><div class="t"><span id="bd-k">This table</span><b id="bd-total"></b><p class="bd-left" id="bd-left"></p></div><button type="button" class="btn sm" id="bd-done">Done</button></div>
+  </dialog>
+
+  <dialog id="qr-dlg" class="sheet full" aria-labelledby="qr-title">
+    <div class="sheet-head"><h3 id="qr-title">Your ticket</h3><button type="button" class="x" data-close aria-label="Close">&#10005;</button></div>
+    <div class="sheet-in" id="qr-in"></div>
+  </dialog>
+
+  <dialog id="text-dlg" class="sheet cp" aria-labelledby="text-title">
+    <div class="sheet-head"><h3 id="text-title">Ticket terms</h3><button type="button" class="x" data-close aria-label="Close">&#10005;</button></div>
+    <div class="sheet-body rich" id="text-body"></div>
+  </dialog>
+
+  <dialog id="sum-dlg" class="sheet cp" aria-labelledby="sum-title">
+    <div class="sheet-head"><h3 id="sum-title">Your order</h3><button type="button" class="x" data-close aria-label="Close">&#10005;</button></div>
+    <div class="summary" id="sheet-sum"></div>
+  </dialog>
+
+  <dialog id="dlg" class="cp" aria-labelledby="dlg-title">
+    <form id="dlg-form" novalidate>
+      <h3 id="dlg-title"></h3>
+      <p class="t" id="dlg-text"></p>
+      <div id="dlg-fields"></div>
+      <p class="err" id="dlg-err" role="alert"></p>
+      <div class="dlg-actions"><button type="button" class="btn btn-line sm" id="dlg-cancel">Cancel</button><button type="submit" class="btn sm" id="dlg-ok">OK</button></div>
+    </form>
+  </dialog>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+<script>
+  const BACKEND_URL = 'https://control-1-0baa.onrender.com';
+  const $ = (id) => document.getElementById(id);
+  const store = {
+    get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
+    set(k, v) { try { if (v === null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) {} },
+    json(k) { try { return JSON.parse(localStorage.getItem(k) || 'null'); } catch (e) { return null; } }
+  };
+  const params = () => new URLSearchParams(location.search);
+  // An order or ticket link: bought tickets keep working while the ticket site is locked, so these pages never lock.
+  const orderMode = () => { const q = params(); return q.has('order') || q.has('ticket'); };
+  const reduced = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // ---------- the ticket site's lock (see the head script) ----------
+  // Every backend call goes through backend(): it adds the owner's preview token as x-preview, and a 423 (locked after
+  // the page loaded) brings the lock back and leaves the caller waiting. Order and ticket pages get the 423 instead.
+  let preview = window.tixPreview || '';
+  const isLocked = () => document.documentElement.classList.contains('locked');
+  async function backend(path, init = {}) {
+    const headers = Object.assign({}, init.headers);
+    if (preview) headers['x-preview'] = preview;
+    if (init.body) headers['content-type'] = 'application/json';
+    const res = await fetch(BACKEND_URL + path, Object.assign({}, init, { headers }));
+    if (res.status === 423 && !orderMode()) { lockSite(); return new Promise(() => {}); }
+    return res;
+  }
+  async function call(path, body) {
+    const res = await backend(path, body ? { method: 'POST', body: JSON.stringify(body) } : {});
+    let data = null;
+    try { data = await res.json(); } catch (e) {}
+    return { ok: res.ok, status: res.status, data: data || {} };
+  }
+  function forgetPreview() { preview = ''; store.set('tickets_preview', null); }
+  const portrait = matchMedia('(orientation: portrait)');
+  const stillOnly = () => reduced() || !!(navigator.connection && navigator.connection.saveData);
+  const shape = () => (portrait.matches ? '9x16' : '16x9');
+  function setTrailer(video) {
+    const k = shape();
+    if (video.dataset.k === k) return;
+    video.dataset.k = k;
+    video.poster = 'trailer/intro-' + k + '.jpg';
+    video.replaceChildren(...['webm', 'mp4'].map((ext) => { const s = document.createElement('source'); s.src = 'trailer/intro-' + k + '.' + ext; s.type = 'video/' + ext; return s; }));
+    video.load();
+  }
+  function stopTrailer(video) { video.pause(); video.replaceChildren(); video.removeAttribute('poster'); delete video.dataset.k; video.load(); }
+  let lockInert = [], fadeTimer = null, started = false, relocked = false, siteTimer = null, siteTries = 0;
+  function showLock() {
+    const video = $('lock-video'), still = $('lock-still');
+    Array.from(document.body.children).forEach((el) => { if (el.id !== 'lock' && el.tagName !== 'SCRIPT' && !el.inert) { el.inert = true; lockInert.push(el); } });
+    const showStill = () => { still.src = 'trailer/intro-' + shape() + '.jpg'; still.hidden = false; video.hidden = true; stopTrailer(video); };
+    if (stillOnly()) return showStill();
+    still.hidden = true; video.hidden = false; video.muted = true;
+    setTrailer(video);
+    const p = video.play();
+    if (p) p.catch((err) => { if (err && err.name === 'NotAllowedError' && isLocked()) showStill(); });
+  }
+  function lockSite() {
+    store.set('tickets_site_open', '0');
+    if (preview) forgetPreview();
+    if (orderMode()) return;
+    if (started) relocked = true;
+    if (!siteTimer) siteTimer = setTimeout(checkSite, 60000);
+    if (isLocked() && !fadeTimer) return;
+    clearTimeout(fadeTimer); fadeTimer = null;
+    document.querySelectorAll('dialog[open]').forEach((d) => d.close());
+    $('preview-tag').classList.add('hidden');
+    $('lock').classList.remove('leaving', 'gone');
+    document.documentElement.classList.add('locked');
+    showLock();
+  }
+  function openSite(viaPreview) {
+    if (!orderMode()) store.set('tickets_site_open', viaPreview ? '0' : '1');
+    $('preview-tag').classList.toggle('hidden', !viaPreview);
+    if (!isLocked()) return;
+    const lock = $('lock'), fade = !reduced();
+    lockInert.forEach((el) => { el.inert = false; }); lockInert = [];
+    const done = () => { fadeTimer = null; lock.classList.remove('leaving', 'gone'); stopTrailer($('lock-video')); $('lock-still').hidden = true; $('lock-still').removeAttribute('src'); };
+    if (fade) lock.classList.add('leaving');
+    document.documentElement.classList.remove('locked');
+    if (!fade) return done();
+    requestAnimationFrame(() => requestAnimationFrame(() => lock.classList.add('gone')));
+    fadeTimer = setTimeout(done, 450);
+  }
+  portrait.addEventListener('change', () => { if (isLocked()) showLock(); });
+  $('preview-exit').addEventListener('click', (e) => { e.preventDefault(); forgetPreview(); store.set('tickets_site_open', '0'); location.reload(); });
+  if (isLocked()) showLock();
+
+  // ---------- small helpers ----------
+  function el(tag, text, cls) { const e = document.createElement(tag); if (text !== undefined && text !== null) e.textContent = text; if (cls) e.className = cls; return e; }
+  let toastTimer;
+  function toast(text, bad) { const t = $('toast'); t.textContent = text; t.className = 'toast show' + (bad ? ' bad' : ''); clearTimeout(toastTimer); toastTimer = setTimeout(() => { t.className = 'toast'; }, 4500); }
+  // What PayPal charges, in US cents: XCD at 2.70 to the dollar, rounded up, as the backend does.
+  const usdCents = (c, cur) => (cur === 'USD' ? c : Math.ceil((c * 10) / 27));
+  const fmt = (c, cur) => (cur === 'USD' ? 'US$' : 'EC$') + (Number(c) / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const fmtShort = (c, cur) => (cur === 'USD' ? 'US$' : 'EC$') + (c % 100 ? (c / 100).toFixed(2) : String(c / 100));
+  const both = (c, cur) => (cur === 'USD' ? fmt(c, 'USD') : fmt(c, 'XCD') + ' · ' + fmt(usdCents(c, cur), 'USD'));
+  function priceEl(c, cur, cls) {
+    const p = el('span', fmt(c, cur), 'price' + (cls ? ' ' + cls : ''));
+    if (cur !== 'USD') p.appendChild(el('span', fmt(usdCents(c, cur), 'USD'), 'usd'));
+    return p;
+  }
+  const AT = 'America/Antigua';
+  function at(iso, withTime = true) {
+    if (!iso) return '';
+    const p = {};
+    new Intl.DateTimeFormat('en-US', Object.assign({ weekday: 'short', day: 'numeric', month: 'short', timeZone: AT }, withTime ? { hour: 'numeric', minute: '2-digit' } : {}))
+      .formatToParts(new Date(iso)).forEach((x) => { p[x.type] = x.value; });
+    return p.weekday + ' ' + p.day + ' ' + p.month + (withTime ? ' · ' + p.hour + ':' + p.minute + ' ' + p.dayPeriod : '');
+  }
+  const clock = new Intl.DateTimeFormat('en-GB', { timeZone: AT, hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+  const plural = (n, a, b) => n + ' ' + (n === 1 ? a : b);
+  // Terms and policies: "# " starts a heading, "- " a bullet; everything set as text.
+  function renderRich(box, text) {
+    box.replaceChildren();
+    let ul = null;
+    String(text || '').split('\n').forEach((line) => {
+      const l = line.trim();
+      if (!l) { ul = null; return; }
+      if (l.startsWith('# ')) { ul = null; box.appendChild(el('h4', l.slice(2))); return; }
+      if (l.startsWith('- ')) { if (!ul) { ul = el('ul'); box.appendChild(ul); } ul.appendChild(el('li', l.slice(2))); return; }
+      ul = null; box.appendChild(el('p', l));
+    });
+  }
+  function openText(title, text, opener) { $('text-title').textContent = title; renderRich($('text-body'), text); openSheet($('text-dlg'), opener); }
+  // Sheets return focus to whatever opened them.
+  function openSheet(dlg, opener) {
+    const back = opener || document.activeElement;
+    dlg.addEventListener('close', () => { if (back && back.focus && document.contains(back)) back.focus(); }, { once: true });
+    dlg.showModal();
+  }
+  document.querySelectorAll('dialog').forEach((d) => {
+    d.querySelectorAll('[data-close]').forEach((b) => b.addEventListener('click', () => d.close()));
+    d.addEventListener('click', (e) => { if (e.target === d && d.id !== 'builder') d.close(); });
+  });
+  // On-brand confirm/prompt. fields: [{ name, label, type, autocomplete, maxlength }]. onSubmit(values) returns a
+  // promise: a rejected one shows its message and keeps the dialog open. Resolves to the result, or null if cancelled.
+  function ask(o) {
+    return new Promise((resolve) => {
+      const dlg = $('dlg'), box = $('dlg-fields'), inputs = {};
+      $('dlg-title').textContent = o.title; $('dlg-text').textContent = o.text || ''; $('dlg-err').textContent = '';
+      box.replaceChildren();
+      (o.fields || []).forEach((f, i) => {
+        const w = el('div', undefined, 'field'), l = el('label', f.label), inp = el('input');
+        inp.className = 'in'; inp.id = 'dlg-f' + i; l.htmlFor = inp.id;
+        inp.type = f.type || 'text'; if (f.autocomplete) inp.autocomplete = f.autocomplete; if (f.maxlength) inp.maxLength = f.maxlength; if (f.inputmode) inp.inputMode = f.inputmode;
+        w.appendChild(l); w.appendChild(inp); box.appendChild(w); inputs[f.name] = inp;
+      });
+      $('dlg-ok').textContent = o.ok || 'OK';
+      let done = false;
+      const opener = document.activeElement;
+      const finish = (v) => { if (done) return; done = true; $('dlg-form').onsubmit = null; $('dlg-cancel').onclick = null; dlg.onclose = null; if (dlg.open) dlg.close(); if (opener && opener.focus) opener.focus(); resolve(v); };
+      $('dlg-form').onsubmit = (e) => {
+        e.preventDefault();
+        const vals = {}; Object.keys(inputs).forEach((k) => { vals[k] = inputs[k].value; });
+        if (!o.onSubmit) return finish(vals);
+        $('dlg-ok').disabled = true;
+        Promise.resolve(o.onSubmit(vals)).then((r) => finish(r === undefined ? vals : r), (err) => { $('dlg-err').textContent = err.message; }).then(() => { $('dlg-ok').disabled = false; });
+      };
+      $('dlg-cancel').onclick = () => finish(null);
+      dlg.onclose = () => finish(null);
+      dlg.showModal();
+      const first = box.querySelector('input');
+      (first || $('dlg-ok')).focus();
+    });
+  }
+  async function share(title, url, text) {
+    if (navigator.share) {
+      try { await navigator.share({ title, text, url }); return; } catch (e) { if (e && e.name === 'AbortError') return; }
+    }
+    try { await navigator.clipboard.writeText(url); toast(text ? 'Link copied. ' + text : 'Link copied.'); } catch (e) { toast('Copy this link: ' + url); }
+  }
+
+  // ---------- the live QR (the backend's liveqr.js): the code changes every 30 seconds ----------
+  // code = base32(HMAC-SHA256(secret, String(floor(now / 30 s))))[0..8]; the QR is ONDROAD-T:<ref>:<code>. The door
+  // accepts this step and 2 either side, so a screenshot stops working after about a minute and a half.
+  const B32 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567', STEP = 30000, keys = {};
+  const hasCrypto = () => !!(window.crypto && crypto.subtle && window.TextEncoder);
+  function b64url(s) { s = String(s).replace(/-/g, '+').replace(/_/g, '/'); while (s.length % 4) s += '='; const b = atob(s), out = new Uint8Array(b.length); for (let i = 0; i < b.length; i++) out[i] = b.charCodeAt(i); return out; }
+  async function liveCode(secret, step) {
+    if (!keys[secret]) keys[secret] = crypto.subtle.importKey('raw', b64url(secret), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+    const sig = new Uint8Array(await crypto.subtle.sign('HMAC', await keys[secret], new TextEncoder().encode(String(step))));
+    let bits = 0, value = 0, out = '';
+    for (let i = 0; i < 5; i++) { value = (value << 8) | sig[i]; bits += 8; while (bits >= 5) { out += B32[(value >>> (bits - 5)) & 31]; bits -= 5; } }
+    return out;
+  }
+  // Everything live on the page: QRs (re-drawn each step, with a ring that drains) and watermarks (name and clock).
+  const lives = [], marks = [];
+  function mountQr(parent, ref, secret, size) {
+    const wrap = el('div', undefined, 'qr-live');
+    if (!secret || !window.QRCode || !hasCrypto()) {
+      wrap.appendChild(el('p', !secret ? 'No live code for this ticket.' : !window.QRCode ? 'Your ticket needs a connection once to load. Reload this page.' : 'Open this page in your phone' + String.fromCharCode(39) + 's browser to show your live ticket.', 'qr-off'));
+      parent.appendChild(wrap); return null;
+    }
+    const box = el('div', undefined, 'qr-box');
+    const svgNS = 'http://www.w3.org/2000/svg', ring = document.createElementNS(svgNS, 'svg');
+    ring.setAttribute('class', 'qr-ring'); ring.setAttribute('viewBox', '0 0 100 100'); ring.setAttribute('preserveAspectRatio', 'none'); ring.setAttribute('aria-hidden', 'true');
+    ['track', 'run'].forEach((c) => { const r = document.createElementNS(svgNS, 'rect'); r.setAttribute('x', '1'); r.setAttribute('y', '1'); r.setAttribute('width', '98'); r.setAttribute('height', '98'); r.setAttribute('class', c); r.setAttribute('vector-effect', 'non-scaling-stroke'); r.setAttribute('pathLength', '100'); r.setAttribute('stroke-dasharray', '100'); ring.appendChild(r); });
+    const qrEl = el('div'); box.appendChild(qrEl); box.appendChild(ring);
+    box.setAttribute('role', 'img'); box.setAttribute('aria-label', 'Live QR code for ticket ' + ref + '. It changes every 30 seconds.');
+    const left = el('p', '', 'qr-left');
+    wrap.appendChild(box); wrap.appendChild(left); parent.appendChild(wrap);
+    const qr = new QRCode(qrEl, { text: 'ONDROAD-T:' + ref + ':', width: size, height: size, colorDark: '#0b0a09', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.M });
+    const live = { ref, secret, qr, run: ring.lastChild, left, step: null, wrap };
+    lives.push(live); requestAnimationFrame(tickLive);
+    return live;
+  }
+  function liveMark(parent, name) {
+    const w = el('div', undefined, 'live-wm'); w.setAttribute('aria-hidden', 'true');
+    const tile = el('div', undefined, 'tile'), names = el('div', undefined, 'names'), sheen = el('div', undefined, 'sheen');
+    for (let i = 0; i < 9; i++) names.appendChild(el('span'));
+    w.appendChild(tile); w.appendChild(names); w.appendChild(sheen); parent.appendChild(w);
+    marks.push({ names, tile, name: String(name || '').toUpperCase() }); requestAnimationFrame(tickLive);
+    return w;
+  }
+  let tickN = 0;
+  function tickLive() {
+    const now = Date.now(), step = Math.floor(now / STEP), secs = Math.ceil((STEP - (now % STEP)) / 1000);
+    for (let i = lives.length - 1; i >= 0; i--) {
+      const l = lives[i];
+      // Dropped once its ticket leaves the page (not before it's on it: cards are built first, then added).
+      if (!document.contains(l.wrap)) { if (l.on) lives.splice(i, 1); continue; }
+      l.on = true;
+      l.run.setAttribute('stroke-dashoffset', String(100 - (secs / 30) * 100));
+      l.left.replaceChildren(document.createTextNode('Live · new code in '), el('b', secs + 's'));
+      if (l.step !== step) { l.step = step; liveCode(l.secret, step).then((c) => { if (l.step === step) l.qr.makeCode('ONDROAD-T:' + l.ref + ':' + c); }).catch(() => {}); }
+    }
+    const t = clock.format(new Date(now)), line = (n) => Array(4).fill((n ? n + ' · ' : '') + t + ' · LIVE').join('   ·   ');
+    for (let i = marks.length - 1; i >= 0; i--) {
+      const m = marks[i];
+      if (!document.contains(m.names)) { if (m.on) marks.splice(i, 1); continue; }
+      m.on = true;
+      const txt = line(m.name);
+      Array.prototype.forEach.call(m.names.children, (s) => { s.textContent = txt; });
+      // Under reduced motion the tile doesn't drift: it moves to a new spot every few seconds instead.
+      if (reduced() && tickN % 5 === 0) m.tile.style.transform = 'translate(' + ((tickN * 37) % 260) + 'px, ' + ((tickN * 23) % 150) + 'px)';
+    }
+    tickN++;
+  }
+  setInterval(tickLive, 1000);
+
+  // ---------- views ----------
+  const VIEWS = ['v-loading', 'v-soon', 'v-list', 'v-event', 'v-checkout', 'v-order', 'v-error'];
+  function view(id, { find = false } = {}) {
+    VIEWS.forEach((v) => $(v).classList.toggle('hidden', v !== id));
+    $('find').classList.toggle('hidden', !find);
+    $('foot').classList.toggle('hidden', id === 'v-soon' || id === 'v-loading');
+    document.body.dataset.view = id;
+  }
+  function go(q, replace) {
+    const s = new URLSearchParams(q).toString();
+    history[replace ? 'replaceState' : 'pushState'](null, '', location.pathname + (s ? '?' + s : ''));
+    route();
+    window.scrollTo(0, 0);
+  }
+  window.addEventListener('popstate', () => route());
+  $('nav-home').addEventListener('click', (e) => { e.preventDefault(); go({}); });
+  let SITE = null, EVENTS = null, EV = null, OLD = false;
+
+  function route() {
+    document.querySelectorAll('dialog[open]').forEach((d) => d.close());
+    const q = params();
+    // Leaving checkout: its PayPal buttons and hold timer go (the hold itself runs out on the backend).
+    if (q.get('step') !== 'checkout') { clearInterval(holdT); $('pp-box').replaceChildren(); }
+    if (OLD) return view('v-soon');
+    if (q.get('order')) return showOrder(q.get('order'), q.get('s') || '');
+    if (q.get('ticket')) return showTicket(q.get('ticket'), q.get('s') || '');
+    if (q.get('e')) return q.get('step') === 'checkout' ? showCheckout(q.get('e')) : showEvent(q.get('e'));
+    return showList();
+  }
+
+  // ---------- the events list ----------
+  function posterEl(ev, box) {
+    box.replaceChildren();
+    const art = el('div', undefined, 'poster-art'); art.setAttribute('aria-hidden', 'true');
+    ['s1', 's2', 's3'].forEach((c) => art.appendChild(el('i', undefined, 'streak ' + c)));
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); svg.setAttribute('viewBox', '0 0 64 64');
+    const use = document.createElementNS('http://www.w3.org/2000/svg', 'use'); use.setAttribute('href', '#dmono'); svg.appendChild(use); art.appendChild(svg);
+    box.appendChild(art);
+    const src = String(ev.poster || '');
+    if (/^https:\/\/\S+$/.test(src) || /^[A-Za-z0-9_-]+(\/[A-Za-z0-9_-]+)*\.(png|jpe?g|svg|webp|gif)$/.test(src)) {
+      const img = el('img', undefined, 'poster-img'); img.alt = ''; img.decoding = 'async';
+      img.addEventListener('error', () => img.remove());
+      img.src = src; box.appendChild(img);
+    }
+    const wm = el('div', undefined, 'wm-over'); wm.setAttribute('aria-hidden', 'true'); box.appendChild(wm);
+  }
+  function priceRange(ev) {
+    if (ev.price_from === null || ev.price_from === undefined) return '';
+    return ev.price_from === ev.price_to ? fmtShort(ev.price_from, ev.currency) : 'From ' + fmtShort(ev.price_from, ev.currency) + ' – ' + fmtShort(ev.price_to, ev.currency);
+  }
+  async function loadEvents() {
+    const r = await call('/api/tickets/events');
+    if (r.status === 404) { OLD = true; return null; }
+    if (!r.ok) throw new Error(r.data.error || 'The events did not load.');
+    EVENTS = r.data.events || [];
+    return EVENTS;
+  }
+  async function showList() {
+    view('v-loading');
+    let list;
+    try { list = await loadEvents(); } catch (e) { return failView(e.message); }
+    if (OLD) return view('v-soon');
+    // Only one event on sale: straight to it.
+    if (list.length === 1) return go({ e: list[0].slug }, true);
+    const box = $('evlist'); box.replaceChildren();
+    $('list-empty').classList.toggle('hidden', list.length > 0);
+    list.forEach((ev, i) => {
+      const a = el('a', undefined, 'evrow reveal'); a.href = '?e=' + encodeURIComponent(ev.slug); a.style.animationDelay = (i * 60) + 'ms';
+      a.addEventListener('click', (e) => { e.preventDefault(); go({ e: ev.slug }); });
+      const p = el('div', undefined, 'ev-poster'); posterEl(ev, p); a.appendChild(p);
+      const t = el('div'); t.appendChild(el('h2', ev.name, 'ev-name')); t.appendChild(el('p', ev.when || 'Date coming soon', 'ev-when'));
+      const from = el('p', priceRange(ev), 'ev-from');
+      if (ev.currency !== 'USD' && ev.price_from !== null) from.appendChild(el('small', 'From ' + fmt(usdCents(ev.price_from, ev.currency), 'USD') + ' by card'));
+      t.appendChild(from); a.appendChild(t);
+      const b = el('span', 'Tickets', 'btn sm ev-go'); b.setAttribute('aria-hidden', 'true'); a.appendChild(b);
+      box.appendChild(a);
+    });
+    document.title = "On D' Road Tickets";
+    view('v-list', { find: true });
+  }
+  function failView(msg) {
+    view('v-error');
+    $('er-text').textContent = msg || 'Something went wrong. Try again in a minute.';
+  }
+
+  // ---------- one event ----------
+  let cart = { tickets: {}, tables: [] }, seq = 0;
+  const prod = (id) => EV && EV.products.find((p) => p.id === Number(id));
+  const bottle = (id) => EV && EV.menus && EV.menus.bottles.find((b) => b.id === Number(id));
+  const chaser = (id) => { if (!EV || !EV.menus) return null; for (const g of EV.menus.chaser_groups) { const c = g.chasers.find((x) => x.id === Number(id)); if (c) return Object.assign({ group: g }, c); } return null; };
+  const cartKey = () => 'tix_cart_' + EV.slug;
+  function saveCart() { store.set(cartKey(), JSON.stringify(cart)); }
+  // The saved cart, kept to what's still on sale (and within what's left).
+  function loadCart() {
+    const c = store.json(cartKey()) || { tickets: {}, tables: [] };
+    cart = { tickets: {}, tables: [] };
+    Object.keys(c.tickets || {}).forEach((id) => { const p = prod(id); const n = Math.min(Number(c.tickets[id]) || 0, p ? p.max_now : 0); if (p && p.kind === 'TICKET' && n > 0 && !p.sold_out && !p.sales_closed) cart.tickets[id] = n; });
+    (c.tables || []).forEach((t) => { const p = prod(t.product_id); if (p && p.kind === 'TABLE' && !p.sold_out && !p.sales_closed && cart.tables.filter((x) => x.product_id === p.id).length < p.max_now && Array.isArray(t.bottles) && t.bottles.length === p.bottle_slots.length && t.bottles.every((b) => b === 'later' ? p.slot_later : !!bottle(b))) cart.tables.push({ uid: ++seq, product_id: p.id, bottles: t.bottles, chasers: Object.fromEntries(Object.entries(t.chasers || {}).filter(([id, n]) => chaser(id) && n > 0)) }); });
+    trimChasers();
+  }
+  function trimChasers() {
+    cart.tables.forEach((t) => { const p = prod(t.product_id); if (pointsUsed(t.chasers) > p.chaser_points * 100) t.chasers = {}; });
+  }
+  const pointsUsed = (ch) => Object.entries(ch || {}).reduce((a, [id, n]) => { const c = chaser(id); return a + (c ? Math.round(c.group.points * 100) * n : 0); }, 0);
+  function depositOf(p, line) {
+    const d = p.deposit;
+    if (!d || !d.due_at) return line;
+    const v = d.kind === 'PERCENT' ? Math.ceil((line * d.value) / 100) : Math.min(d.value, line);
+    return v > 0 && v < line ? v : line;
+  }
+  function tableLine(t) {
+    const p = prod(t.product_id);
+    let up = 0;
+    const slots = p.bottle_slots.map((s, i) => {
+      const id = t.bottles[i];
+      if (id === 'later') return { slot: s, later: true, charge: 0 };
+      const b = bottle(id), charge = b && b.tier > s.tier ? b.upgrade_cents : 0;
+      up += charge;
+      return { slot: s, b, charge };
+    });
+    const line = p.price_cents + up;
+    return { p, slots, up, line, deposit: depositOf(p, line) };
+  }
+  // The order as the backend will price it (it checks again and answers PRICE_CHANGED if anything moved).
+  function totals() {
+    const lines = []; let sub = 0, persons = 0, due = 0, balanceAt = null;
+    Object.keys(cart.tickets).forEach((id) => { const p = prod(id), n = cart.tickets[id]; if (!p || !n) return; const line = p.price_cents * n; sub += line; due += line; persons += n; lines.push({ kind: 'TICKET', p, qty: n, line }); });
+    cart.tables.forEach((t, i) => {
+      const x = tableLine(t); sub += x.line; due += x.deposit; persons += x.p.tickets_included;
+      if (x.deposit < x.line && x.p.deposit && x.p.deposit.due_at) balanceAt = !balanceAt || x.p.deposit.due_at < balanceAt ? x.p.deposit.due_at : balanceAt;
+      lines.push(Object.assign({ kind: 'TABLE', t, n: cart.tables.filter((y, j) => y.product_id === t.product_id && j <= i).length }, x));
+    });
+    const f = EV.fee || { kind: 'NONE' };
+    const fee = f.kind === 'FLAT' ? f.cents * persons : f.kind === 'PERCENT' ? Math.round((sub * f.percent) / 100) : 0;
+    return { lines, sub, fee, total: sub + fee, due: due + fee, persons, balanceAt, cur: EV.currency, empty: !lines.length };
+  }
+  function itemsForApi() {
+    return Object.keys(cart.tickets).filter((id) => cart.tickets[id] > 0).map((id) => ({ product_id: Number(id), qty: cart.tickets[id] }))
+      .concat(cart.tables.map((t) => ({ product_id: t.product_id, qty: 1, bottles: t.bottles.map((b) => (b === 'later' ? null : Number(b))), chasers: Object.entries(t.chasers).filter(([, n]) => n > 0).map(([id, n]) => ({ id: Number(id), qty: n })) })));
+  }
+
+  async function fetchEvent(slug) {
+    const r = await call('/api/tickets/events/' + encodeURIComponent(slug));
+    if (r.status === 404 && r.data && r.data.code === 'NOT_FOUND') return null;
+    if (r.status === 404) { OLD = true; return null; }
+    if (!r.ok) throw new Error(r.data.error || 'The event did not load.');
+    return r.data;
+  }
+  async function showEvent(slug, keep) {
+    if (!keep || !EV || EV.slug !== slug) {
+      view('v-loading');
+      let ev;
+      try { ev = await fetchEvent(slug); } catch (e) { return failView(e.message); }
+      if (OLD) return view('v-soon');
+      if (!ev) { failView("We couldn't find that event. It may have ended."); $('er-h').textContent = 'Event not found'; return; }
+      EV = ev; loadCart();
+    }
+    renderEvent();
+    view('v-event');
+  }
+  function fact(dl, k, v, sub, extra) {
+    const d = el('div', undefined, 'fact'); d.appendChild(el('dt', k)); const dd = el('dd', v);
+    if (sub) dd.appendChild(el('span', sub, 's'));
+    if (extra) dd.appendChild(extra);
+    d.appendChild(dd); dl.appendChild(d);
+  }
+  function renderEvent() {
+    const ev = EV, closed = ev.status !== 'ON_SALE';
+    document.title = ev.name + " · On D' Road Tickets";
+    posterEl(ev, $('evp-cover'));
+    const tape = el('span', closed ? 'Sales closed' : 'Tickets · 18+', 'tape'); tape.setAttribute('aria-hidden', 'true'); $('evp-cover').appendChild(tape);
+    $('evp-eb').textContent = closed ? 'Sales closed' : 'On sale now';
+    $('evp-name').textContent = ev.name;
+    const dl = $('evp-facts'); dl.replaceChildren();
+    fact(dl, 'When', ev.when || 'Date coming soon', ev.starts_at ? 'Antigua time' : '');
+    if (ev.venue || ev.address) fact(dl, 'Where', ev.venue || ev.address, ev.venue && ev.address ? ev.address : '');
+    else fact(dl, 'Where', ev.location_after_purchase ? 'Shared with ticket holders' : 'Details coming soon', ev.location_after_purchase ? 'The location is on your ticket page once you buy.' : '');
+    const range = priceRange(ev);
+    if (range) fact(dl, 'Price', range, ev.currency !== 'USD' ? 'Charged by card in US$' : '');
+    const pol = ev.refund_policy || (SITE && SITE.terms) || '';
+    const more = el('button', 'Read more', 'linkish'); more.type = 'button';
+    more.addEventListener('click', () => openText(ev.refund_policy ? 'Refund policy' : 'Ticket terms', pol, more));
+    fact(dl, 'Refunds', ev.refund_policy ? firstLine(ev.refund_policy) : 'No refunds, except by the organizers.', '', pol ? more : null);
+    $('evp-info').textContent = ev.info || '';
+    $('evp-info').classList.toggle('hidden', !ev.info);
+    $('evp-cardnote').textContent = ev.currency === 'USD' ? 'Prices in US$. Paid by card or PayPal.' : 'Prices in EC$, with what your card is charged in US$ (EC$2.70 to US$1). Paid by card or PayPal.';
+    renderProducts(); renderSummary();
+  }
+  const firstLine = (t) => { const l = String(t).split('\n').map((x) => x.replace(/^[#-]\s*/, '').trim()).filter(Boolean)[0] || ''; return l.length > 120 ? l.slice(0, 117) + '…' : l; };
+  function saleBits(p, box) {
+    if (p.tier && p.tier.ends_at) box.appendChild(el('span', 'This price ends ' + at(p.tier.ends_at) + ' (Antigua time)', 'live'));
+    if (p.next_tier && !p.sold_out && !p.sales_closed) box.appendChild(el('span', 'Then ' + fmt(p.next_tier.price_cents, p.currency)));
+    if (p.tier && p.tier.left !== null && p.tier.left !== undefined && p.tier.left <= 20 && !p.sold_out) box.appendChild(el('span', p.tier.left + ' left at this price', 'warn'));
+    else if (p.left !== null && p.left <= 20 && !p.sold_out && !p.sales_closed) box.appendChild(el('span', 'Only ' + p.left + ' left', 'warn'));
+    if (p.sales_end && !p.sales_closed && !p.sold_out) box.appendChild(el('span', 'Sales end ' + at(p.sales_end)));
+  }
+  function stepper(label, value, min, max, onChange) {
+    const w = el('div', undefined, 'step'); w.setAttribute('role', 'group'); w.setAttribute('aria-label', label);
+    const minus = el('button', '−'), out = el('output', String(value)), plus = el('button', '+');
+    minus.type = plus.type = 'button';
+    minus.setAttribute('aria-label', 'One less: ' + label); plus.setAttribute('aria-label', 'One more: ' + label);
+    out.setAttribute('aria-live', 'polite');
+    minus.disabled = value <= min; plus.disabled = value >= max;
+    minus.addEventListener('click', () => onChange(value - 1)); plus.addEventListener('click', () => onChange(value + 1));
+    w.appendChild(minus); w.appendChild(out); w.appendChild(plus);
+    return w;
+  }
+  function refocus(sel) { requestAnimationFrame(() => { const x = document.querySelector(sel); if (x && !x.disabled) x.focus(); else { const y = document.querySelector(sel.replace(/:nth-child\(\d\)/, '') + ''); if (y) y.focus(); } }); }
+  function renderProducts() {
+    const ev = EV, closed = ev.status !== 'ON_SALE';
+    const box = $('prods'); box.replaceChildren();
+    const tix = ev.products.filter((p) => p.kind === 'TICKET'), tbls = ev.products.filter((p) => p.kind === 'TABLE');
+    $('sec-tickets').classList.toggle('hidden', !tix.length);
+    $('sec-tables').classList.toggle('hidden', !tbls.length);
+    tix.forEach((p) => {
+      const off = p.sold_out || p.sales_closed || closed;
+      const row = el('div', undefined, 'prod' + (off ? ' off' : '')); row.id = 'prod-' + p.id;
+      const name = el('h3', p.name, 'prod-name');
+      if (p.tier) name.appendChild(el('span', p.tier.name, 'tier-tag'));
+      row.appendChild(name);
+      row.appendChild(priceEl(p.price_cents, p.currency));
+      if (p.includes) row.appendChild(el('p', p.includes, 'prod-inc'));
+      if (p.description) row.appendChild(el('p', p.description, 'prod-desc'));
+      const sale = el('p', undefined, 'prod-sale'); saleBits(p, sale); if (sale.childNodes.length) row.appendChild(sale);
+      const act = el('div', undefined, 'prod-act');
+      if (off) act.appendChild(el('span', p.sold_out ? 'Sold out' : 'Sales closed', 'state'));
+      else {
+        const n = cart.tickets[p.id] || 0;
+        if (p.max_now > 0) act.appendChild(el('span', 'Up to ' + p.max_now, 'prod-sale'));
+        act.appendChild(stepper(p.name, n, 0, p.max_now, (v) => { cart.tickets[p.id] = Math.max(0, Math.min(p.max_now, v)); if (!cart.tickets[p.id]) delete cart.tickets[p.id]; saveCart(); renderProducts(); renderSummary(); refocus('#prod-' + p.id + ' .step button:' + (v > n ? 'last-child' : 'first-child')); }));
+      }
+      row.appendChild(act);
+      box.appendChild(row);
+    });
+    const tb = $('tables'); tb.replaceChildren();
+    const labels = ev.menus ? ev.menus.tier_labels : [];
+    tbls.forEach((p) => {
+      const off = p.sold_out || p.sales_closed || closed;
+      const card = el('article', undefined, 'tbl cp' + (off ? ' off' : '')); card.id = 'tbl-' + p.id;
+      const top = el('div', undefined, 'tbl-top');
+      const nm = el('h3', p.name, 'tbl-name'); if (p.tier) nm.appendChild(el('span', p.tier.name, 'tier-tag'));
+      top.appendChild(nm); top.appendChild(priceEl(p.price_cents, p.currency));
+      card.appendChild(top);
+      const slots = p.bottle_slots.reduce((m, s) => { m[s.label] = (m[s.label] || 0) + 1; return m; }, {});
+      const inc = [plural(p.tickets_included, 'ticket', 'tickets'), plural(p.bottle_slots.length, 'bottle', 'bottles') + (p.bottle_slots.length ? ' (' + Object.entries(slots).map(([l, n]) => (n > 1 ? n + ' ' : '') + l).join(', ') + ')' : ''), p.chaser_points + ' chaser points'];
+      if (p.car_passes) inc.push(plural(p.car_passes, 'car pass', 'car passes'));
+      card.appendChild(el('p', inc.join(' · '), 'tbl-inc'));
+      if (p.includes) card.appendChild(el('p', p.includes, 'tbl-dep'));
+      if (p.perks && p.perks.length) { const ul = el('ul', undefined, 'tbl-perks'); p.perks.forEach((x) => ul.appendChild(el('li', x))); card.appendChild(ul); }
+      if (p.description) card.appendChild(el('p', p.description, 'tbl-dep'));
+      if (p.deposit && p.deposit.due_at && !off) {
+        const d = el('p', undefined, 'tbl-dep'); d.appendChild(document.createTextNode('Book it with a ')); d.appendChild(el('b', fmt(p.deposit.cents, p.currency) + ' deposit'));
+        d.appendChild(document.createTextNode('. The rest is due by ' + at(p.deposit.due_at, false) + '. Deposits are non-refundable.')); card.appendChild(d);
+      }
+      const sale = el('p', undefined, 'prod-sale'); saleBits(p, sale); if (sale.childNodes.length) card.appendChild(sale);
+      const mine = cart.tables.filter((t) => t.product_id === p.id);
+      if (mine.length) {
+        const bl = el('div', undefined, 'builds');
+        mine.forEach((t, i) => {
+          const x = tableLine(t), b = el('div', undefined, 'build');
+          b.appendChild(el('b', (mine.length > 1 ? p.name + ' ' + (i + 1) : 'Your ' + p.name) + ' · ' + fmt(x.line, p.currency)));
+          b.appendChild(el('span', x.slots.map((s) => (s.later ? 'Decide later' : s.b ? s.b.name : '?') + (s.charge ? ' (+' + fmtShort(s.charge, p.currency) + ')' : '')).join(', ') + ' · ' + chaserText(t.chasers), 's'));
+          const acts = el('div', undefined, 'acts');
+          const e = el('button', 'Edit'); e.type = 'button'; e.setAttribute('aria-label', 'Edit ' + p.name + ' ' + (i + 1)); e.addEventListener('click', () => openBuilder(p, cart.tables.indexOf(t), e));
+          const r = el('button', 'Remove'); r.type = 'button'; r.setAttribute('aria-label', 'Remove ' + p.name + ' ' + (i + 1)); r.addEventListener('click', () => { cart.tables.splice(cart.tables.indexOf(t), 1); saveCart(); renderProducts(); renderSummary(); toast('Table removed.'); });
+          acts.appendChild(e); acts.appendChild(r); b.appendChild(acts); bl.appendChild(b);
+        });
+        card.appendChild(bl);
+      }
+      const foot = el('div', undefined, 'tbl-foot');
+      if (off) foot.appendChild(el('span', p.sold_out ? 'Sold out' : 'Sales closed', 'state'));
+      else {
+        foot.appendChild(el('span', mine.length ? plural(mine.length, 'table', 'tables') + ' built · up to ' + p.max_now : 'Up to ' + plural(p.max_now, 'table', 'tables') + ' per order', 'prod-sale'));
+        const bb = el('button', mine.length ? 'Build another' : 'Build your table', 'btn sm'); bb.type = 'button';
+        bb.disabled = mine.length >= p.max_now;
+        bb.addEventListener('click', () => openBuilder(p, -1, bb));
+        foot.appendChild(bb);
+      }
+      card.appendChild(foot);
+      tb.appendChild(card);
+    });
+  }
+  const chaserText = (ch) => { const l = Object.entries(ch || {}).filter(([, n]) => n > 0).map(([id, n]) => { const c = chaser(id); return n + ' × ' + (c ? c.name : '?'); }); return l.length ? l.join(', ') : 'No chasers'; };
+
+  // ---------- the order summary (the rail on laptops, the bar and its sheet on phones, beside checkout) ----------
+  function renderSummary() {
+    const t = totals();
+    [['rail-sum', true], ['sheet-sum', true], ['co-sum', false]].forEach(([id, withGo]) => fillSummary($(id), t, withGo));
+    $('sumbar').classList.toggle('hidden', t.empty);
+    $('sumbar-k').textContent = plural(t.persons, 'ticket', 'tickets') + (cart.tables.length ? ' · ' + plural(cart.tables.length, 'table', 'tables') : '');
+    $('sumbar-v').replaceChildren(document.createTextNode(fmt(t.total, t.cur)));
+    if (t.cur !== 'USD') $('sumbar-v').appendChild(el('small', ' · ' + fmt(usdCents(t.due, t.cur), 'USD') + (t.due < t.total ? ' due now' : '')));
+    $('sumbar-go').disabled = t.empty;
+  }
+  function fillSummary(box, t, withGo) {
+    box.replaceChildren();
+    if (box.id !== 'sheet-sum') box.appendChild(el('h2', 'Your order'));
+    if (t.empty) { box.appendChild(el('p', 'Pick your tickets or build a table. Your order shows up here.', 'sum-empty')); return; }
+    const ul = el('ul', undefined, 'sum-lines');
+    t.lines.forEach((l) => {
+      const li = el('li');
+      if (l.kind === 'TICKET') { li.appendChild(el('b', l.qty + ' × ' + l.p.name)); li.appendChild(el('span', fmt(l.line, t.cur), 'm')); }
+      else {
+        li.appendChild(el('b', l.p.name + (cart.tables.filter((x) => x.product_id === l.p.id).length > 1 ? ' ' + l.n : '')));
+        li.appendChild(el('span', fmt(l.line, t.cur), 'm'));
+        const sub = el('div', undefined, 'sub');
+        const row = (a, b) => { const d = el('div'); d.appendChild(el('span', a)); if (b) d.appendChild(el('span', b)); sub.appendChild(d); };
+        row(plural(l.p.tickets_included, 'ticket', 'tickets') + (l.p.car_passes ? ' · ' + plural(l.p.car_passes, 'car pass', 'car passes') : ''), fmt(l.p.price_cents, t.cur));
+        l.slots.forEach((s) => row((s.later ? 'Decide later' : s.b ? s.b.name : '?') + ' · ' + s.slot.label + ' slot', s.charge ? '+' + fmt(s.charge, t.cur) : 'Included'));
+        row(chaserText(l.t.chasers));
+        if (l.deposit < l.line) row('Deposit now', fmt(l.deposit, t.cur));
+        li.appendChild(sub);
+      }
+      ul.appendChild(li);
+    });
+    if (t.fee) { const li = el('li'); li.appendChild(el('b', 'Service fee')); li.appendChild(el('span', fmt(t.fee, t.cur), 'm')); ul.appendChild(li); }
+    box.appendChild(ul);
+    const tot = el('div', undefined, 'sum-total');
+    tot.appendChild(el('span', 'Total', 'k'));
+    const v = el('span', fmt(t.total, t.cur), 'v'); if (t.cur !== 'USD') v.appendChild(el('small', fmt(usdCents(t.total, t.cur), 'USD') + ' by card'));
+    tot.appendChild(v); box.appendChild(tot);
+    if (t.due < t.total) {
+      const d = el('div', undefined, 'sum-due');
+      d.appendChild(el('span', 'Due now')); d.appendChild(el('b', both(t.due, t.cur)));
+      d.appendChild(el('span', 'Balance ' + fmt(t.total - t.due, t.cur) + ' due by ' + at(t.balanceAt, false) + '. Tickets arrive once it' + String.fromCharCode(39) + 's paid in full.', 's'));
+      box.appendChild(d);
+    }
+    if (withGo) {
+      const b = el('button', 'Checkout', 'btn'); b.type = 'button';
+      b.addEventListener('click', () => { if ($('sum-dlg').open) $('sum-dlg').close(); go({ e: EV.slug, step: 'checkout' }); });
+      box.appendChild(b);
+    }
+    box.appendChild(el('p', t.cur === 'USD' ? 'Charged in US$ by card or PayPal.' : 'Your card is charged in US$ (EC$2.70 to US$1).', 'cardnote'));
+  }
+  $('sumbar-go').addEventListener('click', () => go({ e: EV.slug, step: 'checkout' }));
+  $('sumbar-what').addEventListener('click', (e) => openSheet($('sum-dlg'), e.currentTarget));
+  $('evp-share').addEventListener('click', () => share(EV.name, location.origin + location.pathname + '?e=' + encodeURIComponent(EV.slug)));
+
+  // ---------- the table builder ----------
+  // draft.bottles[i]: a bottle id, 'later', or null while not picked yet. draft.chasers: { id: qty }.
+  let bd = null;
+  function openBuilder(p, index, opener) {
+    const t = index >= 0 ? cart.tables[index] : null;
+    bd = { p, index, draft: { bottles: t ? t.bottles.slice() : p.bottle_slots.map(() => null), chasers: t ? Object.assign({}, t.chasers) : {} }, tabs: p.bottle_slots.map((s, i) => { const b = t && bottle(t.bottles[i]); return b && b.tier > s.tier ? 'up' : 'inc'; }), opener };
+    $('bd-title').textContent = (index >= 0 ? 'Edit ' : 'Build ') + p.name;
+    renderBuilder();
+    openSheet($('builder'), opener);
+    $('bd-x').focus();
+  }
+  function renderBuilder() {
+    const p = bd.p, d = bd.draft, menus = EV.menus || { bottles: [], chaser_groups: [], tier_labels: [] };
+    const body = $('bd-body'); body.replaceChildren();
+    // Bottles: one pick per slot. Included = at or below the slot's tier; upgrades cost the bottle's upgrade price.
+    if (p.bottle_slots.length) {
+      const st = el('section', undefined, 'bd-step');
+      st.appendChild(el('p', 'Step 1 · Bottles', 'bd-k'));
+      st.appendChild(el('h4', 'Pick ' + plural(p.bottle_slots.length, 'bottle', 'bottles'), 'bd-h'));
+      p.bottle_slots.forEach((s, i) => {
+        const slot = el('div', undefined, 'slot'); slot.id = 'slot-' + i;
+        const head = el('div', undefined, 'slot-h');
+        head.appendChild(el('b', 'Bottle ' + (i + 1) + ' · ' + s.label + ' slot'));
+        const pick = d.bottles[i], pb = bottle(pick);
+        head.appendChild(el('span', pick === 'later' ? 'Decide later' : pb ? pb.name : 'Not picked yet'));
+        slot.appendChild(head);
+        const inc = menus.bottles.filter((b) => b.tier <= s.tier), up = menus.bottles.filter((b) => b.tier > s.tier);
+        const tabs = el('div', undefined, 'slot-tabs'); tabs.setAttribute('role', 'tablist'); tabs.setAttribute('aria-label', 'Bottle ' + (i + 1));
+        [['inc', 'Included'], ['up', 'Upgrade']].forEach(([k, lab]) => {
+          if (k === 'up' && !up.length) return;
+          const b = el('button', lab + (k === 'up' ? ' (' + up.length + ')' : ''), 'slot-tab'); b.type = 'button'; b.setAttribute('role', 'tab');
+          b.setAttribute('aria-selected', bd.tabs[i] === k ? 'true' : 'false'); b.id = 'slot-' + i + '-tab-' + k; b.setAttribute('aria-controls', 'slot-' + i + '-list');
+          b.addEventListener('click', () => { bd.tabs[i] = k; renderBuilder(); const x = $('slot-' + i + '-tab-' + k); if (x) x.focus(); });
+          tabs.appendChild(b);
+        });
+        slot.appendChild(tabs);
+        const list = el('div', undefined, 'bottles'); list.id = 'slot-' + i + '-list'; list.setAttribute('role', 'radiogroup'); list.setAttribute('aria-label', 'Bottle ' + (i + 1) + ', ' + s.label + ' slot');
+        const show = bd.tabs[i] === 'up' ? up : inc;
+        const opt = (value, name, sub, price, isInc) => {
+          const l = el('label', undefined, 'bot'), r = el('input'); r.type = 'radio'; r.name = 'slot' + i; r.value = String(value); r.checked = String(d.bottles[i]) === String(value);
+          r.addEventListener('change', () => { d.bottles[i] = value === 'later' ? 'later' : Number(value); renderBuilder(); const x = document.querySelector('#slot-' + i + ' input[value="' + value + '"]'); if (x) x.focus(); });
+          l.appendChild(r); l.appendChild(el('span', undefined, 'mk'));
+          const n = el('span', name, 'nm'); if (sub) n.appendChild(el('small', sub)); l.appendChild(n);
+          l.appendChild(el('span', price, 'pr' + (isInc ? ' inc' : ''))); list.appendChild(l);
+        };
+        show.forEach((b) => opt(b.id, b.name, menus.tier_labels[b.tier - 1], b.tier > s.tier ? '+' + fmt(b.upgrade_cents, EV.currency) : 'Included', b.tier <= s.tier));
+        if (bd.tabs[i] === 'inc' && p.slot_later) opt('later', 'Decide later', 'Pick with your server on the night', 'Included', true);
+        if (!show.length) list.appendChild(el('p', 'Nothing here right now.', 'bd-k'));
+        slot.appendChild(list);
+        st.appendChild(slot);
+      });
+      body.appendChild(st);
+    }
+    // Chasers: steppers within the table's points; a remainder is fine.
+    const st2 = el('section', undefined, 'bd-step');
+    st2.appendChild(el('p', (p.bottle_slots.length ? 'Step 2' : 'Step 1') + ' · Chasers', 'bd-k'));
+    const budget = Math.round(p.chaser_points * 100), used = pointsUsed(d.chasers);
+    const groups = menus.chaser_groups || [];
+    if (!budget || !groups.length) { st2.appendChild(el('h4', 'No chasers with this table', 'bd-h')); }
+    else {
+      st2.appendChild(el('h4', p.chaser_points + ' chaser points to spend', 'bd-h'));
+      const m = el('div', undefined, 'meter'), top = el('div', undefined, 'meter-top');
+      top.appendChild(el('b', (used / 100) + ' of ' + p.chaser_points + ' points')); top.appendChild(el('span', used >= budget ? 'All used' : ((budget - used) / 100) + ' left'));
+      m.appendChild(top);
+      const bar = el('div', undefined, 'meter-bar' + (used >= budget ? ' full' : '')); bar.setAttribute('role', 'meter'); bar.setAttribute('aria-valuemin', '0'); bar.setAttribute('aria-valuemax', String(p.chaser_points)); bar.setAttribute('aria-valuenow', String(used / 100)); bar.setAttribute('aria-label', 'Chaser points used');
+      const fill = el('i'); fill.style.width = Math.min(100, (used / budget) * 100) + '%'; bar.appendChild(fill); m.appendChild(bar); st2.appendChild(m);
+      groups.forEach((g) => {
+        const gw = el('div', undefined, 'chg'), gh = el('div', undefined, 'chg-h');
+        gh.appendChild(el('span', g.name)); gh.appendChild(el('span', plural(g.points, 'point', 'points') + ' each'));
+        gw.appendChild(gh);
+        g.chasers.forEach((c) => {
+          const row = el('div', undefined, 'ch'); row.id = 'ch-' + c.id; row.appendChild(el('b', c.name));
+          const n = d.chasers[c.id] || 0, room = Math.floor((budget - used) / Math.round(g.points * 100));
+          row.appendChild(stepper(c.name, n, 0, n + Math.max(0, room), (v) => { d.chasers[c.id] = Math.max(0, v); if (!d.chasers[c.id]) delete d.chasers[c.id]; renderBuilder(); refocus('#ch-' + c.id + ' .step button:' + (v > n ? 'last-child' : 'first-child')); }));
+          gw.appendChild(row);
+        });
+        st2.appendChild(gw);
+      });
+      const nc = el('div', undefined, 'nochasers');
+      const none = el('button', 'No chasers', 'btn btn-line sm'); none.type = 'button'; none.setAttribute('aria-pressed', used === 0 ? 'true' : 'false');
+      none.addEventListener('click', () => { d.chasers = {}; renderBuilder(); const x = document.querySelector('.nochasers button'); if (x) x.focus(); });
+      nc.appendChild(none); nc.appendChild(el('span', 'Unused points are fine.', 'bd-k'));
+      st2.appendChild(nc);
+    }
+    body.appendChild(st2);
+    // Running total, and Done once every slot has a bottle (or "decide later").
+    const x = tableLine({ product_id: p.id, bottles: d.bottles.map((b) => (b === null ? 'later' : b)), chasers: d.chasers });
+    $('bd-total').replaceChildren(document.createTextNode(fmt(x.line, EV.currency)));
+    if (EV.currency !== 'USD') $('bd-total').appendChild(el('small', fmt(usdCents(x.line, EV.currency), 'USD') + ' by card'));
+    $('bd-k').textContent = x.up ? 'This table, with ' + fmt(x.up, EV.currency) + ' in upgrades' : 'This table';
+    const missing = d.bottles.filter((b) => b === null).length;
+    $('bd-left').textContent = missing ? 'Pick ' + plural(missing, 'more bottle', 'more bottles') : '';
+    $('bd-done').disabled = missing > 0;
+    $('bd-done').textContent = bd.index >= 0 ? 'Save table' : 'Add to order';
+  }
+  $('bd-x').addEventListener('click', () => $('builder').close());
+  $('bd-done').addEventListener('click', () => {
+    if (!bd || bd.draft.bottles.some((b) => b === null)) return;
+    const t = { uid: bd.index >= 0 ? cart.tables[bd.index].uid : ++seq, product_id: bd.p.id, bottles: bd.draft.bottles.slice(), chasers: Object.assign({}, bd.draft.chasers) };
+    if (bd.index >= 0) cart.tables[bd.index] = t; else cart.tables.push(t);
+    saveCart();
+    const was = bd.index;
+    $('builder').close();
+    renderProducts(); renderSummary();
+    toast(was >= 0 ? 'Table updated.' : bd.p.name + ' added to your order.');
+    const b = document.querySelector('#tbl-' + bd.p.id + ' .tbl-foot .btn'); if (b && !b.disabled) b.focus();
+  });
+
+  // ---------- checkout ----------
+  let co = null; // the checkout made: { ref, s, hold_until, due_now_cents, ... }
+  function fillDob() {
+    const d = $('co-dob-d'), m = $('co-dob-m'), y = $('co-dob-y');
+    if (d.options.length) return;
+    const opt = (s, v, t) => { const o = el('option', t); o.value = v; s.appendChild(o); };
+    opt(d, '', 'Day'); for (let i = 1; i <= 31; i++) opt(d, String(i).padStart(2, '0'), String(i));
+    opt(m, '', 'Month'); ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'].forEach((n, i) => opt(m, String(i + 1).padStart(2, '0'), n));
+    const now = antiguaToday();
+    opt(y, '', 'Year'); for (let i = now.y - 18; i >= now.y - 100; i--) opt(y, String(i), String(i));
+  }
+  function antiguaToday() { const p = {}; new Intl.DateTimeFormat('en-US', { timeZone: AT, year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(new Date()).forEach((x) => { p[x.type] = x.value; }); return { y: Number(p.year), m: Number(p.month), d: Number(p.day) }; }
+  async function showCheckout(slug) {
+    if (!EV || EV.slug !== slug) { await showEvent(slug); if (!EV) return; }
+    if (totals().empty) return go({ e: slug }, true);
+    fillDob();
+    const b = store.json('tix_buyer');
+    if (b && !$('co-name').value) { $('co-name').value = b.name || ''; $('co-email').value = b.email || ''; }
+    co = null;
+    $('co-form').classList.remove('hidden'); $('co-pay').classList.add('hidden'); $('pp-box').replaceChildren();
+    ['co-name-err', 'co-email-err', 'co-dob-err', 'co-terms-err', 'co-err'].forEach((id) => { $(id).textContent = ''; });
+    const t = totals();
+    $('co-dep-term').textContent = t.due < t.total ? ', and that table deposits are non-refundable' : '';
+    $('co-go').textContent = t.due < t.total ? 'Continue to pay the deposit' : 'Continue to payment';
+    renderSummary();
+    view('v-checkout');
+    document.title = 'Checkout · ' + EV.name;
+  }
+  $('co-back').addEventListener('click', () => go({ e: EV.slug }));
+  $('co-terms-open').addEventListener('click', (e) => openText('Ticket terms', (SITE && SITE.terms) || 'The ticket terms will be here soon.', e.currentTarget));
+  const fieldErr = { name: 'co-name-err', email: 'co-email-err', birth_date: 'co-dob-err', terms: 'co-terms-err' };
+  function coError(code, msg, field) {
+    const f = field || { NAME_INVALID: 'name', EMAIL_INVALID: 'email', UNDER_18: 'birth_date', BIRTH_DATE_INVALID: 'birth_date', TERMS_REQUIRED: 'terms' }[code];
+    if (f && fieldErr[f]) { $(fieldErr[f]).textContent = msg; const i = { name: 'co-name', email: 'co-email', birth_date: 'co-dob-d', terms: 'co-terms' }[f]; if ($(i)) $(i).focus(); }
+    else $('co-err').textContent = msg;
+  }
+  $('co-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    ['co-name-err', 'co-email-err', 'co-dob-err', 'co-terms-err', 'co-err'].forEach((id) => { $(id).textContent = ''; });
+    const name = $('co-name').value.trim(), email = $('co-email').value.trim(), dd = $('co-dob-d').value, mm = $('co-dob-m').value, yy = $('co-dob-y').value;
+    // Light checks first; the backend checks everything again.
+    if (name.length < 2) return coError('NAME_INVALID', 'Enter your full name as it shows on your ID.');
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return coError('EMAIL_INVALID', 'Enter a valid email address. Your tickets go there.');
+    if (!dd || !mm || !yy) return coError('BIRTH_DATE_INVALID', 'Enter your date of birth.');
+    const dt = new Date(Date.UTC(+yy, +mm - 1, +dd));
+    if (dt.getUTCMonth() !== +mm - 1) return coError('BIRTH_DATE_INVALID', 'Check your date of birth: that day doesn' + String.fromCharCode(39) + 't exist.');
+    const n = antiguaToday(), age = n.y - yy - (n.m < +mm || (n.m === +mm && n.d < +dd) ? 1 : 0);
+    if (age < 18) return coError('UNDER_18', 'Tickets are 18+ only.');
+    if (!$('co-terms').checked) return coError('TERMS_REQUIRED', 'Tick the box to agree to the terms.');
+    store.set('tix_buyer', JSON.stringify({ name, email }));
+    const t = totals();
+    $('co-go').disabled = true;
+    const r = await call('/api/tickets/checkout', { event: EV.slug, items: itemsForApi(), buyer: { name, email, birth_date: yy + '-' + mm + '-' + dd }, terms: true, total_cents: t.total }).catch(() => null);
+    $('co-go').disabled = false;
+    if (!r) return coError(null, 'No connection. Check your signal and try again.');
+    if (!r.ok) {
+      const d = r.data;
+      if (d.event) {
+        // Prices or what's left changed: take the event as it is now and keep what still fits.
+        const before = t.total; EV = d.event; loadCartFrom(); renderSummary();
+        const after = totals();
+        if (d.code === 'PRICE_CHANGED') return coError(null, 'Prices changed while you were choosing. Your total is now ' + fmt(after.total, after.cur) + (before !== after.total ? ' (it was ' + fmt(before, after.cur) + ')' : '') + '. Check your order and continue.');
+        if (after.empty) { coError(null, d.error + ' Pick something else.'); return; }
+        return coError(null, d.error + ' We updated your order to what' + String.fromCharCode(39) + 's left.');
+      }
+      return coError(d.code, d.error || 'Something went wrong. Try again.', d.field);
+    }
+    co = r.data;
+    // Nothing to pay (a free ticket): straight to the tickets.
+    if (!co.due_now_cents || co.status === 'PAID') { clearCart(); return go({ order: co.ref, s: co.s }); }
+    $('co-form').classList.add('hidden'); $('co-pay').classList.remove('hidden');
+    $('co-usd').textContent = 'You pay ' + both(co.due_now_cents, co.currency) + ' now' + (co.due_now_cents < co.total_cents ? ' (the deposit)' : '') + '. PayPal charges it in US$.';
+    holdTimer(co.hold_until);
+    renderPayPal($('pp-box'), co.ref, co.s, co.paypal.client_id, () => { clearCart(); go({ order: co.ref, s: co.s }); });
+  });
+  // After PRICE_CHANGED or SOLD_OUT: the cart against the fresh event (keeps tables whose bottles are still on the menu).
+  function loadCartFrom() { const keep = JSON.stringify(cart); store.set(cartKey(), keep); loadCart(); saveCart(); renderProducts(); }
+  function clearCart() { cart = { tickets: {}, tables: [] }; if (EV) saveCart(); }
+  let holdT = null;
+  function holdTimer(until) {
+    clearInterval(holdT);
+    const box = $('co-hold'), end = new Date(until).getTime();
+    const tick = () => {
+      const left = Math.max(0, end - Date.now()), m = Math.floor(left / 60000), s = Math.floor((left % 60000) / 1000);
+      if (!left) {
+        clearInterval(holdT); box.classList.add('over'); box.textContent = 'Your 30 minutes ran out, so these tickets went back on sale.';
+        $('pp-box').replaceChildren();
+        const again = el('button', 'Start again', 'btn'); again.type = 'button'; again.addEventListener('click', () => go({ e: EV.slug })); $('pp-box').appendChild(again);
+        return;
+      }
+      box.classList.remove('over'); box.textContent = 'Held for you: ' + m + ':' + String(s).padStart(2, '0') + ' to pay';
+    };
+    tick(); holdT = setInterval(tick, 1000);
+  }
+
+  // PayPal's buttons for an order (first payment or balance). onDone runs once it's paid (or the deposit is).
+  let sdkPromise = null, sdkClient = '';
+  function loadSdk(clientId) {
+    if (sdkPromise && sdkClient === clientId) return sdkPromise;
+    sdkClient = clientId;
+    sdkPromise = new Promise((resolve, reject) => {
+      const s = document.createElement('script');
+      s.src = 'https://www.paypal.com/sdk/js?client-id=' + encodeURIComponent(clientId) + '&currency=USD&intent=capture&components=buttons';
+      s.onload = () => (window.paypal ? resolve(window.paypal) : reject(new Error('PayPal did not load.')));
+      s.onerror = () => { sdkPromise = null; reject(new Error('PayPal did not load.')); };
+      document.head.appendChild(s);
+    });
+    return sdkPromise;
+  }
+  function renderPayPal(box, ref, sig, clientId, onDone, base) {
+    box.replaceChildren();
+    const msg = el('p', '', 'err'); msg.setAttribute('role', 'alert');
+    const holder = el('div'); holder.id = 'pp-' + Math.random().toString(36).slice(2);
+    box.appendChild(holder); box.appendChild(msg);
+    const path = base || '/api/tickets/paypal';
+    const body = (x) => Object.assign(base ? { s: sig } : { ref, s: sig }, x || {});
+    loadSdk(clientId).then((pp) => pp.Buttons({
+      style: { layout: 'vertical', shape: 'rect', color: 'black', label: 'pay' },
+      createOrder: async () => {
+        msg.textContent = '';
+        const r = await call(path + '/create-order', body());
+        if (!r.ok) {
+          if (r.data.code === 'ALREADY_PAID') { onDone(); throw new Error('paid'); }
+          if (r.data.code === 'HOLD_EXPIRED') { toast(r.data.error, true); }
+          msg.textContent = r.data.error || 'PayPal is not available right now.';
+          throw new Error(r.data.code || 'create');
+        }
+        return r.data.id;
+      },
+      onApprove: async (data, actions) => {
+        msg.textContent = 'Confirming your payment…';
+        const r = await call(path + '/capture', body({ paypal_order_id: data.orderID })).catch(() => null);
+        if (!r) { msg.textContent = 'No connection. Your payment may have gone through: reload this page in a minute.'; return; }
+        if (r.ok && r.data.success) { msg.textContent = ''; return onDone(); }
+        if (r.ok && r.data.pending) { msg.textContent = r.data.message; return; }
+        if (r.data.code === 'DECLINED') { msg.textContent = r.data.error; return actions.restart(); }
+        msg.textContent = r.data.error || 'The payment did not go through.';
+      },
+      onError: (err) => { if (err && /paid|HOLD|PAYPAL|create/.test(String(err.message))) return; msg.textContent = 'PayPal hit a problem. Try again.'; }
+    }).render('#' + holder.id)).catch((e) => { msg.textContent = e.message; });
+  }
+
+  // ---------- an order's page ----------
+  const cacheKey = (k, ref) => 'tix_' + k + '_' + ref;
+  async function getPage(kind, ref, sig) {
+    const k = cacheKey(kind, ref);
+    let r = null;
+    try { r = await call('/api/tickets/' + (kind === 'o' ? 'order/' : 'ticket/') + encodeURIComponent(ref) + '?s=' + encodeURIComponent(sig)); } catch (e) { r = null; }
+    if (!r) { const c = store.json(k); return c ? { data: c, offline: true } : { error: 'No connection, and this page isn' + String.fromCharCode(39) + 't saved on this phone yet. Try again with signal.' }; }
+    if (r.status === 404) return { error: null, notFound: true };
+    if (!r.ok) return { error: r.data.error || 'This page did not load.' };
+    // Saved on this phone with the live secrets, so the ticket opens offline; dropped once refunded or cancelled.
+    const live = kind === 'o' ? r.data.status === 'PAID' : r.data.ticket && r.data.ticket.status === 'VALID';
+    store.set(k, live ? JSON.stringify(r.data) : null);
+    return { data: r.data };
+  }
+  async function showOrder(ref, sig) {
+    view('v-loading');
+    const p = await getPage('o', ref, sig);
+    if (p.notFound || p.error) { failView(p.error || ''); return; }
+    renderOrder(p.data, ref, sig, p.offline);
+  }
+  async function showTicket(ref, sig) {
+    view('v-loading');
+    const p = await getPage('t', ref, sig);
+    if (p.notFound || p.error) { failView(p.error || ''); return; }
+    renderTicketPage(p.data, ref, sig, p.offline);
+  }
+  function eventFacts(box, ev) {
+    const dl = el('dl', undefined, 'evp-facts op-event');
+    fact(dl, 'Event', ev.name);
+    fact(dl, 'When', ev.when || 'Date coming soon', ev.starts_at ? 'Antigua time' : '');
+    if (ev.venue || ev.address) fact(dl, 'Where', ev.venue || ev.address, ev.venue && ev.address ? ev.address : '');
+    box.appendChild(dl);
+    if (ev.buyer_info) { const s = el('div', undefined, 'op-sect'); s.appendChild(el('h2', 'Good to know', 'eb')); s.appendChild(el('p', ev.buyer_info, 'evp-info')); box.appendChild(s); }
+  }
+  function ticketCard(t, ctx) {
+    const live = t.status === 'VALID' && !!t.secret;
+    const a = el('article', undefined, 'tk' + (t.kind === 'CAR' ? ' tk-car' : '') + (live ? '' : ' dead'));
+    a.setAttribute('aria-label', (t.kind === 'CAR' ? 'Car pass: ' : 'Ticket: ') + t.label);
+    const h = el('div', undefined, 'tk-head');
+    const mk = el('span', undefined, 'tk-mark'); mk.setAttribute('aria-hidden', 'true'); mk.appendChild(document.createTextNode('On D')); mk.appendChild(el('span', "'", 'apos')); mk.appendChild(document.createTextNode(' ')); mk.appendChild(el('i', 'Road'));
+    h.appendChild(mk); const sl = el('span', undefined, 'tk-slash'); sl.setAttribute('aria-hidden', 'true'); h.appendChild(sl);
+    h.appendChild(el('span', t.kind === 'CAR' ? 'Car pass' : 'Admit one', 'tk-kind'));
+    a.appendChild(h);
+    if (live) liveMark(a, ctx.holder || t.holder || '');
+    const b = el('div', undefined, 'tk-body');
+    b.appendChild(el('p', t.label, 'tk-label'));
+    if (live) mountQr(b, t.ref, t.secret, 196);
+    else b.appendChild(el('p', t.status === 'TRANSFERRED' ? 'Transferred to ' + (t.transferred_to || 'a friend') : t.checked_in ? 'Checked in' : 'Cancelled', 'tk-gone'));
+    const meta = el('dl', undefined, 'tk-meta');
+    const m1 = el('div'); m1.appendChild(el('dt', 'Holder')); m1.appendChild(el('dd', t.status === 'TRANSFERRED' ? '—' : (ctx.holder || t.holder || ''))); meta.appendChild(m1);
+    const m2 = el('div'); m2.appendChild(el('dt', 'Ticket')); m2.appendChild(el('dd', t.ref, 'ref')); meta.appendChild(m2);
+    b.appendChild(meta);
+    if (live) {
+      const acts = el('div', undefined, 'tk-acts');
+      const q = el('button', 'Show QR', 'main'); q.type = 'button'; q.addEventListener('click', () => openQr(t, ctx, q));
+      const s = el('button', 'Share'); s.type = 'button'; s.addEventListener('click', () => share(ctx.eventName + ': ' + t.label, t.link, 'Whoever scans it first gets in. To give it away for good, use Transfer.'));
+      const tr = el('button', 'Transfer'); tr.type = 'button'; tr.disabled = !!t.checked_in || ctx.over;
+      tr.addEventListener('click', () => transfer(t, ctx));
+      if (t.checked_in) { q.disabled = true; q.textContent = 'Checked in'; }
+      acts.appendChild(q); acts.appendChild(s); acts.appendChild(tr); b.appendChild(acts);
+    }
+    a.appendChild(b);
+    const f = el('div', undefined, 'tk-foot'); f.setAttribute('aria-hidden', 'true'); f.appendChild(el('span', '[ 18+ | Antigua ]')); f.appendChild(el('span', '17°07′N 61°51′W')); a.appendChild(f);
+    return a;
+  }
+  function openQr(t, ctx, opener) {
+    const box = $('qr-in'); box.replaceChildren();
+    $('qr-title').textContent = t.kind === 'CAR' ? 'Car pass' : 'Your ticket';
+    liveMark(box, ctx.holder || t.holder || '');
+    box.appendChild(el('p', t.label, 'big-label'));
+    mountQr(box, t.ref, t.secret, 300);
+    box.appendChild(el('p', 'Turn your brightness up and show this at the door. The code changes every 30 seconds, so screenshots won' + String.fromCharCode(39) + 't work.', 'hint'));
+    openSheet($('qr-dlg'), opener);
+  }
+  function transfer(t, ctx) {
+    ask({ title: 'Transfer this ticket', text: 'Your friend gets their own ticket by email, in their name. This one stops working straight away, and so does its link.', ok: 'Transfer',
+      fields: [{ name: 'name', label: 'Their full name (as on their ID)', autocomplete: 'off', maxlength: 80 }, { name: 'email', label: 'Their email', type: 'email', autocomplete: 'off', inputmode: 'email', maxlength: 254 }],
+      onSubmit: async (v) => {
+        const r = await call('/api/tickets/ticket/' + encodeURIComponent(t.ref) + '/transfer', { s: t.s || ctx.sig, name: v.name, email: v.email });
+        if (!r.ok) throw new Error(r.data.error || 'That didn' + String.fromCharCode(39) + 't work. Try again.');
+        return r.data;
+      } }).then((r) => {
+      if (!r) return;
+      store.set(cacheKey('t', t.ref), null);
+      toast('Sent to ' + r.transferred_to + '. This ticket no longer works.');
+      route();
+    });
+  }
+  function tableSel(box, items, cur) {
+    const tables = items.filter((i) => i.kind === 'TABLE');
+    if (!tables.length) return;
+    const s = el('div', undefined, 'op-sect'); s.appendChild(el('h2', tables.length > 1 ? 'Your tables' : 'Your table', 'eb'));
+    const w = el('div', undefined, 'table-sel');
+    tables.forEach((i, n) => {
+      const one = el('div', undefined, 'one cp'); one.appendChild(el('h3', i.name + (tables.length > 1 ? ' ' + (n + 1) : '')));
+      const sel = i.selections || {};
+      if ((sel.slots || []).length) {
+        one.appendChild(el('p', 'Bottles', 'grp'));
+        const ul = el('ul'); sel.slots.forEach((x) => { const li = el('li'); li.appendChild(el('span', x.later ? 'Decide later (' + x.slot_label + ')' : x.name + ' · ' + (x.tier_label || ''))); li.appendChild(el('span', x.charge_cents ? '+' + fmt(x.charge_cents, cur) : 'Included')); ul.appendChild(li); }); one.appendChild(ul);
+      }
+      one.appendChild(el('p', 'Chasers', 'grp'));
+      const ul2 = el('ul'); if (!(sel.chasers || []).length) ul2.appendChild(el('li', 'No chasers'));
+      (sel.chasers || []).forEach((c) => { const li = el('li'); li.appendChild(el('span', c.qty + ' × ' + c.name)); li.appendChild(el('span', c.group)); ul2.appendChild(li); });
+      one.appendChild(ul2);
+      w.appendChild(one);
+    });
+    s.appendChild(w); box.appendChild(s);
+  }
+  function moneyPanel(d) {
+    const p = el('div', undefined, 'op-pay cp');
+    p.appendChild(el('h2', d.status === 'DEPOSIT_PAID' ? 'Deposit paid' : d.status === 'PENDING' ? 'To pay' : 'Paid', 'h2'));
+    const big = el('p', fmt(d.status === 'DEPOSIT_PAID' ? d.balance_cents : d.status === 'PENDING' ? (d.pay ? d.pay.cents : d.total_cents) : d.paid_cents, d.currency), 'big');
+    if (d.currency !== 'USD') big.appendChild(el('small', fmt(usdCents(d.status === 'DEPOSIT_PAID' ? d.balance_cents : d.status === 'PENDING' ? (d.pay ? d.pay.cents : d.total_cents) : d.paid_cents, d.currency), 'USD') + ' by card'));
+    if (d.status === 'DEPOSIT_PAID') big.insertBefore(el('small', 'Balance due by ' + at(d.balance_due_at, false)), big.firstChild.nextSibling);
+    p.appendChild(big);
+    const r2 = el('div', undefined, 'row2');
+    const cell = (k, v) => { const c = el('div'); c.appendChild(el('span', k)); c.appendChild(el('b', v)); r2.appendChild(c); };
+    cell('Total', fmt(d.total_cents, d.currency)); cell('Paid', fmt(d.paid_cents, d.currency));
+    if (d.fee_cents) cell('Service fee', fmt(d.fee_cents, d.currency));
+    if (d.status === 'DEPOSIT_PAID') cell('Balance', fmt(d.balance_cents, d.currency));
+    p.appendChild(r2);
+    const ul = el('ul', undefined, 'sum-lines');
+    d.items.forEach((i) => { const li = el('li'); li.appendChild(el('b', (i.kind === 'TABLE' ? '' : i.qty + ' × ') + i.name + (i.tier_name ? ' (' + i.tier_name + ')' : ''))); li.appendChild(el('span', fmt(i.line_cents, d.currency), 'm')); ul.appendChild(li); });
+    p.appendChild(ul);
+    return p;
+  }
+  function renderOrder(d, ref, sig, offline) {
+    const box = $('v-order'); box.replaceChildren();
+    const first = d.buyer_first_name || 'friend';
+    box.appendChild(el('p', d.event.name, 'eb'));
+    const h = el('h1', '', 'h1'); h.id = 'op-h';
+    const titles = { PAID: ["You're in, ", first + '.'], DEPOSIT_PAID: ['Your table is held, ', first + '.'], PENDING: ['Almost there, ', first + '.'], CANCELLED: ['This order ', 'was cancelled.'], REFUNDED: ['This order ', 'was refunded.'] };
+    const tt = titles[d.status] || ['Your order', ''];
+    h.appendChild(document.createTextNode(tt[0])); h.appendChild(el('span', tt[1], 'thin'));
+    box.appendChild(h);
+    box.appendChild(el('p', 'Order ' + d.ref + (d.status === 'PAID' ? ' · paid' : ''), 'op-ref'));
+    if (offline) box.appendChild(el('p', 'No connection: showing your tickets saved on this phone. The QR still works.', 'offline-note'));
+    const grid = el('div', undefined, 'op-grid'), left = el('div'), right = el('div');
+    grid.appendChild(left); grid.appendChild(right); box.appendChild(grid);
+    if (d.status === 'DEPOSIT_PAID' || d.status === 'PENDING') grid.classList.add('pay-first');
+    eventFacts(left, d.event);
+    const ctx = { holder: d.buyer_name, eventName: d.event.name, over: d.event_over, sig };
+    if (d.status === 'PAID' || d.status === 'REFUNDED') {
+      const people = d.tickets.filter((t) => t.kind === 'PERSON'), cars = d.tickets.filter((t) => t.kind === 'CAR');
+      const live = people.filter((t) => t.status === 'VALID').length;
+      const s = el('div', undefined, 'op-sect');
+      s.appendChild(el('h2', 'My tickets', 'h2'));
+      s.appendChild(el('p', d.status === 'REFUNDED' ? 'These tickets were cancelled with the refund.' : 'You have ' + plural(live, 'ticket', 'tickets') + ' for this event' + (cars.length ? ', and ' + plural(cars.filter((t) => t.status === 'VALID').length, 'car pass', 'car passes') : '') + '. Each QR lets one person in, once.', 'op-count'));
+      const g = el('div', undefined, 'tk-grid'); people.forEach((t) => g.appendChild(ticketCard(t, ctx))); s.appendChild(g);
+      left.appendChild(s);
+      if (cars.length) { const c = el('div', undefined, 'op-sect'); c.appendChild(el('h2', 'Car passes', 'h2')); c.appendChild(el('p', 'One car each, scanned at the gate. A car pass doesn' + String.fromCharCode(39) + 't let a person in.', 'op-count')); const g2 = el('div', undefined, 'tk-grid'); cars.forEach((t) => g2.appendChild(ticketCard(t, ctx))); c.appendChild(g2); left.appendChild(c); }
+    }
+    tableSel(left, d.items, d.currency);
+    right.appendChild(moneyPanel(d));
+    const panel = right.firstChild;
+    if (d.status === 'DEPOSIT_PAID') {
+      panel.appendChild(el('p', 'Your tickets arrive here once the balance is paid. Unpaid by the deadline, the booking is cancelled and the table goes back on sale. Deposits are non-refundable.', 'pp-note'));
+      payBox(panel, d, ref, sig, 'Pay the balance');
+    } else if (d.status === 'PENDING') {
+      if (d.hold_until && new Date(d.hold_until) > new Date()) {
+        const hold = el('div', 'Held until ' + at(d.hold_until), 'hold'); panel.appendChild(hold);
+        payBox(panel, d, ref, sig, 'Finish paying');
+      } else {
+        panel.appendChild(el('p', 'This checkout ended before it was paid, so the tickets went back on sale. You weren' + String.fromCharCode(39) + 't charged.', 'notice'));
+        const again = el('a', 'Back to the event', 'btn'); again.href = '?e=' + encodeURIComponent(d.event.slug); again.style.marginTop = '14px'; panel.appendChild(again);
+      }
+    } else if (d.status === 'CANCELLED') {
+      panel.appendChild(el('p', d.paid_cents ? 'The balance wasn' + String.fromCharCode(39) + 't paid by the deadline, so the table was released. Deposits are non-refundable.' : 'This order wasn' + String.fromCharCode(39) + 't paid, so nothing was charged.', 'notice bad'));
+    } else if (d.status === 'PAID') {
+      panel.appendChild(el('p', 'Screenshots won' + String.fromCharCode(39) + 't work at the door: open your ticket on your phone. Sending a ticket to a friend? Transfer gives them their own, in their name.', 'pp-note'));
+    }
+    view('v-order', { find: true });
+    document.title = (d.status === 'PAID' ? 'Your tickets' : 'Your order') + ' · ' + d.event.name;
+  }
+  function payBox(panel, d, ref, sig, label) {
+    if (!d.pay) return;
+    if (d.pay.pending) { panel.appendChild(el('p', 'PayPal is still processing your payment. We' + String.fromCharCode(39) + 'll email you when it' + String.fromCharCode(39) + 's confirmed.', 'notice')); return; }
+    if (!d.pay.enabled || !d.pay.client_id) { panel.appendChild(el('p', 'Online payment isn' + String.fromCharCode(39) + 't open yet. Check back soon.', 'notice')); return; }
+    panel.appendChild(el('p', label + ': ' + fmt(d.pay.cents, d.currency) + (d.currency !== 'USD' ? '. Your card is charged US$' + d.pay.usd + '.' : '.'), 'pp-note'));
+    const pb = el('div', undefined, 'pp-box'); panel.appendChild(pb);
+    renderPayPal(pb, ref, sig, d.pay.client_id, () => { toast('Paid. Thank you.'); showOrder(ref, sig); }, '/api/tickets/order/' + encodeURIComponent(ref) + '/paypal');
+  }
+  function renderTicketPage(d, ref, sig, offline) {
+    const box = $('v-order'); box.replaceChildren();
+    const t = d.ticket;
+    box.appendChild(el('p', d.event.name, 'eb'));
+    const h = el('h1', '', 'h1'); h.id = 'op-h';
+    const first = String(d.holder_name || '').split(' ')[0];
+    if (t.status === 'VALID') { h.appendChild(document.createTextNode("You're in" + (first ? ', ' : '.'))); if (first) h.appendChild(el('span', first + '.', 'thin')); }
+    else { h.appendChild(document.createTextNode('This ticket ')); h.appendChild(el('span', t.status === 'TRANSFERRED' ? 'was transferred.' : 'no longer works.', 'thin')); }
+    box.appendChild(h);
+    if (d.from_first_name && t.status === 'VALID') box.appendChild(el('p', 'From ' + d.from_first_name, 'op-ref'));
+    if (offline) box.appendChild(el('p', 'No connection: showing the ticket saved on this phone. The QR still works.', 'offline-note'));
+    const grid = el('div', undefined, 'op-grid'), left = el('div'), right = el('div');
+    grid.appendChild(left); grid.appendChild(right); box.appendChild(grid);
+    const g = el('div', undefined, 'tk-grid'); g.style.gridTemplateColumns = 'minmax(0, 420px)';
+    g.appendChild(ticketCard(Object.assign({}, t, { s: sig, link: t.link || location.href }), { holder: d.holder_name, eventName: d.event.name, over: d.event_over, sig }));
+    left.appendChild(g);
+    eventFacts(right, d.event);
+    view('v-order', { find: true });
+    document.title = 'Your ticket · ' + d.event.name;
+  }
+
+  // ---------- find my tickets ----------
+  function openFind() { $('find').classList.remove('hidden'); $('find').scrollIntoView({ block: 'center' }); $('find-email').focus(); }
+  $('nav-find').addEventListener('click', openFind);
+  $('foot-find').addEventListener('click', openFind);
+  $('find-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    $('find-err').textContent = ''; $('find-ok').classList.add('hidden');
+    const email = $('find-email').value.trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { $('find-err').textContent = 'Enter the email you bought with.'; return; }
+    const r = await call('/api/tickets/resend', { email }).catch(() => null);
+    if (!r) { $('find-err').textContent = 'No connection. Try again with signal.'; return; }
+    if (r.status === 423) { $('find-err').textContent = 'The ticket site is closed for now. Your ticket links still work.'; return; }
+    if (!r.ok) { $('find-err').textContent = r.data.error || 'That didn' + String.fromCharCode(39) + 't work. Try again.'; return; }
+    $('find-ok').textContent = r.data.message; $('find-ok').classList.remove('hidden');
+  });
+
+  // ---------- the footer: contact and terms from /api/tickets/site ----------
+  function renderFoot() {
+    const c = (SITE && SITE.contact) || {}, box = $('foot-contact'); box.replaceChildren();
+    const add = (t, href) => { const a = el('a', t); a.href = href; a.target = '_blank'; a.rel = 'noopener'; box.appendChild(a); };
+    if (c.whatsapp) add('WhatsApp', 'https://wa.me/' + c.whatsapp);
+    if (c.instagram) add('@' + c.instagram, 'https://instagram.com/' + c.instagram);
+    if (c.email) add(c.email, 'mailto:' + c.email);
+    if (SITE && SITE.main_site) $('foot-main').href = SITE.main_site;
+  }
+  $('foot-terms').addEventListener('click', (e) => openText('Ticket terms', (SITE && SITE.terms) || 'The ticket terms will be here soon.', e.currentTarget));
+
+  // ---------- start ----------
+  async function loadSite() {
+    try {
+      const res = await backend('/api/tickets/site');
+      if (res.status === 404) return { old: true };
+      if (!res.ok) return null;
+      return await res.json();
+    } catch (e) { return null; }
+  }
+  function start() { if (started) return; started = true; route(); }
+  async function checkSite() {
+    siteTimer = null;
+    const s = await loadSite();
+    if (s && s.old) { OLD = true; openSite(false); started = false; return start(); }
+    if (s && s.locked !== true) {
+      SITE = s; renderFoot();
+      if (relocked) return location.reload();
+      openSite(!!s.preview); start();
+    } else if (s && s.locked === true) { if (orderMode()) start(); else lockSite(); }
+    else if (!s && !isLocked()) start();
+    if (isLocked() && !siteTimer) siteTimer = setTimeout(checkSite, s ? 60000 : Math.min(30000, 3000 * 2 ** siteTries++));
+  }
+  if (!isLocked()) start();
+  checkSite();
+</script>
+</body>
+</html>
