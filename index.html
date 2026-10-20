@@ -1862,6 +1862,23 @@
 
   const inviteToken = new URLSearchParams(location.search).get('invite');
   const loginCode = new URLSearchParams(location.search).get('login');
+  // ?code=XYZ (a link a promoter shares): kept until the guest is logged in, approved and picking a package, where it
+  // fills the code box. Taken out of the address bar (other parameters kept). Kept in localStorage so it survives the
+  // login link; a code that doesn't look like one is ignored.
+  let sharedCode = '';
+  (function () {
+    const q = new URLSearchParams(location.search), c = String(q.get('code') || '').trim().toUpperCase();
+    if (/^[A-Z0-9][A-Z0-9-]{2,23}$/.test(c)) sharedCode = c;
+    if (q.has('code')) {
+      q.delete('code');
+      const rest = q.toString();
+      history.replaceState(null, '', location.pathname + (rest ? '?' + rest : '') + location.hash);
+    }
+    try {
+      if (sharedCode) localStorage.setItem('odr_code', sharedCode);
+      else sharedCode = String(localStorage.getItem('odr_code') || '');
+    } catch (err) { /* storage off: the code only lasts for this visit */ }
+  })();
 
   async function loadInvite() {
     const loginErr = $('login-error');
@@ -1871,7 +1888,9 @@
       if (!res.ok) { loginErr.innerText = data.error; return; }
       $('login-view').classList.add('hidden');
       $('accept-view').classList.remove('hidden');
-      $('accept-from').textContent = (data.inviter === 'CONTROL' ? "On D' Road" : data.inviter) + ' chose you as one of their two invites.';
+      // A promoter's invite (a newer backend sends inviter_kind) has their name as the inviter.
+      $('accept-from').textContent = data.inviter_kind === 'PROMOTER' ? data.inviter + ' invited you to On D\' Road.'
+        : (data.inviter === 'CONTROL' ? "On D' Road" : data.inviter) + ' chose you as one of their two invites.';
       $('accept-note').textContent = data.note ? '"' + data.note + '"' : '';
     } catch (err) { loginErr.innerText = 'Network error. Try again.'; }
   }
@@ -2083,6 +2102,15 @@
     if (sel.dataset.key !== key) { fillSizes(sel, sizes, ''); sel.dataset.key = key; } // keep the pick while the package stays the same
     $('pkg-size-wrap').classList.toggle('hidden', !sizes.length);
     $('pkg-promo').classList.toggle('hidden', !p || !codesOn());
+    // A code from a shared link (?code=...) fills the code box the first time it shows, and is checked like a typed one.
+    if (p && codesOn() && sharedCode && !$('promo-code').value) {
+      $('promo-open').setAttribute('aria-expanded', 'true');
+      $('promo-open').classList.add('hidden');
+      $('promo-box').classList.remove('hidden');
+      $('promo-code').value = sharedCode;
+      sharedCode = '';
+      try { localStorage.removeItem('odr_code'); } catch (err) { /* storage off: it was only kept for this visit */ }
+    }
     // A code is checked again when the guest picks another package or the price moves on.
     if (promo && promo.key !== pkgKey(p)) promo = null;
     const code = typedCode();
@@ -2128,7 +2156,9 @@
       promo = { code, key, amount_cents: d.amount_cents, currency: d.currency };
       // A free pass is paid the moment it's claimed, which locks the name and date of birth.
       const lockNote = !d.amount_cents && profileOn() ? " Once you claim it, your name and date of birth can't change." : '';
-      promoMsg(d.label + '. You pay ' + (d.amount_cents ? money(d.amount_cents, d.currency) : 'nothing') + '.' + lockNote, false);
+      // A tracking code (kind TRACK) is full price: "Code applied", never a discount.
+      const label = d.kind === 'TRACK' || !d.label ? 'Code applied' : d.label;
+      promoMsg(label + '. You pay ' + (d.amount_cents ? money(d.amount_cents, d.currency) : 'nothing') + '.' + lockNote, false);
       setConfirmLabel();
     } catch (err) {
       if (lastCheck === mine) lastCheck = '';
@@ -2342,9 +2372,20 @@
     try { return new URL(v).protocol === 'https:' ? v : ''; } catch (err) { return ''; }
   }
 
+  // The event's name (a newer backend sends it) is the page title, as text. "On D' Road" itself, or no name, keeps
+  // the styled wordmark title.
+  const EVP_TITLE = $('evp-title').innerHTML;
+  function renderTitle(name) {
+    const n = typeof name === 'string' ? name.replace(/\s+/g, ' ').trim() : '';
+    const plain = !n || n.replace(/[\u2018\u2019\u02BC`]/g, "'").toLowerCase() === "on d' road";
+    if (plain) { if ($('evp-title').innerHTML !== EVP_TITLE) $('evp-title').innerHTML = EVP_TITLE; }
+    else if ($('evp-title').textContent !== n || $('evp-title').children.length) $('evp-title').textContent = n;
+  }
+
   function renderEvp() {
     const o = myOrder, ev = eventData || {};
     const paid = orderPaid(), reserved = !!o && o.status === 'RESERVED';
+    renderTitle(ev.name);
     const when = String(ev.when || '').trim();
     $('evp-when').textContent = when || 'Date coming soon';
     $('evp-when').classList.toggle('soon', !when);
@@ -2634,8 +2675,9 @@
       if (myOrder.tier_name) notes.push(/price$/i.test(myOrder.tier_name) ? myOrder.tier_name : myOrder.tier_name + ' price');
       if (free) notes.push('Free pass');
       else if (myOrder.promo_code) {
-        notes.push('Code ' + myOrder.promo_code + ': '
-          + (myOrder.discount_cents > 0 ? money(myOrder.discount_cents, myOrder.currency) + ' off' : myOrder.promo_label || 'applied'));
+        // A tracking code (promo_kind TRACK, from a newer backend) takes nothing off: just "Code X applied".
+        notes.push(myOrder.discount_cents > 0 ? 'Code ' + myOrder.promo_code + ': ' + money(myOrder.discount_cents, myOrder.currency) + ' off'
+          : myOrder.promo_kind === 'TRACK' || !myOrder.promo_label ? 'Code ' + myOrder.promo_code + ' applied' : 'Code ' + myOrder.promo_code + ': ' + myOrder.promo_label);
       }
       $('order-price-note').textContent = notes.join(' · ');
       $('order-price-note').classList.toggle('hidden', !notes.length);
