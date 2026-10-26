@@ -758,6 +758,108 @@
       #qr-dlg .qr-tags { margin-top: auto; margin-bottom: 4px; }
     }
 
+    /* guide:css:start. The event guide's look, shared word for word by the guest site and the admin preview
+       (control/guide.js, GUIDE_VIEW_CSS): change one, copy it to the other. It uses the guest site's tokens. */
+    .gd { --gd-do: var(--acid); --gd-dont: var(--red); --gd-heads: var(--amber); position: relative; isolation: isolate; color: var(--text); font-family: var(--body); font-variant-numeric: tabular-nums; }
+    .gd::before { content: ''; position: absolute; inset: 0; z-index: -1; background: var(--wm) 0 0 / 260px 150px; pointer-events: none; }
+    :where(.gd) :where(p, h2, h3, ol, ul, figure) { margin: 0; }
+    .gd-head { padding-bottom: 22px; border-bottom: 1px solid var(--line-2); }
+    .gd-k { font: 400 12px/1.2 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+    .gd-k::before { content: '[ '; } .gd-k::after { content: ' ]'; }
+    .gd-title { margin-top: 12px; font: 900 clamp(30px, 8.6vw, 44px)/.95 var(--wide); font-stretch: 125%; letter-spacing: -.01em; text-transform: uppercase; overflow-wrap: anywhere; }
+    .gd-meta { display: flex; flex-wrap: wrap; gap: 4px 16px; margin-top: 12px; font: 400 12.5px/1.5 var(--mono); color: var(--muted); }
+    .gd-saved { color: var(--gd-do); }
+    .gd-saved::before { content: ''; display: inline-block; width: 7px; height: 7px; margin-right: 8px; background: currentColor; vertical-align: 1px; }
+    .gd-only { margin-top: 10px; color: var(--muted); font-size: 14.5px; line-height: 1.5; }
+    .gd-sec { padding: 30px 0; border-bottom: 1px solid var(--line); }
+    .gd-sec:last-child { border-bottom: 0; padding-bottom: 4px; }
+    .gd-h { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; font: 400 12px/1.2 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--text); }
+    .gd-h::after { content: ''; flex: 1; height: 1px; background: var(--line); }
+    .gd-n { color: var(--orange); font-weight: 700; }
+    .gd-place { font: 900 clamp(26px, 7.6vw, 38px)/1 var(--wide); font-stretch: 125%; letter-spacing: -.005em; text-transform: uppercase; overflow-wrap: anywhere; }
+    .gd-time { display: flex; align-items: center; flex-wrap: wrap; gap: 10px 16px; margin-top: 16px; }
+    .gd-time b { font: 900 clamp(46px, 15vw, 72px)/.88 var(--wide); font-stretch: 125%; letter-spacing: -.02em; white-space: nowrap; }
+    .gd-sharp { display: inline-flex; align-items: center; min-height: 30px; padding: 0 10px; background: var(--orange); color: var(--ink); font: 700 12px/1 var(--mono); letter-spacing: .16em; text-transform: uppercase; }
+    .gd-date { margin-top: 12px; font: 400 13px/1.4 var(--mono); letter-spacing: .04em; color: var(--muted); }
+    .gd-maps { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 8px; margin-top: 22px; }
+    .gd-map { display: flex; align-items: center; gap: 12px; min-height: 52px; padding: 0 16px; border: 1px solid var(--line-2); color: var(--text); text-decoration: none; font: 700 14px/1.2 var(--wide); font-stretch: 112%; letter-spacing: .04em; text-transform: uppercase; transition: border-color .2s, background .2s; }
+    .gd-map svg { width: 18px; height: 18px; flex: none; color: var(--orange); }
+    .gd-map span { flex: 1; }
+    .gd-map::after { content: '↗'; font: 400 16px/1 var(--mono); color: var(--muted); }
+    .gd-map:hover { border-color: var(--text); background: rgba(236, 235, 230, .05); }
+    .gd-sub { margin-top: 26px; font: 400 12px/1.2 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+    .gd-text { margin-top: 10px; font-size: 16px; line-height: 1.6; white-space: pre-line; overflow-wrap: anywhere; }
+    .gd-fig { margin-top: 22px; border: 1px solid var(--line); background: var(--black); }
+    .gd-fig img { display: block; width: 100%; height: auto; max-height: 440px; object-fit: cover; }
+    .gd-hint { margin: -8px 0 16px; font: 400 12px/1.4 var(--mono); color: var(--muted); }
+    /* The route: one line down the stops, each a numbered marker; the start is orange, the end solid chalk. */
+    .gd-stops { list-style: none; padding: 0; }
+    .gd-stop { position: relative; display: grid; grid-template-columns: 30px minmax(0, 1fr); gap: 0 16px; padding-bottom: 24px; }
+    .gd-stop:last-child { padding-bottom: 0; }
+    .gd-stop::before { content: ''; position: absolute; left: 14px; top: 30px; bottom: 0; width: 2px; background: var(--line-2); }
+    .gd-stop.is-start::before { background: linear-gradient(var(--orange), var(--line-2)); }
+    .gd-stop:last-child::before { display: none; }
+    .gd-dot { position: relative; display: grid; place-items: center; width: 30px; height: 30px; border: 2px solid var(--text); background: var(--char); color: var(--text); font: 700 12px/1 var(--mono); }
+    .gd-stop.is-start .gd-dot { background: var(--orange); border-color: var(--orange); color: var(--ink); }
+    .gd-stop.is-end .gd-dot { background: var(--text); color: var(--ink); }
+    .gd-stop-t { padding-top: 4px; min-width: 0; }
+    .gd-stop-t b { display: block; font: 800 17px/1.25 var(--wide); font-stretch: 112%; letter-spacing: .02em; text-transform: uppercase; overflow-wrap: anywhere; }
+    .gd-stop-t p { margin-top: 4px; color: var(--muted); font-size: 15px; line-height: 1.5; overflow-wrap: anywhere; }
+    /* The schedule: time, what, and on the day a Now / Next line and marks. */
+    .gd-nn { display: grid; gap: 8px; margin-bottom: 18px; }
+    .gd-nn p { display: flex; align-items: baseline; gap: 12px; padding: 13px 14px; background: var(--char-2); border-left: 3px solid var(--gd-do); font-size: 16px; line-height: 1.35; }
+    .gd-nn span { flex: none; min-width: 3.6em; font: 700 11.5px/1 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--gd-do); }
+    .gd-nn b { overflow-wrap: anywhere; }
+    .gd-nn .is-next { border-left-color: var(--text); }
+    .gd-nn .is-next span { color: var(--text); }
+    .gd-tl { list-style: none; padding: 0; border-top: 1px solid var(--line); }
+    .gd-item { display: grid; grid-template-columns: 84px minmax(0, 1fr) auto; align-items: baseline; gap: 4px 12px; padding: 15px 0; border-bottom: 1px solid var(--line); }
+    .gd-at { font: 700 14px/1.3 var(--mono); white-space: nowrap; }
+    .gd-item b { font-size: 16px; line-height: 1.35; overflow-wrap: anywhere; }
+    .gd-item p { grid-column: 2 / -1; color: var(--muted); font-size: 14.5px; line-height: 1.5; overflow-wrap: anywhere; }
+    .gd-tag { padding: 5px 7px; font: 700 11px/1 var(--mono); letter-spacing: .12em; text-transform: uppercase; }
+    .gd-item.is-now, .gd-item.is-next { padding-left: 12px; }
+    .gd-item.is-now { box-shadow: inset 3px 0 0 var(--gd-do); background: linear-gradient(90deg, rgba(182, 255, 59, .08), transparent 70%); }
+    .gd-item.is-now .gd-tag { background: var(--gd-do); color: var(--ink); }
+    .gd-item.is-next { box-shadow: inset 3px 0 0 var(--text); }
+    .gd-item.is-next .gd-tag { box-shadow: inset 0 0 0 1px var(--text); }
+    .gd-item.is-past .gd-at, .gd-item.is-past b { color: var(--muted); font-weight: 400; }
+    /* Parking's disclaimer, and the rules: an icon and a label in each one's colour. */
+    .gd-warn { display: grid; grid-template-columns: 22px minmax(0, 1fr); gap: 12px; align-items: start; margin-top: 22px; padding: 14px 16px; border: 1px solid var(--line-2); border-left: 3px solid var(--gd-heads); font-size: 15px; line-height: 1.5; }
+    .gd-warn svg { width: 22px; height: 22px; color: var(--gd-heads); }
+    .gd-rlist { list-style: none; padding: 0; border-top: 1px solid var(--line); }
+    .gd-tl > li:last-child, .gd-rlist > li:last-child { border-bottom: 0; padding-bottom: 0; }
+    .gd-rule { display: grid; grid-template-columns: 40px minmax(0, 1fr); align-items: start; gap: 2px 14px; padding: 15px 0; border-bottom: 1px solid var(--line); }
+    .gd-ic { grid-row: span 2; display: grid; place-items: center; width: 40px; height: 40px; border: 1px solid currentColor; }
+    .gd-ic svg { width: 20px; height: 20px; }
+    .gd-rk { font: 700 11.5px/1.4 var(--mono); letter-spacing: .14em; text-transform: uppercase; }
+    .gd-rule p { color: var(--text); font-size: 16px; line-height: 1.45; overflow-wrap: anywhere; }
+    .gd-rule.r-do { color: var(--gd-do); } .gd-rule.r-dont { color: var(--gd-dont); } .gd-rule.r-heads { color: var(--gd-heads); }
+    .gd-rule.r-dont .gd-ic { border-style: dashed; }
+    @media (prefers-reduced-motion: reduce) { .gd-map { transition: none; } }
+    /* guide:css:end */
+
+    /* The event guide (paid guests): a card on the event page that opens the guide sheet. */
+    .guide-card { order: 2; position: relative; margin: 26px var(--gut) 0; padding: 20px 18px 18px; border: 1px solid var(--line-2); border-left: 3px solid var(--orange);
+      background: var(--wm) 0 0 / 260px 150px, var(--char-2); }
+    .guide-card .eb { margin-bottom: 14px; }
+    .gc-place { font: 900 24px/1.05 var(--wide); font-stretch: 125%; text-transform: uppercase; letter-spacing: -.005em; overflow-wrap: anywhere; }
+    .gc-time { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; margin-top: 10px; font: 700 14px/1.4 var(--mono); }
+    .gc-time .sharp { padding: 4px 7px; background: var(--orange); color: var(--ink); font-size: 11px; line-height: 1; letter-spacing: .14em; text-transform: uppercase; }
+    .gc-nn { margin-top: 14px; padding: 11px 12px; background: var(--char-3); border-left: 3px solid var(--acid); font-size: 15px; line-height: 1.4; overflow-wrap: anywhere; }
+    .gc-nn b { margin-right: 10px; font: 700 11.5px/1 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--acid); }
+    #guide-open { margin-top: 18px; }
+    .gc-saved { margin-top: 12px; font: 400 12.5px/1.4 var(--mono); color: var(--acid); }
+    /* The guide sheet: full screen on phones, a wide panel on laptops, the watermark faint behind it. */
+    #guide-dlg { max-width: min(760px, calc(100vw - 32px)); max-height: min(92vh, 1200px); overflow-y: auto; overscroll-behavior: contain; background: var(--char) var(--matte); color: var(--text); border: 1px solid var(--line-2); }
+    .gdlg-bar { position: sticky; top: 0; z-index: 2; display: flex; justify-content: flex-end; padding: 6px 6px 0; background: linear-gradient(var(--char) 60%, rgba(20, 20, 22, 0)); }
+    #guide-view { padding: 0 22px 36px; }
+    @media (max-width: 1023px) {
+      #guide-dlg { width: 100%; max-width: 100%; height: 100%; max-height: 100%; margin: 0; border: 0; }
+      #guide-view { padding: 0 var(--gut) calc(36px + env(safe-area-inset-bottom)); }
+    }
+    @media (min-width: 1024px) { .guide-card { margin: 0 0 32px; padding: 24px 24px 22px; } .gc-place { font-size: 30px; } #guide-open { width: auto; min-width: 260px; } }
+
     .toast { position: fixed; left: 50%; bottom: 24px; z-index: 100; width: max-content; max-width: calc(100vw - 32px); padding: 14px 18px 14px 16px; border-left: 3px solid var(--orange);
       background: var(--text); color: var(--ink); font-size: 15px; font-weight: 600; line-height: 1.4; box-shadow: 0 20px 50px -10px rgba(0, 0, 0, .7);
       opacity: 0; transform: translate(-50%, 16px); pointer-events: none; transition: opacity .3s, transform .3s var(--ease); }
@@ -1022,6 +1124,7 @@
     <div class="nav-links" id="nav-links">
       <a href="#how" class="nl-out" data-spy="how">How it works</a>
       <a href="#ev-main" class="nl-in" data-spy="ev-main">Event</a>
+      <a href="#guide-card" class="nl-in hidden" id="nl-guide" aria-haspopup="dialog">Guide</a>
       <a href="#evp-slot" class="nl-in" data-spy="evp-slot">Your package</a>
       <a href="#account" class="nl-in" data-spy="account">Account</a>
       <a href="#faq" class="nl-faq" data-spy="faq">FAQ</a>
@@ -1168,6 +1271,7 @@
                 <span>More</span>
               </button>
               <div id="evp-menu" class="evp-menu hidden" role="group" aria-label="More">
+                <button type="button" class="mi hidden" id="mi-guide" data-act="guide"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 21s-6.5-6.1-6.5-11a6.5 6.5 0 0 1 13 0c0 4.9-6.5 11-6.5 11z"/><path d="M12 7.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5z"/></svg>Guide</button>
                 <button type="button" class="mi" id="mi-qr" data-act="qr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3.5" y="3.5" width="7" height="7"/><rect x="13.5" y="3.5" width="7" height="7"/><rect x="3.5" y="13.5" width="7" height="7"/><path d="M14 14h2.5v2.5H14zM18 18h2.5v2.5H18zM18 14h2.5M14 18v2.5"/></svg>Show my pass QR</button>
                 <button type="button" class="mi warn-mi" id="mi-cancel" data-act="cancel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="4" y="4" width="16" height="16"/><path d="M9 9l6 6M15 9l-6 6"/></svg>Cancel my spot</button>
                 <button type="button" class="mi" id="mi-refund" data-act="refund"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M4 12a8 8 0 1 0 2.3-5.7"/><path d="M4 4v4h4"/></svg><span id="mi-refund-label">Request a refund</span></button>
@@ -1209,6 +1313,14 @@
         </div>
 
         <div class="evp-main" id="ev-main">
+          <section id="guide-card" class="guide-card hidden" aria-labelledby="guide-card-h">
+            <p class="eb"><b id="guide-card-h">Your guide</b></p>
+            <p class="gc-place" id="gc-place"></p>
+            <p class="gc-time hidden" id="gc-time"></p>
+            <p class="gc-nn hidden" id="gc-nn"></p>
+            <button type="button" class="btn" id="guide-open" aria-haspopup="dialog">Open your guide</button>
+            <p class="gc-saved hidden" id="gc-saved">Saved on this phone</p>
+          </section>
           <div id="profile-nudge" class="cp nudge hidden">
             <p class="cp-k" style="margin-bottom:12px;">Before pickup</p>
             <h3>Finish your profile</h3>
@@ -1427,6 +1539,11 @@
     </div>
   </dialog>
 
+  <dialog id="guide-dlg" class="sheet" aria-label="Your guide">
+    <div class="gdlg-bar"><button type="button" class="x" data-close aria-label="Close">&#10005;</button></div>
+    <div id="guide-view"></div>
+  </dialog>
+
   <dialog id="dlg" class="cp" aria-labelledby="dlg-title">
     <form id="dlg-form">
       <h3 id="dlg-title"></h3>
@@ -1448,6 +1565,263 @@
 <script>
   const BACKEND_URL = 'https://control-1-0baa.onrender.com';
   const $ = (id) => document.getElementById(id);
+
+  // guide:render:start. The event guide's view, shared word for word by the guest site (controlfrontend/index.html)
+  // and the admin preview (control/guide.js, GUIDE_VIEW_JS): change one, copy it to the other. Plain DOM, textContent
+  // only, links https only. No backticks, dollar-braces or backslashes in here (it also lives in a template literal).
+  const GUIDE = (function () {
+    const NS = 'http://www.w3.org/2000/svg';
+    const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const AST = 4 * 3600000; // Antigua is UTC-4 all year
+    const DAY_MS = 86400000;
+    const KINDS = { DO: ['r-do', 'Do'], DONT: ['r-dont', "Don't"], HEADS_UP: ['r-heads', 'Heads up'] };
+    const ICONS = {
+      pin: ['M12 21s-6.5-6.1-6.5-11a6.5 6.5 0 0 1 13 0c0 4.9-6.5 11-6.5 11z', 'M12 7.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5z'],
+      'r-do': ['M5 12.5l4.5 4.5L19 7.5'],
+      'r-dont': ['M12 3.5a8.5 8.5 0 1 1 0 17 8.5 8.5 0 0 1 0-17z', 'M6 6l12 12'],
+      'r-heads': ['M12 3.5l9.5 17h-19z', 'M12 10v4.5', 'M12 17.2v.6']
+    };
+    const num = (s, a, b) => parseInt(String(s).slice(a, b), 10);
+    const isHm = (s) => typeof s === 'string' && s.length === 5 && s[2] === ':' && num(s, 0, 2) >= 0 && num(s, 0, 2) < 24 && num(s, 3, 5) >= 0 && num(s, 3, 5) < 60;
+    const isDay = (s) => typeof s === 'string' && s.length === 10 && s[4] === '-' && s[7] === '-' && num(s, 0, 4) > 2000 && num(s, 5, 7) > 0 && num(s, 8, 10) > 0;
+    const isFull = (s) => typeof s === 'string' && s.length === 16 && s[10] === 'T' && isDay(s.slice(0, 10)) && isHm(s.slice(11));
+    const mins = (hm) => num(hm, 0, 2) * 60 + num(hm, 3, 5);
+    const at = (day, hm) => Date.UTC(num(day, 0, 4), num(day, 5, 7) - 1, num(day, 8, 10), num(hm, 0, 2), num(hm, 3, 5)) + AST;
+    function el(tag, cls, text) {
+      const e = document.createElement(tag);
+      if (cls) e.className = cls;
+      if (text !== undefined && text !== null && text !== '') e.textContent = text;
+      return e;
+    }
+    function icon(name) {
+      const s = document.createElementNS(NS, 'svg');
+      s.setAttribute('viewBox', '0 0 24 24'); s.setAttribute('fill', 'none'); s.setAttribute('stroke', 'currentColor');
+      s.setAttribute('stroke-width', '1.8'); s.setAttribute('aria-hidden', 'true'); s.setAttribute('focusable', 'false');
+      (ICONS[name] || []).forEach((d) => { const p = document.createElementNS(NS, 'path'); p.setAttribute('d', d); s.appendChild(p); });
+      return s;
+    }
+    // '21:30' or '2026-11-01T21:30' (Antigua time) -> '9:30 PM'
+    function fmtTime(s) {
+      const hm = isFull(s) ? s.slice(11) : s;
+      if (!isHm(hm)) return '';
+      const h = num(hm, 0, 2);
+      return ((h + 11) % 12 + 1) + ':' + hm.slice(3, 5) + ' ' + (h < 12 ? 'AM' : 'PM');
+    }
+    // '2026-11-01' -> 'Sun 1 Nov'
+    function fmtDay(s) {
+      if (!isDay(s)) return '';
+      const d = new Date(Date.UTC(num(s, 0, 4), num(s, 5, 7) - 1, num(s, 8, 10)));
+      return DAYS[d.getUTCDay()] + ' ' + d.getUTCDate() + ' ' + MONTHS[d.getUTCMonth()];
+    }
+    // An ISO instant -> 'Sun 25 Oct, 9:14 PM' in Antigua time
+    function fmtStamp(iso) {
+      const t = Date.parse(iso);
+      if (isNaN(t)) return '';
+      const d = new Date(t - AST), two = (n) => (n < 10 ? '0' : '') + n;
+      return DAYS[d.getUTCDay()] + ' ' + d.getUTCDate() + ' ' + MONTHS[d.getUTCMonth()] + ', ' + fmtTime(two(d.getUTCHours()) + ':' + two(d.getUTCMinutes()));
+    }
+    // The schedule in time order. The day is the meeting point's (or the first full date in the schedule); a time more
+    // than six hours before the meet time counts as the next morning, after midnight. when: the moment, once the day is known.
+    function timeline(g) {
+      const meet = (g && g.meet) || {}, list = (g && Array.isArray(g.schedule)) ? g.schedule : [];
+      let day = isDay(meet.date) ? meet.date : '';
+      if (!day) { const f = list.find((x) => isFull(x && x.time)); if (f) day = f.time.slice(0, 10); }
+      const m0 = isHm(meet.time) ? mins(meet.time) : null;
+      return list.map((x, i) => {
+        const t = String((x && x.time) || ''), full = isFull(t), hm = full ? t.slice(11) : isHm(t) ? t : '';
+        const late = !full && hm && m0 !== null && mins(hm) < m0 - 360 ? 1 : 0;
+        const when = full ? at(t.slice(0, 10), hm) : hm && day ? at(day, hm) + late * DAY_MS : null;
+        const key = when !== null ? when : hm ? (late * 1440 + mins(hm)) * 60000 : Infinity;
+        return { item: x, i, hm, when, key };
+      }).sort((a, b) => (a.key - b.key) || (a.i - b.i));
+    }
+    // What's on now and what's next, on the day only: from midnight (Antigua) until three hours after the last item.
+    function nowNext(g, now) {
+      const rows = timeline(g).filter((r) => r.when !== null);
+      if (!rows.length) return null;
+      const first = rows[0].when, last = rows[rows.length - 1].when;
+      const dayStart = first - ((first - AST) % DAY_MS + DAY_MS) % DAY_MS;
+      if (now < dayStart || now > last + 3 * 3600000) return null;
+      let cur = null, next = null;
+      rows.forEach((r) => { if (r.when <= now) cur = r; else if (!next) next = r; });
+      return { now: cur, next };
+    }
+    // [label, https link] for each map button: both apps from a pin, or the one link that was pasted.
+    function mapLinks(map, label) {
+      if (!map || typeof map !== 'object') return [];
+      if (typeof map.lat === 'number' && typeof map.lng === 'number' && isFinite(map.lat) && isFinite(map.lng)) {
+        const ll = map.lat + ',' + map.lng;
+        return [['Open in Google Maps', 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(ll)],
+          ['Open in Apple Maps', 'https://maps.apple.com/?ll=' + encodeURIComponent(ll) + (label ? '&q=' + encodeURIComponent(label) : '')]];
+      }
+      if (typeof map.url !== 'string' || map.url.indexOf('https://') !== 0) return [];
+      let host = '';
+      try { host = new URL(map.url).hostname.toLowerCase(); } catch (e) { return []; }
+      const apple = host === 'maps.apple.com' || host.slice(-10) === '.apple.com';
+      const google = host.indexOf('google.') >= 0 || host === 'goo.gl' || host === 'maps.app.goo.gl';
+      return [[apple ? 'Open in Apple Maps' : google ? 'Open in Google Maps' : 'Open the map', map.url]];
+    }
+    // An https:// image, or a file in the guest site like "art/meet.jpg" (the poster's rule). site: where such files live.
+    const PATH_OK = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-';
+    function imageSrc(v, site) {
+      if (typeof v !== 'string' || !v) return '';
+      if (v.indexOf('https://') === 0) { try { return new URL(v).protocol === 'https:' && v.indexOf('"') < 0 && v.indexOf(' ') < 0 ? v : ''; } catch (e) { return ''; } }
+      const dot = v.lastIndexOf('.'), ext = v.slice(dot + 1).toLowerCase();
+      if (dot < 1 || ['png', 'jpg', 'jpeg', 'svg', 'webp', 'gif'].indexOf(ext) < 0) return '';
+      const ok = v.slice(0, dot).split('/').every((p) => p.length > 0 && p.split('').every((c) => PATH_OK.indexOf(c) >= 0));
+      return ok ? (site || '') + v : '';
+    }
+    const has = (v) => typeof v === 'string' && v.trim() !== '';
+    const sections = (g) => {
+      const m = (g && g.meet) || {}, p = (g && g.parking) || {};
+      return {
+        meet: has(m.place) || has(m.time) || has(m.how) || has(m.image) || mapLinks(m.map).length > 0,
+        route: !!(g && Array.isArray(g.route) && g.route.length),
+        schedule: !!(g && Array.isArray(g.schedule) && g.schedule.length),
+        parking: has(p.text) || has(p.image) || mapLinks(p.map).length > 0,
+        rules: !!(g && Array.isArray(g.rules) && g.rules.length)
+      };
+    };
+    const isEmpty = (g) => { const s = sections(g); return !(s.meet || s.route || s.schedule || s.parking || s.rules); };
+
+    function mapButtons(box, map, label) {
+      const links = mapLinks(map, label);
+      if (!links.length) return;
+      const row = el('div', 'gd-maps');
+      links.forEach(([text, href]) => {
+        const a = el('a', 'gd-map');
+        a.href = href; a.target = '_blank'; a.rel = 'noopener noreferrer';
+        a.append(icon('pin'), el('span', '', text));
+        row.appendChild(a);
+      });
+      box.appendChild(row);
+    }
+    function picture(box, src, alt, site) {
+      const v = imageSrc(src, site);
+      if (!v) return;
+      const f = el('figure', 'gd-fig'), img = el('img');
+      img.alt = alt; img.loading = 'lazy'; img.decoding = 'async';
+      img.onerror = () => f.remove();
+      img.src = v;
+      f.appendChild(img);
+      box.appendChild(f);
+    }
+    // The schedule's rows and its Now / Next lines; redrawn by tick() on the day.
+    function drawSchedule(box, g, now) {
+      box.replaceChildren();
+      const nn = nowNext(g, now);
+      if (nn && (nn.now || nn.next)) {
+        const line = el('div', 'gd-nn');
+        if (nn.now) { const p = el('p', 'is-now'); p.append(el('span', '', 'Now'), el('b', '', nn.now.item.title || '')); line.appendChild(p); }
+        if (nn.next) { const p = el('p', 'is-next'); p.append(el('span', '', 'Next'), el('b', '', [fmtTime(nn.next.hm), nn.next.item.title].filter(Boolean).join(' · '))); line.appendChild(p); }
+        box.appendChild(line);
+      }
+      const ol = el('ol', 'gd-tl');
+      timeline(g).forEach((r) => {
+        const li = el('li', 'gd-item');
+        const state = nn && nn.now && nn.now.i === r.i ? 'now' : nn && nn.next && nn.next.i === r.i ? 'next' : nn && r.when !== null && r.when < now ? 'past' : '';
+        if (state) li.classList.add('is-' + state);
+        li.appendChild(el('span', 'gd-at', fmtTime(r.hm) || '·'));
+        li.appendChild(el('b', '', r.item.title || ''));
+        if (state === 'now' || state === 'next') li.appendChild(el('span', 'gd-tag', state === 'now' ? 'Now' : 'Next'));
+        if (has(r.item.note)) li.appendChild(el('p', '', r.item.note));
+        ol.appendChild(li);
+      });
+      box.appendChild(ol);
+    }
+    // o: { name (the event's), site (where relative images live), saved (shown from this phone's copy), now (ms) }.
+    function render(root, g, o) {
+      o = o || {};
+      g = g || {};
+      root.replaceChildren();
+      root.classList.add('gd');
+      const s = sections(g);
+      const head = el('header', 'gd-head');
+      head.appendChild(el('p', 'gd-k', 'Your guide'));
+      if (has(o.name)) head.appendChild(el('h2', 'gd-title', o.name));
+      const meta = el('p', 'gd-meta');
+      if (o.saved) meta.appendChild(el('span', 'gd-saved', 'Saved on this phone'));
+      const stamp = fmtStamp(g.updated_at || g.published_at);
+      if (stamp) meta.appendChild(el('span', '', 'Updated ' + stamp));
+      if (meta.childNodes.length) head.appendChild(meta);
+      head.appendChild(el('p', 'gd-only', "For paid guests only. Keep it in the crew: don't share it."));
+      root.appendChild(head);
+      let n = 0;
+      const section = (key, title) => {
+        const sec = el('section', 'gd-sec gd-' + key);
+        const h = el('h3', 'gd-h');
+        h.append(el('span', 'gd-n', String(++n).padStart(2, '0')), el('span', '', title));
+        sec.appendChild(h);
+        root.appendChild(sec);
+        return sec;
+      };
+      if (s.meet) {
+        const m = g.meet, sec = section('meet', 'Meeting point');
+        if (has(m.place)) sec.appendChild(el('p', 'gd-place', m.place));
+        if (fmtTime(m.time)) {
+          const t = el('p', 'gd-time');
+          t.appendChild(el('b', '', fmtTime(m.time)));
+          if (m.sharp) t.appendChild(el('span', 'gd-sharp', 'Sharp'));
+          sec.appendChild(t);
+        }
+        const when = [fmtDay(m.date), fmtTime(m.time) ? 'Antigua time' : ''].filter(Boolean).join(' · ');
+        if (when) sec.appendChild(el('p', 'gd-date', when));
+        mapButtons(sec, m.map, m.place);
+        if (has(m.how)) { sec.appendChild(el('p', 'gd-sub', 'How to get there')); sec.appendChild(el('p', 'gd-text', m.how)); }
+        picture(sec, m.image, 'The meeting point', o.site);
+      }
+      if (s.route) {
+        const sec = section('route', 'Route');
+        const ol = el('ol', 'gd-stops');
+        g.route.forEach((x, i) => {
+          const li = el('li', 'gd-stop' + (i === 0 ? ' is-start' : '') + (i === g.route.length - 1 && i > 0 ? ' is-end' : ''));
+          const dot = el('span', 'gd-dot', String(i + 1));
+          dot.setAttribute('aria-hidden', 'true');
+          const body = el('div', 'gd-stop-t');
+          body.appendChild(el('b', '', x.title || ''));
+          if (has(x.note)) body.appendChild(el('p', '', x.note));
+          li.append(dot, body);
+          ol.appendChild(li);
+        });
+        sec.appendChild(ol);
+      }
+      if (s.schedule) {
+        const sec = section('schedule', 'Schedule');
+        sec.appendChild(el('p', 'gd-hint', 'Antigua time'));
+        const box = el('div', 'gd-sched');
+        sec.appendChild(box);
+        drawSchedule(box, g, typeof o.now === 'number' ? o.now : Date.now());
+        root.gdTick = (now) => drawSchedule(box, g, typeof now === 'number' ? now : Date.now());
+      } else root.gdTick = null;
+      if (s.parking) {
+        const p = g.parking, sec = section('parking', 'Parking');
+        if (has(p.text)) sec.appendChild(el('p', 'gd-text', p.text));
+        mapButtons(sec, p.map, 'Parking');
+        picture(sec, p.image, 'Parking', o.site);
+        if (p.disclaimer) {
+          const w = el('p', 'gd-warn');
+          w.append(icon('r-heads'), el('span', '', 'Use at your own risk: not an official car park.'));
+          sec.appendChild(w);
+        }
+      }
+      if (s.rules) {
+        const sec = section('rules', 'Rules');
+        const ul = el('ul', 'gd-rlist');
+        g.rules.forEach((r) => {
+          const k = KINDS[r.kind] || KINDS.HEADS_UP;
+          const li = el('li', 'gd-rule ' + k[0]);
+          const ic = el('span', 'gd-ic');
+          ic.appendChild(icon(k[0]));
+          li.append(ic, el('span', 'gd-rk', k[1]), el('p', '', r.text || ''));
+          ul.appendChild(li);
+        });
+        sec.appendChild(ul);
+      }
+    }
+    return { render, nowNext, timeline, fmtTime, fmtDay, fmtStamp, mapLinks, imageSrc, sections, isEmpty };
+  })();
+  // guide:render:end
 
   // ---- site lock: while html.locked is set (see the head script) only the trailer shows and nothing else loads ----
   // Every backend call goes through backend(): it sends the owner's preview token as x-preview when there is one, and a
@@ -1676,6 +2050,9 @@
   // invited_by(_name) only come from the newer backend: no approval means approved, and no full_name key keeps the
   // profile UI off. profileApi turns false if /api/profile answers 404 (not deployed yet).
   let me = null, profileApi = true;
+  // The event guide (see "the event guide" below): what /api/event sent (or this phone kept), and whether it's the kept copy.
+  // openGuideFlag: the guest came from the "Your guide is ready" email (?guide=1), so the guide opens once it's here.
+  let guideData = null, guideSaved = false, openGuideFlag = false;
 
   // ---- account state and profile ----
   const acctState = () => {
@@ -1841,11 +2218,13 @@
   function logout() {
     localStorage.removeItem('control_user_email');
     localStorage.removeItem('control_token');
+    store(guideKey(), null);
+    guideData = null; guideSaved = false;
     currentUser = null;
     token = null;
     myOrder = null; orderLoaded = false; eventData = null; me = null; profileApi = true;
     closeMenu();
-    ['dlg', 'contact-dlg', 'qr-dlg'].forEach((id) => { if ($(id).open) $(id).close(); });
+    ['dlg', 'contact-dlg', 'qr-dlg', 'guide-dlg'].forEach((id) => { if ($(id).open) $(id).close(); });
     renderHead(); resetPromo();
     $('login-view').classList.remove('hidden');
     $('portal-view').classList.add('hidden');
@@ -1914,6 +2293,22 @@
       if (sharedCode) localStorage.setItem('odr_code', sharedCode);
       else sharedCode = String(localStorage.getItem('odr_code') || '');
     } catch (err) { /* storage off: the code only lasts for this visit */ }
+  })();
+
+  // ?guide=1 (the "Your guide is ready" email's button): kept in localStorage (odr_guide_open) like a shared code, so it
+  // survives the login link, and taken out of the address bar (other parameters kept).
+  (function () {
+    const q = new URLSearchParams(location.search);
+    if (q.has('guide')) {
+      openGuideFlag = q.get('guide') === '1';
+      q.delete('guide');
+      const rest = q.toString();
+      history.replaceState(null, '', location.pathname + (rest ? '?' + rest : '') + location.hash);
+    }
+    try {
+      if (openGuideFlag) localStorage.setItem('odr_guide_open', '1');
+      else openGuideFlag = localStorage.getItem('odr_guide_open') === '1';
+    } catch (err) { /* storage off: the flag only lasts for this visit */ }
   })();
 
   async function loadInvite() {
@@ -2452,6 +2847,7 @@
       delete img.dataset.src; img.removeAttribute('src'); img.classList.add('hidden'); $('evp-art').classList.remove('hidden');
     }
     renderMenu();
+    renderGuideCard();
   }
 
   // The More menu follows the order: the pass QR once paid, and the same cancel / refund / withdraw as the order panel.
@@ -2613,7 +3009,8 @@
     // Focus goes back to More first, so a dialog the action opens returns there when it closes.
     closeMenu(true);
     const act = item.dataset.act;
-    if (act === 'qr') openQr(moreBtn);
+    if (act === 'guide') openGuide(moreBtn);
+    else if (act === 'qr') openQr(moreBtn);
     else if (act === 'cancel') $('order-cancel').click();
     else if (act === 'refund') $('order-refund').click();
     else if (act === 'withdraw') $('order-withdraw').click();
@@ -2706,8 +3103,91 @@
       $('event-paid-text').textContent = (ev && ev.paid_info) || '';
       $('event-paid').classList.toggle('hidden', !(ev && ev.paid_info));
       $('event-locked').classList.toggle('hidden', !ev || !!ev.paid || !ev.has_paid_info);
-    } catch (err) { if (err.message !== 'SESSION_EXPIRED') console.error(err); }
+      // The guide: only a paid guest of this event gets one. No guide key (unpublished, not paid, an older backend):
+      // the copy kept on this phone goes, and so does the email's "open the guide" flag.
+      if (ev) {
+        const g = ev.guide && typeof ev.guide === 'object' ? ev.guide : null;
+        keepGuide(g);
+        setGuide(g, false);
+        if (!g && openGuideFlag) { openGuideFlag = false; store('odr_guide_open', null); }
+      }
+    } catch (err) {
+      if (err.message === 'SESSION_EXPIRED') return;
+      // No signal: the guide kept on this phone still shows, marked "Saved on this phone".
+      const kept = err instanceof TypeError ? keptGuide() : null;
+      if (kept && !guideData) {
+        if (!eventData && kept.name) { eventData = { name: kept.name }; try { renderHead(); } catch (e) {} }
+        setGuide(kept.guide, true);
+        return;
+      }
+      console.error(err);
+    }
   }
+
+  // ---- the event guide (control/guide.js): for a paid guest of the current event, once the organizers publish it ----
+  // /api/event sends it as `guide` (an older backend never does, so nothing shows). The card sits under the status line
+  // on phones and at the top of the main column on laptops; More > Guide, the laptop nav and the card open the sheet.
+  // It's kept on this phone (odr_guide_<email>) for venues with bad signal, and dropped as soon as the order isn't paid
+  // any more or the guide is taken down.
+  const guideKey = () => 'odr_guide_' + String(currentUser || '').toLowerCase();
+  function keepGuide(g) {
+    if (!currentUser) return;
+    store(guideKey(), g ? JSON.stringify({ guide: g, name: (eventData && eventData.name) || '' }) : null);
+  }
+  function keptGuide() {
+    try { const k = JSON.parse(localStorage.getItem(guideKey()) || 'null'); return k && k.guide && typeof k.guide === 'object' ? k : null; } catch (e) { return null; }
+  }
+  function setGuide(g, saved) {
+    guideData = g && typeof g === 'object' && !GUIDE.isEmpty(g) ? g : null;
+    guideSaved = !!(guideData && saved);
+    renderGuideCard();
+  }
+  function renderGuideCard() {
+    const g = guideData, on = !!g && !!currentUser && acctState() === 'approved';
+    $('guide-card').classList.toggle('hidden', !on);
+    $('mi-guide').classList.toggle('hidden', !on);
+    $('nl-guide').classList.toggle('hidden', !on);
+    if (!on) { if ($('guide-dlg').open) $('guide-dlg').close(); return; }
+    const m = g.meet || {}, t = GUIDE.fmtTime(m.time);
+    $('gc-place').textContent = m.place || 'The plan for the night';
+    const when = $('gc-time');
+    when.replaceChildren();
+    const line = [t || m.date ? 'Meet' : '', GUIDE.fmtDay(m.date), t].filter(Boolean).join(' · ');
+    if (line) when.appendChild(document.createTextNode(line));
+    if (t && m.sharp) { const s = document.createElement('span'); s.className = 'sharp'; s.textContent = 'Sharp'; when.appendChild(s); }
+    when.classList.toggle('hidden', !line);
+    const nn = GUIDE.nowNext(g, Date.now()), box = $('gc-nn');
+    box.replaceChildren();
+    if (nn && (nn.now || nn.next)) {
+      const r = nn.now || nn.next, b = document.createElement('b');
+      b.textContent = nn.now ? 'Now' : 'Next';
+      box.append(b, document.createTextNode(nn.now ? r.item.title : [GUIDE.fmtTime(r.hm), r.item.title].filter(Boolean).join(' · ')));
+    }
+    box.classList.toggle('hidden', !box.childNodes.length);
+    $('gc-saved').classList.toggle('hidden', !guideSaved);
+    // Came from the email (?guide=1): open it once, as soon as it's here and the account has loaded.
+    if (openGuideFlag) {
+      openGuideFlag = false;
+      store('odr_guide_open', null);
+      openGuide($('guide-open'));
+    }
+  }
+  function openGuide(opener) {
+    if (!guideData) return;
+    closeMenu();
+    GUIDE.render($('guide-view'), guideData, { name: (eventData && eventData.name) || '', saved: guideSaved, now: Date.now() });
+    openSheet($('guide-dlg'), opener);
+    $('guide-dlg').scrollTop = 0;
+  }
+  $('guide-open').addEventListener('click', (e) => openGuide(e.currentTarget));
+  $('nl-guide').addEventListener('click', (e) => { e.preventDefault(); openGuide(e.currentTarget); });
+  // Now and Next move on by themselves on the day.
+  setInterval(() => {
+    if (!guideData) return;
+    renderGuideCard();
+    const v = $('guide-view');
+    if ($('guide-dlg').open && typeof v.gdTick === 'function') v.gdTick(Date.now());
+  }, 30000);
 
   async function loadPackages() {
     try {
@@ -2768,6 +3248,8 @@
       if (!res.ok) throw new Error((data && data.error) || 'Order did not load');
       const first = !orderLoaded, was = myOrder ? myOrder.status : null;
       myOrder = data; orderLoaded = true;
+      // The guide is for paid guests: an order that isn't paid (any more) takes it off this phone.
+      if (!myOrder || myOrder.status !== 'PAID') { store(guideKey(), null); if (guideData) setGuide(null, false); }
       const statusBox = $('order-status');
       const pkgBox = $('pkg-card');
       renderPass();
