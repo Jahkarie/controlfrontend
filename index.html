@@ -209,6 +209,17 @@
     #nav-cta { position: relative; }
     #nav-cta::before { content: ''; position: absolute; inset: -3px 0; }
     body:has(#accept-view:not(.hidden)) #nav-cta { display: none; }
+    /* Tickets: the public ticket site, shown only while it's open (see showTickets()). Always the outline style. */
+    .nav-tix { gap: 8px; }
+    .nav-tix:not(.hidden) + #nav-cta { margin-left: -12px; }
+    .nav-tix svg { width: 18px; height: 18px; flex: none; }
+    .wall-tix { position: absolute; z-index: 2; top: 6px; right: var(--gut); display: inline-flex; align-items: center; gap: 8px; min-height: 44px;
+      color: var(--ink); text-decoration: none; font: 700 12px/1 var(--mono); letter-spacing: .1em; text-transform: uppercase; }
+    .wall-tix span { padding: 4px 6px; margin: -4px -6px; background: var(--wall); }
+    .wall-tix i { font-style: normal; opacity: .55; }
+    .wall-tix svg { width: 20px; height: 20px; flex: none; }
+    .wall-tix:hover span { text-decoration: underline; text-underline-offset: 3px; }
+    body.authed .wall-tix, body:has(#accept-view:not(.hidden)) .wall-tix { display: none; }
     body.authed .nl-out, body:not(.evp-on) .nl-in { display: none; }
     /* Phone: on the event page the big actions live in the bottom bar. */
     @media (max-width: 1023px) {
@@ -217,6 +228,15 @@
       /* Once the front has scrolled away, the bar's Get in is the only way to the sheet: it takes the orange. */
       body:not(.authed) .navbtn { background: var(--orange); border-color: var(--orange); color: var(--ink); }
       body:not(.authed) .navbtn:hover { background: #ff7440; border-color: #ff7440; }
+      body:not(.authed) .nav-tix { background: none; border-color: var(--line-2); color: var(--text); }
+      body:not(.authed) .nav-tix:hover { background: none; border-color: var(--text); }
+      .nav { gap: 20px; }
+      .nav-tix { padding: 0 12px; }
+      .navbtn { white-space: nowrap; }
+    }
+    @media (max-width: 389px) {
+      .nav { gap: 14px; }
+      .nav-tix svg { display: none; }
       body:not(.authed):has(#login-view:not(.hidden)) .nav { transform: translateY(-100%); }
       body.scrolled:not(.authed):has(#login-view:not(.hidden)) .nav { transform: none; }
     }
@@ -887,6 +907,7 @@
       .nav-links a[aria-current="true"]::after { content: ''; position: absolute; left: 14px; right: 14px; bottom: 8px; height: 1px; background: var(--orange); }
       body:has(#faq.hidden) .nav-links .nl-faq { display: none; }
       body.evp-on #nav-cta { display: inline-flex; }
+      .wall-tix { display: none; }
 
       /* Calm states: split, statement left, request right. */
       #portal-view:not([data-acct="approved"]) { min-height: 100vh; padding: calc(var(--top) + 56px) var(--gut) 72px; max-width: 1480px; margin: 0 auto;
@@ -1130,6 +1151,7 @@
       <a href="#faq" class="nl-faq" data-spy="faq">FAQ</a>
       <a href="#contact" class="nl-out" data-spy="contact">Contact</a>
     </div>
+    <a class="navbtn nav-tix hidden" id="nav-tix" href="https://tickets.ondroad.xyz/"><svg aria-hidden="true" focusable="false"><use href="#i-ticket"/></svg>Tickets</a>
     <a class="navbtn" id="nav-cta" href="#access">Get in</a>
   </nav>
 
@@ -1143,6 +1165,7 @@
           <svg class="xh x1" focusable="false"><use href="#xh"/></svg><svg class="xh x2" focusable="false"><use href="#xh"/></svg>
           <svg class="xh x3" focusable="false"><use href="#xh"/></svg><svg class="xh x4" focusable="false"><use href="#xh"/></svg>
         </div>
+        <a class="wall-tix hidden" id="wall-tix" href="https://tickets.ondroad.xyz/"><svg aria-hidden="true" focusable="false"><use href="#i-ticket"/></svg><span><i aria-hidden="true">[ </i>Tickets<i aria-hidden="true"> ]</i></span></a>
         <div class="hero-in">
           <p class="hero-k reveal"><span>Antigua Carnival</span><span>Invite only</span></p>
           <h1 class="hero-wm reveal"><span class="sr">On D' Road</span><svg class="bar-wm" viewBox="0 0 1000 440" aria-hidden="true" focusable="false"><use href="#barmark"/></svg></h1>
@@ -3682,6 +3705,22 @@
     });
   })();
 
+  // The Tickets button (bar, and the phone front's corner): only while the ticket site is open, asked once /api/site
+  // has said this site is open (so a locked site still requests nothing else). Its own lock answers
+  // { locked: true } (or a 404 from an older backend), which keeps the button hidden. Plain fetch: the main site's
+  // preview token means nothing there, and its 423 handling isn't wanted for this.
+  let ticketsAsked = false;
+  async function showTickets() {
+    if (ticketsAsked) return;
+    ticketsAsked = true;
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/tickets/site`);
+      if (!res.ok) return;
+      const d = await res.json();
+      if (d && d.locked === false) ['nav-tix', 'wall-tix'].forEach((id) => $(id).classList.remove('hidden'));
+    } catch (err) { /* no button */ }
+  }
+
   // An invite link opens the accept screen, a login link exchanges itself for a session,
   // otherwise a saved session resumes automatically. This runs last, after everything above exists.
   function start() {
@@ -3701,7 +3740,7 @@
     const s = await loadSite();
     if (s && s.locked !== true) {
       if (relocked) return location.reload();
-      openSite(!!s.preview); start();
+      openSite(!!s.preview); start(); showTickets();
     } else if (!s && !isLocked()) start();
     if (isLocked() && !siteTimer) siteTimer = setTimeout(checkSite, s ? 60000 : Math.min(30000, 3000 * 2 ** siteTries++));
   }

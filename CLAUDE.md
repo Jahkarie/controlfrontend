@@ -23,6 +23,7 @@ On D' Road is an invite-only, 18+ Antigua Carnival band. This repo is the guest-
   - scroll-spy for the laptop nav (`#nav-links a[data-spy]` get `aria-current`);
   - the pass's "Full screen" button (`#pass-expand`) clicks More > Show my pass QR (`#mi-qr`).
   It makes no API calls, reads no storage and touches no guest data. The main script doesn't depend on it.
+- **Tickets button:** the bar has "Tickets" (`#nav-tix`, with the ticket icon, left of `#nav-cta`; the outline style even where Get in is orange; the icon drops below 390px wide), and the phone front has "[ Tickets ]" (`#wall-tix`) in the wall's top-right corner, since the bar waits until the wall has scrolled away there (hidden on laptops, once logged in and on the invite form). Both link to `https://tickets.ondroad.xyz/` and stay hidden until, once `/api/site` has said this site is open, `showTickets()` asks `/api/tickets/site` (once, with a plain `fetch` without `x-preview`) and it answers `locked: false`; the ticket site's own lock, an error or an older backend keep them hidden. While the main site is locked nothing shows anyway.
 
 ## Page flow
 
