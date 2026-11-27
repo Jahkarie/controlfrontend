@@ -588,6 +588,17 @@
             <h2 class="eb">VIP tables · bottle service</h2>
             <div id="tables" class="tables"></div>
           </div>
+          <div class="sec hidden" id="sec-invites">
+            <h2 class="eb">Invite friends</h2>
+            <p class="cardnote" id="inv-left"></p>
+            <ul id="inv-sent"></ul>
+            <form id="inv-refer" autocomplete="off">
+              <p><label>Your email (the one your invite was sent to)<br><input id="ir-me" type="email" maxlength="200" required></label></p>
+              <p><label>Friend's email<br><input id="ir-to" type="email" maxlength="200" required></label></p>
+              <p><button type="submit" class="btn sm">Send invite</button></p>
+              <p class="err" id="ir-err" role="alert"></p>
+            </form>
+          </div>
           <p class="cardnote" id="evp-cardnote"></p>
         </div>
         <aside class="rail" aria-label="Your order"><div class="summary cp" id="rail-sum"></div></aside>
@@ -1095,8 +1106,34 @@
       EV = ev; loadCart();
     }
     renderEvent();
+    renderInvitePanel();
     view('v-event');
   }
+  // Referrals: shown to someone holding an invite for an invite-only event whose owner allows invites to friends.
+  async function refreshInvites() {
+    const r = await call('/api/tickets/invites/status', { event: EV.slug, invite: INVITE, email: $('ir-me').value.trim() });
+    if (!r.ok) { $('ir-err').textContent = r.data.error || ''; return; }
+    $('ir-err').textContent = '';
+    $('inv-left').textContent = r.data.left + ' of ' + r.data.limit + ' invites left.';
+    const list = $('inv-sent'); list.replaceChildren();
+    r.data.sent.forEach((s) => { const li = document.createElement('li'); li.textContent = s.email; list.appendChild(li); });
+  }
+  function renderInvitePanel() {
+    const sec = $('sec-invites');
+    const on = !!INVITE && EV.invite_only && EV.status === 'ON_SALE' && (EV.invites_per_guest || 0) > 0;
+    sec.classList.toggle('hidden', !on);
+    $('inv-sent').replaceChildren(); $('inv-left').textContent = ''; $('ir-err').textContent = '';
+  }
+  $('ir-me').addEventListener('change', () => { if ($('ir-me').value) refreshInvites(); });
+  $('inv-refer').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const to = $('ir-to').value.trim();
+    const r = await call('/api/tickets/invites/refer', { event: EV.slug, invite: INVITE, email: $('ir-me').value.trim(), to });
+    if (!r.ok) { $('ir-err').textContent = r.data.error || 'Something went wrong. Try again.'; return; }
+    $('ir-to').value = '';
+    $('ir-err').textContent = r.data.emailed ? 'Invite sent to ' + r.data.to + '.' : 'Invite saved, but the email did not send. Tell them the link yourself.';
+    refreshInvites();
+  });
   function fact(dl, k, v, sub, extra) {
     const d = el('div', undefined, 'fact'); d.appendChild(el('dt', k)); const dd = el('dd', v);
     if (sub) dd.appendChild(el('span', sub, 's'));
