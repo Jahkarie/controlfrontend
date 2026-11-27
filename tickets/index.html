@@ -701,6 +701,8 @@
     set(k, v) { try { if (v === null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) {} },
     json(k) { try { return JSON.parse(localStorage.getItem(k) || 'null'); } catch (e) { return null; } }
   };
+  // The invite link's token (?invite=...). Kept across navigation and sent with checkout.
+  var INVITE = new URLSearchParams(location.search).get('invite') || '';
   const params = () => new URLSearchParams(location.search);
   // An order or ticket link: bought tickets keep working while the ticket site is locked, so these pages never lock.
   const orderMode = () => { const q = params(); return q.has('order') || q.has('ticket'); };
@@ -942,7 +944,9 @@
     document.body.dataset.view = id;
   }
   function go(q, replace) {
-    const s = new URLSearchParams(q).toString();
+    const qs = new URLSearchParams(q);
+    if (INVITE && !qs.has('invite')) qs.set('invite', INVITE);
+    const s = qs.toString();
     history[replace ? 'replaceState' : 'pushState'](null, '', location.pathname + (s ? '?' + s : ''));
     route();
     window.scrollTo(0, 0);
@@ -1431,7 +1435,7 @@
     store.set('tix_buyer', JSON.stringify({ name, email }));
     const t = totals();
     $('co-go').disabled = true;
-    const r = await call('/api/tickets/checkout', { event: EV.slug, items: itemsForApi(), buyer: { name, email, birth_date: yy + '-' + mm + '-' + dd }, terms: true, total_cents: t.total }).catch(() => null);
+    const r = await call('/api/tickets/checkout', { event: EV.slug, items: itemsForApi(), buyer: { name, email, birth_date: yy + '-' + mm + '-' + dd }, terms: true, total_cents: t.total, invite: INVITE }).catch(() => null);
     $('co-go').disabled = false;
     if (!r) return coError(null, 'No connection. Check your signal and try again.');
     if (!r.ok) {
